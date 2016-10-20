@@ -14,9 +14,11 @@ setup(
     url='https://github.com/Rostlab/LocText',
     author='Shrikant Vinchurkar, Juan Miguel Cejuela, Ashish Baghudana',
     author_email='loctext@rostlab.org',
+
     packages=find_packages(exclude=['tests']),
-    test_suite='nose.collector',
-    setup_requires=['nose>=1.0'],
+
+    test_suite='pytest-runner',
+    setup_requires=['pytest'],
 
     dependency_links=[
         'https://github.com/Rostlab/nalaf/tree/develop#egg=nalaf'
