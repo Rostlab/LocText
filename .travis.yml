@@ -4,7 +4,7 @@ python:
 install:
   - "pip install ."
 before_script:
-  - "pip install git+https://github.com/Rostlab/nalaf.git"
+  - "pip install git+https://github.com/Rostlab/nalaf.git@feature/Experimental"
   - "python -m nalaf.download_corpora"
   - "pip install codecov"
 after_success:

@@ -21,11 +21,11 @@ setup(
     setup_requires=['pytest'],
 
     dependency_links=[
-        'https://github.com/Rostlab/nalaf/tree/develop#egg=nalaf'
+        'https://github.com/Rostlab/nalaf/tree/feature/Experimental#egg=nalaf'
     ],
 
     install_requires=[
         # 'nalaf',
-        'spacy'
+        # 'spacy'
     ]
 )
