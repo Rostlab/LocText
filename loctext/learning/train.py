@@ -1,6 +1,6 @@
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
-from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
+from loctext.learning.annotators import LocTextBaselineRelationExtractor
 
 def parse_arguments(argv):
     import argparse
@@ -18,12 +18,12 @@ def train(argv):
     args = parse_arguments(argv)
     corpus = read_corpus(args.corpus)
 
-    annotator = StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
+    annotator = LocTextBaselineRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
 
     ret = Evaluations.cross_validate(annotator, corpus, evaluator, args.k_num_folds, use_validation_set=(not args.use_test_set))
 
-    print(ret)
+    return ret
 
 
 def read_corpus(corpus_name):
