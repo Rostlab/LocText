@@ -25,7 +25,7 @@ setup(
     ],
 
     install_requires=[
-        'nalaf',
+        # 'nalaf',
         'spacy'
     ]
 )
