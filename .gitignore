@@ -1,6 +1,6 @@
 # Ignore all hidden files by default
 .*
-~.travis.yml
+!.travis.yml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
