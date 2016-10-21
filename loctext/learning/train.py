@@ -46,6 +46,7 @@ def read_corpus(corpus_name):
 
     return corpus
 
+
 if __name__ == "__main__":
     import sys
     train(sys.argv[1:])
