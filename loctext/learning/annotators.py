@@ -14,7 +14,7 @@ class LocTextBaselineRelationExtractor(RelationExtractor):
         self.__annotator = StubSameSentenceRelationExtractor(entity1_class, entity2_class, rel_type)
 
     def annotate(self, corpus):
-        return self.__annotator.tag(corpus)  # TODO change to annotate
+        return self.__annotator.annotate(corpus)
 
 
 class LocTextRelationExtractor(RelationExtractor):
