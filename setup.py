@@ -7,7 +7,7 @@ def readme():
         return file.read()
 
 setup(
-    name='nala',
+    name='LocText',
     version='0.1.0',
     description='NLP Extraction of Relationships: Protein--Cell Compartments',
     long_description=readme(),
