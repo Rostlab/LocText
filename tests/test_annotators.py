@@ -14,7 +14,6 @@ def test_baseline():
     BASELINE_F_ON_LOCTEXT = 0.4234297812279464
     BASELINE_F_SE_ON_LOCTEXT = 0.0024623653397242064
 
-
     annotator = LocTextBaselineRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
 
