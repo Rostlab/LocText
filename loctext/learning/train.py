@@ -10,6 +10,7 @@ def parse_arguments(argv):
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--use_tk', default=False, action='store_true')
     parser.add_argument('--use_test_set', default=False, action='store_true')
+    parser.add_argument('--k_num_folds', type=int, default=5)
 
     return parser.parse_args()
 
@@ -17,26 +18,11 @@ def train(argv):
     args = parse_arguments(argv)
     corpus = read_corpus(args.corpus)
 
-    tagger = StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
+    annotator = StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
 
-    k = 5
+    ret = Evaluations.cross_validate(annotator, corpus, evaluator, args.k_num_folds, use_validation_set=(not args.use_test_set))
 
-    print("# FOLDS")
-    merged = []
-    for fold in range(k):
-        training, validation, test = corpus.cv_kfold_split(k, fold, validation_set=(not args.use_test_set))
-        if args.use_test_set:
-            validation = test
-
-        tagger.tag(validation)
-
-        r = evaluator.evaluate(validation)
-        merged.append(r)
-        print(r)
-
-    print("\n# FINAL")
-    ret = Evaluations.merge(merged)
     print(ret)
 
 
