@@ -25,8 +25,9 @@ def train_with_argv(argv):
 
 def train(training_set, args):
 
+    feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
     # Beware: we should actually read the class ids from the corpus
-    pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID))
+    pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=feature_generators)
 
     # Learn
     pipeline.execute(training_set, train=True)

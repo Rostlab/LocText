@@ -47,7 +47,8 @@ class LocTextRelationExtractor(RelationExtractor):
         super().__init__(entity1_class, entity2_class, rel_type)
         self.bin_model = bin_model
         self.svmlight = svmlight if svmlight else SVMLightTreeKernels(model_path=self.bin_model, use_tree_kernel=False)
-        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class))
+        feature_generators = LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
+        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
         self.execute_pipeline = execute_pipeline
 
 
