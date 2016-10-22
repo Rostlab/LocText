@@ -3,6 +3,8 @@ from nalaf.structures.dataset_pipelines import PrepareDatasetPipeline
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
+from nalaf.features.relations import NamedEntityCountFeatureGenerator
+
 
 class LocTextBaselineRelationExtractor(RelationExtractor):
 
@@ -26,7 +28,10 @@ class LocTextRelationExtractor(RelationExtractor):
 
         #GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
-        return []
+        return [
+            NamedEntityCountFeatureGenerator(class1, feature_set, training_mode=train),
+            NamedEntityCountFeatureGenerator(class2, feature_set, training_mode=train)
+        ]
 
 
     def __init__(
