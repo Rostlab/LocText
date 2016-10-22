@@ -26,10 +26,10 @@ def train_with_argv(argv):
 def train(training_set, args):
 
     # Beware: we should actually read the class ids from the corpus
-    pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
+    pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID))
 
     # Learn
-    pipeline.execute(training_set, train=True, feature_generators=LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID, pipeline.feature_set, train=True))
+    pipeline.execute(training_set, train=True)
     svmlight = SVMLightTreeKernels(use_tree_kernel=False)
     instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set)
     svmlight.learn(instancesfile)

@@ -24,13 +24,13 @@ class LocTextBaselineRelationExtractor(RelationExtractor):
 class LocTextRelationExtractor(RelationExtractor):
 
     @staticmethod
-    def default_feature_generators(class1, class2, feature_set, train, graphs=None):
+    def default_feature_generators(class1, class2, graphs=None):
 
         #GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return [
-            NamedEntityCountFeatureGenerator(class1, feature_set, training_mode=train),
-            NamedEntityCountFeatureGenerator(class2, feature_set, training_mode=train)
+            NamedEntityCountFeatureGenerator(class1),
+            NamedEntityCountFeatureGenerator(class2)
         ]
 
 
@@ -40,20 +40,20 @@ class LocTextRelationExtractor(RelationExtractor):
             entity2_class,
             rel_type,
             bin_model,
-            svmlight=None,
             pipeline=None,
+            svmlight=None,
             execute_pipeline=True):
 
         super().__init__(entity1_class, entity2_class, rel_type)
         self.bin_model = bin_model
         self.svmlight = svmlight if svmlight else SVMLightTreeKernels(model_path=self.bin_model, use_tree_kernel=False)
-        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type)
+        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class))
         self.execute_pipeline = execute_pipeline
 
 
     def annotate(self, corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(corpus, train=False, feature_generators=LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class, self.pipeline.feature_set, train=False))
+            self.pipeline.execute(corpus, train=False)
 
         instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.tag(instancesfile)
