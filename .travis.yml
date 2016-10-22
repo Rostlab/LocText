@@ -10,7 +10,7 @@ before_script:
 after_success:
   - "codecov"
 script:
-  - "py.test -v"
+  - "py.test"
 branches:
   only:
     - master
