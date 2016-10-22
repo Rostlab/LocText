@@ -1,6 +1,7 @@
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
-from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
+#from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from loctext.learning.annotators import LocTextBaselineRelationExtractor
+from nalaf.learning.svmlight import SVMLightTreeKernels
 
 def parse_arguments(argv):
     import argparse
@@ -14,16 +15,26 @@ def parse_arguments(argv):
 
     return parser.parse_args()
 
-def train(argv):
+
+def train_with_argv(argv):
     args = parse_arguments(argv)
     corpus = read_corpus(args.corpus)
 
-    annotator = LocTextBaselineRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
+    return train(corpus, args)
 
-    ret = Evaluations.cross_validate(annotator, corpus, evaluator, args.k_num_folds, use_validation_set=(not args.use_test_set))
 
-    return ret
+def train(training_set, args):
+
+    # Beware: we should actually read the class ids from the corpus
+    pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, parser=parser)
+
+    # Learn
+    pipeline.execute(training_set, train=True)
+    svmlight = SVMLightTreeKernels(use_tree_kernel=args.use_tk)
+    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set)
+    svmlight.learn(instancesfile)
+
+    return svmlight, pipeline
 
 
 def read_corpus(corpus_name):
