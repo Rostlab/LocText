@@ -1,6 +1,8 @@
 from nalaf.learning.taggers import RelationExtractor
 from nalaf.structures.dataset_pipelines import PrepareDatasetPipeline
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
+from nalaf.learning.svmlight import SVMLightTreeKernels
+from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 
 class LocTextBaselineRelationExtractor(RelationExtractor):
 
@@ -23,6 +25,7 @@ class LocTextRelationExtractor(RelationExtractor):
     def default_features_pipeline():
         return PrepareDatasetPipeline()
 
+
     def __init__(
             self,
             entity1_class,
@@ -44,13 +47,10 @@ class LocTextRelationExtractor(RelationExtractor):
 
     def annotate(self, corpus):
         if self.execute_pipeline:
-            # self.pipeline.execute(corpus, train=False, feature_set=feature_set)
-            self.pipeline.execute(dataset)
+            self.pipeline.execute(corpus, train=False, feature_set=self.pipeline.feature_set)
 
-        feature_set = -1  # undefined yet
-
-        svmlight.create_input_file(corpus, 'predict', feature_set)
-        svmlight.tag(mode='predict')
-        svmlight.read_predictions(corpus)
+        instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
+        predictionsfile = self.svmlight.tag(instancesfile)
+        self.svmlight.read_predictions(corpus, predictionsfile)
 
         return corpus
