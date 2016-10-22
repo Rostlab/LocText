@@ -48,7 +48,7 @@ class LocTextRelationExtractor(RelationExtractor):
 
     def annotate(self, corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(corpus, train=False, feature_generators=LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class, self.relation_type, self.pipeline.feature_set, train=True))
+            self.pipeline.execute(corpus, train=False, feature_generators=LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class, self.pipeline.feature_set, train=True))
 
         instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.tag(instancesfile)
