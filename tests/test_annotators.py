@@ -47,6 +47,12 @@ def test_LocText():
 
     rel_evaluation = results(REL_PRO_LOC_ID).compute(strictness="exact")
 
+    # # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
+    # r_5	174	167	83	0	0	0.5103	0.6770	0.5819	0.0049	0.5103	0.6770	0.5819	0.0051
+    print(results)
+    #Computation(precision=0.5102639296187683, precision_SE=0.004894534246666679, recall=0.6770428015564203, recall_SE=0.007291120408974056, f_measure=0.5819397993311036, f_measure_SE=0.005016402372379795)
+    print(rel_evaluation)
+
     assert math.isclose(rel_evaluation.f_measure, BASELINE_F_ON_LOCTEXT)
     assert math.isclose(rel_evaluation.f_measure_SE, BASELINE_F_SE_ON_LOCTEXT, rel_tol=0.1)
 
