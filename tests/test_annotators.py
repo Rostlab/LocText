@@ -32,8 +32,8 @@ def test_baseline():
 
 def test_LocText():
     corpus = read_corpus("LocText")
-    BASELINE_F_ON_LOCTEXT = 0.5566600397614313
-    BASELINE_F_SE_ON_LOCTEXT = 0.006041640890651582
+    BASELINE_F_ON_LOCTEXT = 0.5819397993311036
+    BASELINE_F_SE_ON_LOCTEXT = 0.005016402372379795
 
     train_set, test_set = corpus.percentage_split()
 
