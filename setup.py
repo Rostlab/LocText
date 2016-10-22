@@ -27,7 +27,6 @@ setup(
     install_requires=[
         # 'nalaf',
         'spacy',
-        'ujson',
         'progress'
     ]
 )
