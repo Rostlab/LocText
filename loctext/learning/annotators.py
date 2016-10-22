@@ -22,8 +22,11 @@ class LocTextBaselineRelationExtractor(RelationExtractor):
 class LocTextRelationExtractor(RelationExtractor):
 
     @staticmethod
-    def default_features_pipeline():
-        return PrepareDatasetPipeline()
+    def default_feature_generators(class1, class2, feature_set, train, graphs=None):
+
+        #GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
+
+        return []
 
 
     def __init__(
@@ -38,16 +41,14 @@ class LocTextRelationExtractor(RelationExtractor):
 
         super().__init__(entity1_class, entity2_class, rel_type)
         self.bin_model = bin_model
-        self.pipeline = pipeline if pipeline else LocTextRelationExtractor.default_features_pipeline
+        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(model_path=self.bin_model, use_tree_kernel=False)
+        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type)
         self.execute_pipeline = execute_pipeline
-        # ---
-        SVM_PATH = '/usr/local/manual/bin/'  # TODO hardcoded
-        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(SVM_PATH, self.bin_model, use_tree_kernel=False)
 
 
     def annotate(self, corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(corpus, train=False, feature_set=self.pipeline.feature_set)
+            self.pipeline.execute(corpus, train=False, feature_generators=LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class, self.relation_type, self.pipeline.feature_set, train=True))
 
         instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.tag(instancesfile)

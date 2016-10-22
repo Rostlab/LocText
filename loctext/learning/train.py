@@ -1,6 +1,7 @@
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.learning.svmlight import SVMLightTreeKernels
+from loctext.learning.annotators import LocTextRelationExtractor
 
 def parse_arguments(argv):
     import argparse
@@ -28,7 +29,7 @@ def train(training_set, args):
     pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 
     # Learn
-    pipeline.execute(training_set, train=True)
+    pipeline.execute(training_set, train=True, feature_generators=LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID, pipeline.feature_set, train=True))
     svmlight = SVMLightTreeKernels(use_tree_kernel=False)
     instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set)
     svmlight.learn(instancesfile)
