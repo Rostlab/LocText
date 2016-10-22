@@ -18,7 +18,7 @@ setup(
     packages=find_packages(exclude=['tests']),
 
     test_suite='pytest-runner',
-    setup_requires=['pytest'],
+    setup_requires=['pytest', 'ujson'],
 
     dependency_links=[
         'https://github.com/Rostlab/nalaf/tree/feature/Experimental#egg=nalaf'
@@ -26,7 +26,8 @@ setup(
 
     install_requires=[
         # 'nalaf',
-        # 'spacy',
+        'spacy',
+        'ujson',
         'progress'
     ]
 )
