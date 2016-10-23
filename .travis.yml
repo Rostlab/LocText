@@ -16,6 +16,7 @@ env:
 cache:
   pip: true
   directories:
+    - $HOME/nltk_data
     - $SVM_LIGHT
 
 before_install:
