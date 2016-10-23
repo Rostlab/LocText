@@ -3,28 +3,33 @@ language: python
 python:
   - "3.5"
 
+branches:
+  only:
+    - master
+    - develop
+
 cache:
   pip: true
+  directories:
+    - $TRAVIS_BUILD_DIR/svm_light
 
-install:
+before_install:
   - pip install git+https://github.com/Rostlab/nalaf.git@feature/Experimental
   - python -m nalaf.download_corpora
   - pip install codecov
+  - pip install pytest-cov
   - wget http://download.joachims.org/svm_light/current/svm_light.tar.gz -O /tmp/svm_light.tar.gz
   - mkdir svm_light && cd svm_light
   - tar -xvf /tmp/svm_light.tar.gz
   - make
   - export PATH=$PATH:$PWD
   - cd $TRAVIS_BUILD_DIR
+
+install:
   - pip install .
 
 script:
-  - py.test -v
+  - py.test -v --cov=./
 
 after_success:
   - codecov
-
-branches:
-  only:
-    - master
-    - develop
