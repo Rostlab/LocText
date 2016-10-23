@@ -19,6 +19,7 @@ before_install:
   - pip install codecov
   - pip install pytest-cov
   - wget http://download.joachims.org/svm_light/current/svm_light.tar.gz -O /tmp/svm_light.tar.gz
+  - echo "$PWD and $TRAVIS_BUILD_DIR"
   - mkdir svm_light && cd svm_light
   - tar -xvf /tmp/svm_light.tar.gz
   - make
