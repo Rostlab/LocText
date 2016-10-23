@@ -10,6 +10,7 @@ from loctext.learning.annotators import LocTextBaselineRelationExtractor, LocTex
 from loctext.learning.train import read_corpus, train
 import math
 
+
 k_num_folds = 5
 use_validation_set = True
 
