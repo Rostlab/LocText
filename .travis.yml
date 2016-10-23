@@ -24,7 +24,7 @@ before_install:
   - python -m nalaf.download_corpora
   - pip install codecov pytest-cov
   - test -d $SVM_LIGHT && echo "Use cached svm_light" || (wget http://download.joachims.org/svm_light/current/svm_light.tar.gz -O /tmp/svm_light.tar.gz && mkdir $SVM_LIGHT && cd $SVM_LIGHT && tar -xvf /tmp/svm_light.tar.gz && make)
-  #- export
+  - svm_classify # Effectively test that svm_light was installed and in the PATH. It should print version -> SVM-light V6.02 (14.08.08)
   - cd $TRAVIS_BUILD_DIR
 
 install:
