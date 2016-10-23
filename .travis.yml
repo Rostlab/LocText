@@ -1,9 +1,12 @@
 language: python
+
 python:
   - "3.5"
+
+cache:
+  pip: true
+
 install:
-  - "pip install ."
-before_script:
   - pip install git+https://github.com/Rostlab/nalaf.git@feature/Experimental
   - python -m nalaf.download_corpora
   - pip install codecov
@@ -12,10 +15,15 @@ before_script:
   - tar -xvf /tmp/svm_light.tar.gz
   - make
   - export PATH=$PATH:$PWD
-after_success:
-  - "codecov"
+  - cd $TRAVIS_BUILD_DIR
+  - pip install .
+
 script:
-  - "py.test -v"
+  - py.test -v
+
+after_success:
+  - codecov
+
 branches:
   only:
     - master
