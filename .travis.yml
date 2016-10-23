@@ -9,8 +9,9 @@ branches:
     - develop
 
 env:
-  - SVM_LIGHT=$HOME/svm_light
-  - PATH=$PATH:$SVM_LIGHT
+  global:
+    - SVM_LIGHT=$HOME/svm_light
+    - PATH=$PATH:$SVM_LIGHT
 
 cache:
   pip: true
