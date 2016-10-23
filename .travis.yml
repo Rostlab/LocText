@@ -8,22 +8,22 @@ branches:
     - master
     - develop
 
+env:
+  - SVM_LIGHT=$HOME/svm_light
+  - PATH=$PATH:$SVM_LIGHT
+
 cache:
   pip: true
   directories:
-    - $TRAVIS_BUILD_DIR/svm_light
+    - $SVM_LIGHT
 
 before_install:
+  - printenv # Just for debugging purposes
   - pip install git+https://github.com/Rostlab/nalaf.git@feature/Experimental
   - python -m nalaf.download_corpora
-  - pip install codecov
-  - pip install pytest-cov
-  - wget http://download.joachims.org/svm_light/current/svm_light.tar.gz -O /tmp/svm_light.tar.gz
-  - echo "$PWD and $TRAVIS_BUILD_DIR and $HOME"
-  - mkdir svm_light && cd svm_light
-  - tar -xvf /tmp/svm_light.tar.gz
-  - make
-  - export PATH=$PATH:$PWD
+  - pip install codecov pytest-cov
+  - test -d $SVM_LIGHT && echo "Use cached svm_light" || (wget http://download.joachims.org/svm_light/current/svm_light.tar.gz -O /tmp/svm_light.tar.gz && mkdir $SVM_LIGHT && cd $SVM_LIGHT && tar -xvf /tmp/svm_light.tar.gz && make)
+  #- export
   - cd $TRAVIS_BUILD_DIR
 
 install:
