@@ -38,9 +38,8 @@ def test_LocText():
 
     train_set, test_set = corpus.percentage_split()
 
-    pipeline, svmlight = train(train_set, {'use_tk': False})
+    annotator = train(train_set, {'use_tk': False})
 
-    annotator = LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, svmlight.model_path, pipeline=pipeline, svmlight=svmlight)
     annotator.annotate(test_set)
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
 

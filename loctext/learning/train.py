@@ -26,16 +26,17 @@ def train_with_argv(argv):
 def train(training_set, args):
 
     feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
-    # Beware: we should actually read the class ids from the corpus
+    # Alert: we should read the class ids from the corpus
     pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=feature_generators)
 
     # Learn
     pipeline.execute(training_set, train=True)
-    svmlight = SVMLightTreeKernels(use_tree_kernel=False)
+    svmlight = SVMLightTreeKernels(use_tree_kernel=False)  # Beware: should use args, but conflict of Namespace vs object
     instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set)
     svmlight.learn(instancesfile)
 
-    return pipeline, svmlight
+    # Alert: we should read the class ids from the corpus
+    return LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, svmlight.model_path, pipeline=pipeline, svmlight=svmlight)
 
 
 def read_corpus(corpus_name):
