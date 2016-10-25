@@ -17,8 +17,8 @@ use_validation_set = True
 
 def test_baseline():
     corpus = read_corpus("LocText")
-    BASELINE_F_ON_LOCTEXT = 0.4234297812279464
-    BASELINE_F_SE_ON_LOCTEXT = 0.0024623653397242064
+    EXPECTED_F = 0.4234297812279464
+    EXPECTED_F_SE = 0.0024623653397242064
 
     annotator_fun = (lambda _: LocTextBaselineRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
@@ -26,16 +26,16 @@ def test_baseline():
     evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, k_num_folds, use_validation_set=use_validation_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, BASELINE_F_ON_LOCTEXT)
-    assert math.isclose(rel_evaluation.f_measure_SE, BASELINE_F_SE_ON_LOCTEXT, rel_tol=0.1)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F)
+    assert math.isclose(rel_evaluation.f_measure_SE, EXPECTED_F_SE, rel_tol=0.1)
 
     return rel_evaluation
 
 
 def test_LocText():
     corpus = read_corpus("LocText")
-    BASELINE_F_ON_LOCTEXT = 0.5819397993311036
-    BASELINE_F_SE_ON_LOCTEXT = 0.005016402372379795
+    EXPECTED_F = 0.5819397993311036
+    EXPECTED_F_SE = 0.005016402372379795
 
     annotator_fun = (lambda train_set: train(train_set, {'use_tk': False}))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
@@ -43,8 +43,8 @@ def test_LocText():
     evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, k_num_folds, use_validation_set=use_validation_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, BASELINE_F_ON_LOCTEXT)
-    assert math.isclose(rel_evaluation.f_measure_SE, BASELINE_F_SE_ON_LOCTEXT, rel_tol=0.1)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F)
+    assert math.isclose(rel_evaluation.f_measure_SE, EXPECTED_F_SE, abs_tol=0.01)
 
     return rel_evaluation
 
