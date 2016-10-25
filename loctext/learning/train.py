@@ -13,7 +13,7 @@ def parse_arguments(argv):
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
 
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def train_with_argv(argv):
