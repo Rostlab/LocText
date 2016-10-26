@@ -1,5 +1,6 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 
+
 class LocationWordFeatureGenerator(EdgeFeatureGenerator):
     """
     Check each sentence for the presence of location words if the sentence
@@ -15,28 +16,40 @@ class LocationWordFeatureGenerator(EdgeFeatureGenerator):
         self.prefix1 = prefix1
         self.prefix2 = prefix2
         self.prefix3 = prefix3
-        pass
+
+        self.loc_tokens = [
+            # Original LocText code
+            'location',
+            'localize',
+            # Extra Added by Juanmi
+            'localization',
+        ]
 
 
     def generate(self, dataset, feature_set, is_training_mode):
         for edge in dataset.edges():
             location_word = False
-            if edge.entity1.class_id != self.loc_e_id:  #  'e_1' (protein)
+
+            if edge.entity1.class_id != self.loc_e_id:  # 'e_1' (protein)
                 head1 = edge.entity1.head_token
                 head2 = edge.entity2.head_token
             else:
                 head1 = edge.entity2.head_token
                 head2 = edge.entity1.head_token
+
             sentence = edge.part.sentences[edge.sentence_id]
+
             for token in sentence:
-                if not token.is_entity_part(edge.part) and ('location' in token.word.lower() or 'localize' in token.word.lower()):
+                if not token.is_entity_part(edge.part) and any(x in token.word.lower() for x in self.loc_tokens):
                     location_word = True
                     if head1.features['id'] < token.features['id'] < head2.features['id']:
-                        feature_name = '88_localize_word_in_between_[0]'
+                        feature_name = mk_feature_name(self.prefix1, 'LocalizeWordInBetween')
                         self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
             if (location_word):
-                feature_name = '89_location_word_found_[0]'
+                feature_name = mk_feature_name(self.prefix2, 'locationWordFound')
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
             else:
-                feature_name = '90_location_word_not_found_[0]'
+                feature_name = mk_feature_name(self.prefix3, 'locationWordNotFound')
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
