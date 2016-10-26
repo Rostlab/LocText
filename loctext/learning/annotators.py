@@ -29,8 +29,9 @@ class LocTextRelationExtractor(RelationExtractor):
         #GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return [
-            NamedEntityCountFeatureGenerator(class1),
-            NamedEntityCountFeatureGenerator(class2)
+            NamedEntityCountFeatureGenerator(class1, 107),  # Protein
+            NamedEntityCountFeatureGenerator(class2, 108),  # Location
+
         ]
 
 
