@@ -12,7 +12,7 @@ class LocationWordFeatureGenerator(EdgeFeatureGenerator):
     :type training_mode: bool
     """
     def __init__(self, loc_e_id, prefix1, prefix2=None, prefix3=None):
-        self.loc_e_id = loc_id
+        self.loc_e_id = loc_e_id
         self.prefix1 = prefix1
         self.prefix2 = prefix2
         self.prefix3 = prefix3
@@ -43,13 +43,13 @@ class LocationWordFeatureGenerator(EdgeFeatureGenerator):
                 if not token.is_entity_part(edge.part) and any(x in token.word.lower() for x in self.loc_tokens):
                     location_word = True
                     if head1.features['id'] < token.features['id'] < head2.features['id']:
-                        feature_name = mk_feature_name(self.prefix1, 'LocalizeWordInBetween')
+                        feature_name = self.mk_feature_name(self.prefix1, 'LocalizeWordInBetween')
                         self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
             if (location_word):
-                feature_name = mk_feature_name(self.prefix2, 'locationWordFound')
+                feature_name = self.mk_feature_name(self.prefix2, 'locationWordFound')
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
             else:
-                feature_name = mk_feature_name(self.prefix3, 'locationWordNotFound')
+                feature_name = self.mk_feature_name(self.prefix3, 'locationWordNotFound')
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
