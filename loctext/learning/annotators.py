@@ -1,9 +1,9 @@
 from nalaf.learning.taggers import RelationExtractor
-from nalaf.structures.dataset_pipelines import PrepareDatasetPipeline
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.features.relations import NamedEntityCountFeatureGenerator
+from loctext.relations.specific import LocationWordFeatureGenerator
 
 
 class LocTextBaselineRelationExtractor(RelationExtractor):
@@ -24,13 +24,16 @@ class LocTextBaselineRelationExtractor(RelationExtractor):
 class LocTextRelationExtractor(RelationExtractor):
 
     @staticmethod
-    def default_feature_generators(class1, class2, graphs=None):
+    def default_feature_generators(prot_e_id, loc_e_id, graphs=None):
 
         #GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return [
-            NamedEntityCountFeatureGenerator(class1, 107),  # Protein
-            NamedEntityCountFeatureGenerator(class2, 108),  # Location
+            LocationWordFeatureGenerator(loc_e_id, prefix1=2),
+
+
+            NamedEntityCountFeatureGenerator(prot_e_id, 107),
+            NamedEntityCountFeatureGenerator(loc_e_id, 108),
 
         ]
 
