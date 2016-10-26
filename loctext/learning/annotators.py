@@ -3,7 +3,7 @@ from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.features.relations import NamedEntityCountFeatureGenerator
-from loctext.relations.specific import LocationWordFeatureGenerator
+from loctext.features.specific import LocationWordFeatureGenerator
 
 
 class LocTextBaselineRelationExtractor(RelationExtractor):

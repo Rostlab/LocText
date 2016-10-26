@@ -11,7 +11,7 @@ class LocationWordFeatureGenerator(EdgeFeatureGenerator):
     :param training_mode: indicates whether the mode is training or testing
     :type training_mode: bool
     """
-    def __init__(self, loc_e_id, prefix1, prefix2=None, prefix3):
+    def __init__(self, loc_e_id, prefix1, prefix2=None, prefix3=None):
         self.loc_e_id = loc_id
         self.prefix1 = prefix1
         self.prefix2 = prefix2
