@@ -61,7 +61,8 @@ class LocTextRelationExtractor(RelationExtractor):
             ),
 
             EntityOrderFeatureGenerator(
-                # TODO change prefix names
+                prefix_order_entity1_entity2=46,
+                prefix_order_entity2_entity1=47,
             ),
 
             PathFeatureGenerator(
