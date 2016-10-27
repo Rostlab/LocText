@@ -4,6 +4,7 @@ from nalaf.learning.svmlight import SVMLightTreeKernels
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator
 from nalaf.features.relations.context import LinearDistanceFeatureGenerator
+from nalaf.features.relations.context import EntityOrderFeatureGenerator
 from loctext.features.specific import LocationWordFeatureGenerator
 from loctext.features.specific import ProteinWordFeatureGenerator
 
@@ -55,6 +56,10 @@ class LocTextRelationExtractor(RelationExtractor):
                 # prefix_entity_linear_distance=45
             ),
 
+            EntityOrderFeatureGenerator(
+                # TODO change prefix names
+            ),
+
             # TODO NamedEntityCountFeatureGenerator(
             #     prot_e_id,
             #     prefix=107),
@@ -65,11 +70,6 @@ class LocTextRelationExtractor(RelationExtractor):
             #
             # LocText original features as ordered by Madhukhar SP:
             #
-            # LocationWordFeatureGenerator(feature_set, training_mode=train),
-            # ProteinWordFeatureGenerator(feature_set, self.graphs, training_mode=train),
-            # IntermediateTokensFeatureGenerator(feature_set, training_mode=train),
-            # LinearDistanceFeatureGenerator(feature_set, training_mode=train),
-            # EntityOrderFeatureGenerator(feature_set, training_mode=train),
             # PathFeatureGenerator(feature_set, self.graphs, training_mode=train),
             # TokenFeatureGenerator(feature_set, training_mode=train),
             # EntityHeadTokenUpperCaseFeatureGenerator(feature_set, training_mode=train),
