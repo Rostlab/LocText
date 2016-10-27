@@ -1,10 +1,12 @@
 from nalaf.learning.taggers import RelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
+from nalaf.features.relations import TokenFeatureGenerator
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator
 from nalaf.features.relations.context import LinearDistanceFeatureGenerator
 from nalaf.features.relations.context import EntityOrderFeatureGenerator
+from nalaf.features.relations.path import PathFeatureGenerator
 from loctext.features.specific import LocationWordFeatureGenerator
 from loctext.features.specific import ProteinWordFeatureGenerator
 
@@ -60,6 +62,17 @@ class LocTextRelationExtractor(RelationExtractor):
                 # TODO change prefix names
             ),
 
+            PathFeatureGenerator(
+                GRAPHS_CLOSURE_VARIABLE
+                # TODO change variables
+                # TODO the used vars where not checked
+            ),
+
+            TokenFeatureGenerator(
+                # TODO change variables
+                # TODO the used vars where not checked
+            )
+
             # TODO NamedEntityCountFeatureGenerator(
             #     prot_e_id,
             #     prefix=107),
@@ -70,15 +83,11 @@ class LocTextRelationExtractor(RelationExtractor):
             #
             # LocText original features as ordered by Madhukhar SP:
             #
-            # PathFeatureGenerator(feature_set, self.graphs, training_mode=train),
-            # TokenFeatureGenerator(feature_set, training_mode=train),
             # EntityHeadTokenUpperCaseFeatureGenerator(feature_set, training_mode=train),
             # EntityHeadTokenDigitsFeatureGenerator(feature_set, training_mode=train),
             # EntityHeadTokenPunctuationFeatureGenerator(feature_set, training_mode=train),
             # BagOfWordsFeatureGenerator(feature_set, training_mode=train),
             # StemmedBagOfWordsFeatureGenerator(feature_set, training_mode=train),
-            # NamedEntityCountFeatureGenerator(self.class1, feature_set, training_mode=train),
-            # NamedEntityCountFeatureGenerator(self.class2, feature_set, training_mode=train)
         ]
 
 
