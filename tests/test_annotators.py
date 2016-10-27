@@ -43,7 +43,7 @@ def test_LocText():
     evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, k_num_folds, use_validation_set=use_validation_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F,  abs_tol=0.0001)
     assert math.isclose(rel_evaluation.f_measure_SE, EXPECTED_F_SE, abs_tol=0.01)
 
     return rel_evaluation
