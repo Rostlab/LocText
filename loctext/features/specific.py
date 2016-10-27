@@ -57,13 +57,13 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                         if path == []:
                             path = [token, head1]
                         for tok in path:
-                            feature_name = '80_PWPE_bow_masked_' + tok.masked_text(edge.part) + '_[0]'
+                            feature_name = '82_PWPE_bow_' + tok.word + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                             feature_name = '81_PWPE_pos_' + tok.features['pos'] + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
-                            feature_name = '82_PWPE_bow_' + tok.word + '_[0]'
+                            feature_name = '80_PWPE_bow_masked_' + tok.masked_text(edge.part) + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                         all_walks = build_walks(path)
