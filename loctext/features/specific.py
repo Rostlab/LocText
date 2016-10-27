@@ -79,7 +79,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
 
                         for j in range(len(all_walks)):
                             dir_grams = ''
-                            for i in range(len(path)-1):
+                            for i in range(len(path) - 1):
                                 cur_walk = all_walks[j]
                                 if cur_walk[i][0] == path[i]:
                                     dir_grams += 'F'
@@ -100,7 +100,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
 
     def gen_prefix_feat_name(self, prefix_feature, *args):
         prefix = self.__getattribute__(prefix_feature)
-        pure_name = prefix_feature[prefix_feature.find("_")  +  1:]  # Remove "prefix_"
+        pure_name = prefix_feature[prefix_feature.find("_") + 1:]  # Remove "prefix_"
         feature_name = self.mk_feature_name(prefix, pure_name, *args)
         print_debug(feature_name)
         return feature_name
