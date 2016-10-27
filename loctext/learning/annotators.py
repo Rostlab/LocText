@@ -1,14 +1,16 @@
 from nalaf.learning.taggers import RelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
-from nalaf.features.relations import TokenFeatureGenerator
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
-from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator
+
+from loctext.features.specific import LocationWordFeatureGenerator
+from loctext.features.specific import ProteinWordFeatureGenerator
 from nalaf.features.relations.context import LinearDistanceFeatureGenerator
 from nalaf.features.relations.context import EntityOrderFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
-from loctext.features.specific import LocationWordFeatureGenerator
-from loctext.features.specific import ProteinWordFeatureGenerator
+from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
+from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
+
 
 
 
@@ -68,26 +70,46 @@ class LocTextRelationExtractor(RelationExtractor):
                 # TODO the used vars where not checked
             ),
 
-            TokenFeatureGenerator(
+            # TODO doesn't add directly anything -- We shall check every feature indirectly added by the other gens.
+            # TokenFeatureGenerator(
+            #     # TODO change variables
+            #     # TODO the used vars where not checked
+            # )
+
+            EntityHeadTokenUpperCaseFeatureGenerator(
                 # TODO change variables
                 # TODO the used vars where not checked
+            ),
+
+            EntityHeadTokenDigitsFeatureGenerator(
+                # TODO change variables
+                # TODO the used vars where not checked
+            ),
+
+            EntityHeadTokenPunctuationFeatureGenerator(
+                # TODO change variables
+                # TODO the used vars where not checked
+            ),
+
+            BagOfWordsFeatureGenerator(
+                # TODO change variables
+                # TODO the used vars where not checked
+            ),
+
+            StemmedBagOfWordsFeatureGenerator(
+                # TODO change variables
+                # TODO the used vars where not checked
+            ),
+
+            NamedEntityCountFeatureGenerator(
+                prot_e_id,
+                prefix=107
+            ),
+
+            NamedEntityCountFeatureGenerator(
+                loc_e_id,
+                prefix=108
             )
-
-            # TODO NamedEntityCountFeatureGenerator(
-            #     prot_e_id,
-            #     prefix=107),
-            # TODO NamedEntityCountFeatureGenerator(
-            #     loc_e_id,
-            #     prefix=108),
-
-            #
-            # LocText original features as ordered by Madhukhar SP:
-            #
-            # EntityHeadTokenUpperCaseFeatureGenerator(feature_set, training_mode=train),
-            # EntityHeadTokenDigitsFeatureGenerator(feature_set, training_mode=train),
-            # EntityHeadTokenPunctuationFeatureGenerator(feature_set, training_mode=train),
-            # BagOfWordsFeatureGenerator(feature_set, training_mode=train),
-            # StemmedBagOfWordsFeatureGenerator(feature_set, training_mode=train),
         ]
 
 
