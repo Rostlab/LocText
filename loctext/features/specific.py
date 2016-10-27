@@ -1,4 +1,6 @@
 from nalaf.features.relations import EdgeFeatureGenerator
+from nalaf import print_debug
+
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
     """
@@ -17,9 +19,14 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
     :param training_mode: indicates whether the mode is training or testing
     :type training_mode: bool
     """
-    def __init__(self, graphs):
+    def __init__(
+        self, graphs,
+        prefix_dependency_from_protein_word_to_entity=None
+    ):
         self.graphs = graphs
         """a dictionary of graphs to avoid recomputation of path"""
+
+        self.prefix_dependency_from_protein_word_to_entity = prefix_dependency_from_protein_word_to_entity
 
 
     def generate(self, dataset, feature_set, is_training_mode):
@@ -39,8 +46,9 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                     for dependency_to in token.features['dependency_to']:
                         token_to = dependency_to[0]
                         if token_to == head1:
-                            feature_name = '79_dependency_from_protein_word_to_entity_[0]'
+                            feature_name = self.gen_prefix_feat_name("prefix_dependency_from_protein_word_to_entity")
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
                         path = get_path(token, head1, edge.part, edge.sentence_id, self.graphs)
                         if path == []:
                             path = [token, head1]
@@ -76,6 +84,14 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
             else:
                 feature_name = '87_protein_not_word_found_[0]'
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+
+    def gen_prefix_feat_name(self, prefix_feature, *args):
+        prefix = self.__getattribute__(prefix_feature)
+        pure_name = prefix_feature[prefix_feature.find("_") + 1:]  # Remove "prefix_"
+        feature_name = self.mk_feature_name(prefix, pure_name, *args)
+        print_debug(feature_name)
+        return feature_name
 
 
 class LocationWordFeatureGenerator(EdgeFeatureGenerator):
