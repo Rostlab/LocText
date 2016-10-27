@@ -2,9 +2,11 @@ from nalaf.learning.taggers import RelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
-from nalaf.features.relations import NamedEntityCountFeatureGenerator
+from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator
+from nalaf.features.relations.context import LinearDistanceFeatureGenerator
 from loctext.features.specific import LocationWordFeatureGenerator
 from loctext.features.specific import ProteinWordFeatureGenerator
+
 
 
 class LocTextBaselineRelationExtractor(RelationExtractor):
@@ -41,6 +43,12 @@ class LocTextRelationExtractor(RelationExtractor):
                 prefix_PWPE_dep=10,
                 prefix_protein_word_found=13,
                 prefix_protein_not_word_found=14
+            ),
+
+            # TODO IntermediateTokensFeatureGenerator(feature_set, training_mode=train),
+
+            LinearDistanceFeatureGenerator(
+
             ),
 
             NamedEntityCountFeatureGenerator(
