@@ -30,7 +30,10 @@ class LocTextRelationExtractor(RelationExtractor):
         GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return [
-            LocationWordFeatureGenerator(loc_e_id, prefix1=2),
+            LocationWordFeatureGenerator(
+                loc_e_id,
+                prefix1=2),
+
             ProteinWordFeatureGenerator(
                 GRAPHS_CLOSURE_VARIABLE,
                 prefix_PWPE_bow=7,
@@ -40,8 +43,12 @@ class LocTextRelationExtractor(RelationExtractor):
                 prefix_protein_not_word_found=14
             ),
 
-            NamedEntityCountFeatureGenerator(prot_e_id, 107),
-            NamedEntityCountFeatureGenerator(loc_e_id, 108),
+            NamedEntityCountFeatureGenerator(
+                prot_e_id,
+                prefix=107),
+            NamedEntityCountFeatureGenerator(
+                loc_e_id,
+                prefix=108),
 
         ]
 
