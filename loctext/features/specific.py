@@ -21,8 +21,16 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
     """
     def __init__(
         self, graphs,
-        prefix_dependency_from_prot_entity_to_prot_word=None
+        prefix_dependency_from_prot_entity_to_prot_word=None,
         prefix_dependency_from_prot_word_to_prot_entity=None,
+        prefix_PWPE_bow=None,
+        prefix_PWPE_pos=None,
+        prefix_PWPE_bow_masked=None,
+        prefix_PWPE_dep=None,
+        prefix_PWPE_dep_full=None,
+        prefix_PWPE_dep_gram=None,
+        prefix_protein_word_found=None,
+        prefix_protein_not_word_found=None
 
     ):
         self.graphs = graphs
@@ -30,12 +38,21 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
 
         self.prefix_dependency_from_prot_entity_to_prot_word = prefix_dependency_from_prot_entity_to_prot_word
         self.prefix_dependency_from_prot_word_to_prot_entity = prefix_dependency_from_prot_word_to_prot_entity
+        self.prefix_PWPE_bow = prefix_PWPE_bow
+        self.prefix_PWPE_pos = prefix_PWPE_pos
+        self.prefix_PWPE_bow_masked = prefix_PWPE_bow_masked
+        self.prefix_PWPE_dep = prefix_PWPE_dep
+        self.prefix_PWPE_dep_full = prefix_PWPE_dep_full
+        self.prefix_PWPE_dep_gram = prefix_PWPE_dep_gram
+        self.prefix_protein_word_found = prefix_protein_word_found
+        self.prefix_protein_not_word_foun = prefix_protein_not_word_found
+
 
 
     def generate(self, dataset, feature_set, is_training_mode):
         for edge in dataset.edges():
             head1 = edge.entity1.head_token
-            head2 = edge.entity2.head_token
+            # head2 = edge.entity2.head_token
             sentence = edge.part.sentences[edge.sentence_id]
             protein_word_found = False
             for token in sentence:
@@ -57,24 +74,24 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                         if path == []:
                             path = [token, head1]
                         for tok in path:
-                            feature_name = '82_PWPE_bow_' + tok.word
+                            feature_name = self.gen_prefix_feat_name("prefix_PWPE_bow", tok.word)
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
-                            feature_name = '81_PWPE_pos_' + tok.features['pos']
+                            feature_name = self.gen_prefix_feat_name("prefix_PWPE_pos", tok.features['pos'])
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
-                            feature_name = '80_PWPE_bow_masked_' + tok.masked_text(edge.part)
+                            feature_name = self.gen_prefix_feat_name("PWPE_bow_masked", tok.masked_text(edge.part))
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                         all_walks = build_walks(path)
                         for dep_list in all_walks:
                             dep_path = ''
                             for dep in dep_list:
-                                feature_name = '83_' + 'PWPE_dep_' + dep[1]
+                                feature_name = self.gen_prefix_feat_name("prefix_PWPE_dep", dep[1])
                                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
                                 dep_path += dep[1]
 
-                            feature_name = '84_PWPE_dep_full + ' + dep_path
+                            feature_name = self.gen_prefix_feat_name("prefix_PWPE_dep_full", dep_path)
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                         for j in range(len(all_walks)):
@@ -86,15 +103,15 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                                 else:
                                     dir_grams += 'R'
 
-                            feature_name = '85_PWPE_dep_gram_' + dir_grams
+                            feature_name = self.gen_prefix_feat_name("prefix_PWPE_dep_gram", dir_grams)
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
             if protein_word_found:
-                feature_name = '86_protein_word_found'
+                feature_name = self.gen_prefix_feat_name("prefix_protein_word_found")
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
             else:
-                feature_name = '87_protein_not_word_found'
+                feature_name = self.gen_prefix_feat_name("protein_not_word_found")
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
 
