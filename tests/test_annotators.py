@@ -34,8 +34,8 @@ def test_baseline():
 
 def test_LocText():
     corpus = read_corpus("LocText")
-    EXPECTED_F = 0.5819397993311036
-    EXPECTED_F_SE = 0.005016402372379795
+    EXPECTED_F = 0.5095
+    EXPECTED_F_SE = 0.0028
 
     annotator_fun = (lambda train_set: train(train_set, {'use_tk': False}))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
