@@ -32,7 +32,7 @@ def train(training_set, args):
     # Learn
     pipeline.execute(training_set, train=True)
     svmlight = SVMLightTreeKernels(use_tree_kernel=False)  # Beware: should use args, but conflict of Namespace vs object
-    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set)
+    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=1, undersampling=0.377)
     svmlight.learn(instancesfile)
 
     # Alert: we should read the class ids from the corpus
