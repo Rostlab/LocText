@@ -57,21 +57,26 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                         if path == []:
                             path = [token, head1]
                         for tok in path:
-                            feature_name = '80_PWPE_bow_masked_'+tok.masked_text(edge.part)+'_[0]'
+                            feature_name = '80_PWPE_bow_masked_' + tok.masked_text(edge.part) + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-                            feature_name = '81_PWPE_pos_'+tok.features['pos']+'_[0]'
+
+                            feature_name = '81_PWPE_pos_' + tok.features['pos'] + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-                            feature_name = '82_PWPE_bow_'+tok.word+'_[0]'
+
+                            feature_name = '82_PWPE_bow_' + tok.word + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
                         all_walks = build_walks(path)
                         for dep_list in all_walks:
                             dep_path = ''
                             for dep in dep_list:
-                                feature_name = '83_'+'PWPE_dep_'+dep[1]+'_[0]'
+                                feature_name = '83_' + 'PWPE_dep_' + dep[1] + '_[0]'
                                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
                                 dep_path += dep[1]
-                            feature_name = '84_PWPE_dep_full+'+dep_path+'_[0]'
+
+                            feature_name = '84_PWPE_dep_full + ' + dep_path + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
                         for j in range(len(all_walks)):
                             dir_grams = ''
                             for i in range(len(path)-1):
@@ -80,11 +85,14 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                                     dir_grams += 'F'
                                 else:
                                     dir_grams += 'R'
-                            feature_name = '85_PWPE_dep_gram_'+dir_grams+'_[0]'
+
+                            feature_name = '85_PWPE_dep_gram_' + dir_grams + '_[0]'
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
             if protein_word_found:
                 feature_name = '86_protein_word_found_[0]'
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
             else:
                 feature_name = '87_protein_not_word_found_[0]'
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
@@ -92,7 +100,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
 
     def gen_prefix_feat_name(self, prefix_feature, *args):
         prefix = self.__getattribute__(prefix_feature)
-        pure_name = prefix_feature[prefix_feature.find("_") + 1:]  # Remove "prefix_"
+        pure_name = prefix_feature[prefix_feature.find("_")  +  1:]  # Remove "prefix_"
         feature_name = self.mk_feature_name(prefix, pure_name, *args)
         print_debug(feature_name)
         return feature_name
