@@ -116,14 +116,6 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
 
-    def gen_prefix_feat_name(self, prefix_feature, *args):
-        prefix = self.__getattribute__(prefix_feature)
-        pure_name = prefix_feature[prefix_feature.find("_") + 1:]  # Remove "prefix_"
-        feature_name = self.mk_feature_name(prefix, pure_name, *args)
-        # print_debug(feature_name, prefix_feature, args)
-        return feature_name
-
-
 class LocationWordFeatureGenerator(EdgeFeatureGenerator):
     """
     Check each sentence for the presence of location words if the sentence

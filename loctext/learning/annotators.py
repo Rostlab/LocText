@@ -34,7 +34,8 @@ class LocTextRelationExtractor(RelationExtractor):
         return [
             LocationWordFeatureGenerator(
                 loc_e_id,
-                prefix1=2),
+                prefix1=2
+            ),
 
             ProteinWordFeatureGenerator(
                 GRAPHS_CLOSURE_VARIABLE,
@@ -48,15 +49,18 @@ class LocTextRelationExtractor(RelationExtractor):
             # TODO IntermediateTokensFeatureGenerator(feature_set, training_mode=train),
 
             LinearDistanceFeatureGenerator(
-
+                distance=5,
+                prefix_entity_linear_distance_greater_than=43,
+                prefix_entity_linear_distance_lesser_than=44,
+                # prefix_entity_linear_distance=45
             ),
 
-            NamedEntityCountFeatureGenerator(
-                prot_e_id,
-                prefix=107),
-            NamedEntityCountFeatureGenerator(
-                loc_e_id,
-                prefix=108),
+            # TODO NamedEntityCountFeatureGenerator(
+            #     prot_e_id,
+            #     prefix=107),
+            # TODO NamedEntityCountFeatureGenerator(
+            #     loc_e_id,
+            #     prefix=108),
 
             #
             # LocText original features as ordered by Madhukhar SP:
