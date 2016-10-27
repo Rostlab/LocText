@@ -21,12 +21,15 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
     """
     def __init__(
         self, graphs,
-        prefix_dependency_from_protein_word_to_entity=None
+        prefix_dependency_from_prot_entity_to_prot_word=None
+        prefix_dependency_from_prot_word_to_prot_entity=None,
+
     ):
         self.graphs = graphs
         """a dictionary of graphs to avoid recomputation of path"""
 
-        self.prefix_dependency_from_protein_word_to_entity = prefix_dependency_from_protein_word_to_entity
+        self.prefix_dependency_from_prot_entity_to_prot_word = prefix_dependency_from_prot_entity_to_prot_word
+        self.prefix_dependency_from_prot_word_to_prot_entity = prefix_dependency_from_prot_word_to_prot_entity
 
 
     def generate(self, dataset, feature_set, is_training_mode):
@@ -39,14 +42,15 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                 if token.is_entity_part(edge.part) and token.word.lower().find('protein') >= 0:
                     protein_word_found = True
                     token_from = token.features['dependency_from'][0]
-                    if token_from == head1:
-                        feature_name = '78_dependency_from_entity_to_protein_word_[0]'
 
+                    if token_from == head1:
+                        feature_name = self.gen_prefix_feat_name("prefix_dependency_from_prot_entity_to_prot_word")
                         self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
                     for dependency_to in token.features['dependency_to']:
                         token_to = dependency_to[0]
                         if token_to == head1:
-                            feature_name = self.gen_prefix_feat_name("prefix_dependency_from_protein_word_to_entity")
+                            feature_name = self.gen_prefix_feat_name("prefix_dependency_from_prot_word_to_prot_entity")
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                         path = get_path(token, head1, edge.part, edge.sentence_id, self.graphs)
