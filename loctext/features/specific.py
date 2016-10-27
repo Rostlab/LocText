@@ -47,6 +47,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
         self.prefix_protein_word_found = prefix_protein_word_found
         self.prefix_protein_not_word_foun = prefix_protein_not_word_found
 
+        self.keyword = 'protein'
 
 
     def generate(self, dataset, feature_set, is_training_mode):
@@ -56,7 +57,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
             sentence = edge.part.sentences[edge.sentence_id]
             protein_word_found = False
             for token in sentence:
-                if token.is_entity_part(edge.part) and token.word.lower().find('protein') >= 0:
+                if token.is_entity_part(edge.part) and token.word.lower().find(self.keyword) >= 0:
                     protein_word_found = True
                     token_from = token.features['dependency_from'][0]
 
