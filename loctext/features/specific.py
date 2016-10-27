@@ -31,7 +31,6 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
         prefix_PWPE_dep_gram=None,
         prefix_protein_word_found=None,
         prefix_protein_not_word_found=None
-
     ):
         self.graphs = graphs
         """a dictionary of graphs to avoid recomputation of path"""
@@ -45,7 +44,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
         self.prefix_PWPE_dep_full = prefix_PWPE_dep_full
         self.prefix_PWPE_dep_gram = prefix_PWPE_dep_gram
         self.prefix_protein_word_found = prefix_protein_word_found
-        self.prefix_protein_not_word_foun = prefix_protein_not_word_found
+        self.prefix_protein_not_word_found = prefix_protein_not_word_found
 
         self.keyword = 'protein'
 
@@ -112,7 +111,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
             else:
-                feature_name = self.gen_prefix_feat_name("protein_not_word_found")
+                feature_name = self.gen_prefix_feat_name("prefix_protein_not_word_found")
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
 
@@ -120,7 +119,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
         prefix = self.__getattribute__(prefix_feature)
         pure_name = prefix_feature[prefix_feature.find("_") + 1:]  # Remove "prefix_"
         feature_name = self.mk_feature_name(prefix, pure_name, *args)
-        print_debug(feature_name)
+        # print_debug(feature_name, prefix_feature, args)
         return feature_name
 
 
