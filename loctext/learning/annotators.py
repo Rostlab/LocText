@@ -50,6 +50,23 @@ class LocTextRelationExtractor(RelationExtractor):
                 loc_e_id,
                 prefix=108),
 
+            #
+            # LocText original features as ordered by Madhukhar SP:
+            #
+            # LocationWordFeatureGenerator(feature_set, training_mode=train),
+            # ProteinWordFeatureGenerator(feature_set, self.graphs, training_mode=train),
+            # IntermediateTokensFeatureGenerator(feature_set, training_mode=train),
+            # LinearDistanceFeatureGenerator(feature_set, training_mode=train),
+            # EntityOrderFeatureGenerator(feature_set, training_mode=train),
+            # PathFeatureGenerator(feature_set, self.graphs, training_mode=train),
+            # TokenFeatureGenerator(feature_set, training_mode=train),
+            # EntityHeadTokenUpperCaseFeatureGenerator(feature_set, training_mode=train),
+            # EntityHeadTokenDigitsFeatureGenerator(feature_set, training_mode=train),
+            # EntityHeadTokenPunctuationFeatureGenerator(feature_set, training_mode=train),
+            # BagOfWordsFeatureGenerator(feature_set, training_mode=train),
+            # StemmedBagOfWordsFeatureGenerator(feature_set, training_mode=train),
+            # NamedEntityCountFeatureGenerator(self.class1, feature_set, training_mode=train),
+            # NamedEntityCountFeatureGenerator(self.class2, feature_set, training_mode=train)
         ]
 
 
