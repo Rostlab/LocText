@@ -1,5 +1,82 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 
+class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
+    """
+    Check for the presence of the word "protein" in the sentence. If the word
+    "protein" is part of an entity, then it checks for dependencies from the
+    head token of the entity to the word and vice versa.
+
+    For the dependency path between the word "protein" and the head token, it
+    also calculates the bag of words representation, masked text and parts of
+    speech for each token in the path.
+
+    :param feature_set: the feature set for the dataset
+    :type feature_set: nalaf.structures.data.FeatureDictionary
+    :param graphs: the graph representation for each sentence in the dataset
+    :type graphs: dictionary
+    :param training_mode: indicates whether the mode is training or testing
+    :type training_mode: bool
+    """
+    def __init__(self, graphs):
+        self.graphs = graphs
+        """a dictionary of graphs to avoid recomputation of path"""
+
+
+    def generate(self, dataset, feature_set, is_training_mode):
+        for edge in dataset.edges():
+            head1 = edge.entity1.head_token
+            head2 = edge.entity2.head_token
+            sentence = edge.part.sentences[edge.sentence_id]
+            protein_word_found = False
+            for token in sentence:
+                if token.is_entity_part(edge.part) and token.word.lower().find('protein') >= 0:
+                    protein_word_found = True
+                    token_from = token.features['dependency_from'][0]
+                    if token_from == head1:
+                        feature_name = '78_dependency_from_entity_to_protein_word_[0]'
+
+                        self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                    for dependency_to in token.features['dependency_to']:
+                        token_to = dependency_to[0]
+                        if token_to == head1:
+                            feature_name = '79_dependency_from_protein_word_to_entity_[0]'
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                        path = get_path(token, head1, edge.part, edge.sentence_id, self.graphs)
+                        if path == []:
+                            path = [token, head1]
+                        for tok in path:
+                            feature_name = '80_PWPE_bow_masked_'+tok.masked_text(edge.part)+'_[0]'
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                            feature_name = '81_PWPE_pos_'+tok.features['pos']+'_[0]'
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                            feature_name = '82_PWPE_bow_'+tok.word+'_[0]'
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                        all_walks = build_walks(path)
+                        for dep_list in all_walks:
+                            dep_path = ''
+                            for dep in dep_list:
+                                feature_name = '83_'+'PWPE_dep_'+dep[1]+'_[0]'
+                                self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                                dep_path += dep[1]
+                            feature_name = '84_PWPE_dep_full+'+dep_path+'_[0]'
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                        for j in range(len(all_walks)):
+                            dir_grams = ''
+                            for i in range(len(path)-1):
+                                cur_walk = all_walks[j]
+                                if cur_walk[i][0] == path[i]:
+                                    dir_grams += 'F'
+                                else:
+                                    dir_grams += 'R'
+                            feature_name = '85_PWPE_dep_gram_'+dir_grams+'_[0]'
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+            if protein_word_found:
+                feature_name = '86_protein_word_found_[0]'
+                self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+            else:
+                feature_name = '87_protein_not_word_found_[0]'
+                self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
 
 class LocationWordFeatureGenerator(EdgeFeatureGenerator):
     """
