@@ -90,11 +90,11 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
             if protein_word_found:
-                feature_name = '86_protein_word_found_[0]'
+                feature_name = '86_protein_word_found'
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
             else:
-                feature_name = '87_protein_not_word_found_[0]'
+                feature_name = '87_protein_not_word_found'
                 self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
 
