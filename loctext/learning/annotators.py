@@ -2,7 +2,6 @@ from nalaf.learning.taggers import RelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
-
 from loctext.features.specific import LocationWordFeatureGenerator
 from loctext.features.specific import ProteinWordFeatureGenerator
 from nalaf.features.relations.context import LinearDistanceFeatureGenerator
