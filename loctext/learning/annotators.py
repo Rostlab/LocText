@@ -77,6 +77,6 @@ class LocTextRelationExtractor(RelationExtractor):
 
         instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.tag(instancesfile)
-        self.svmlight.read_predictions(corpus, predictionsfile)
+        self.svmlight.read_predictions(corpus, predictionsfile, threshold=0)
 
         return corpus
