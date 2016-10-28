@@ -92,13 +92,12 @@ class LocTextRelationExtractor(RelationExtractor):
             ),
 
             BagOfWordsFeatureGenerator(
-                # TODO change variables
-                # TODO the used vars where not checked
+                prefix_bow_text=2,
+                prefix_ne_bow_count=3,
             ),
 
             StemmedBagOfWordsFeatureGenerator(
-                # TODO change variables
-                # TODO the used vars where not checked
+                prefix_bow_stem=4
             ),
 
             NamedEntityCountFeatureGenerator(
