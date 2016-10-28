@@ -77,18 +77,20 @@ class LocTextRelationExtractor(RelationExtractor):
             # )
 
             EntityHeadTokenUpperCaseFeatureGenerator(
-                # TODO change variables
-                # TODO the used vars where not checked
+                prefix_entity1_upper_case_middle=87.1,
+                prefix_entity2_upper_case_middle=87.2,
             ),
 
             EntityHeadTokenDigitsFeatureGenerator(
-                # TODO change variables
-                # TODO the used vars where not checked
+                prefix_entity1_has_hyphenated_digits=89.1,
+                prefix_entity2_has_hyphenated_digits=89.2,
             ),
 
             EntityHeadTokenPunctuationFeatureGenerator(
-                # TODO change variables
-                # TODO the used vars where not checked
+                prefix_entity1_has_hyphen=90.1,
+                prefix_entity1_has_fslash=91.1,
+                prefix_entity2_has_hyphen=90.2,
+                prefix_entity2_has_fslash=91.2,
             ),
 
             BagOfWordsFeatureGenerator(
