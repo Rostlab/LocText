@@ -6,6 +6,7 @@ from loctext.features.specific import LocationWordFeatureGenerator
 from loctext.features.specific import ProteinWordFeatureGenerator
 from nalaf.features.relations.context import LinearDistanceFeatureGenerator
 from nalaf.features.relations.context import EntityOrderFeatureGenerator
+from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
@@ -50,7 +51,19 @@ class LocTextRelationExtractor(RelationExtractor):
                 prefix_protein_not_word_found=14
             ),
 
-            # TODO IntermediateTokensFeatureGenerator(feature_set, training_mode=train),
+            IntermediateTokensFeatureGenerator(
+                prefix_fwd_pos_intermediate=34,
+
+                prefix_bkd_bow_intermediate=35,
+                prefix_bkd_bow_intermediate_masked=36,
+                prefix_bkd_stem_intermediate=37,
+                prefix_bkd_pos_intermediate=38,
+
+                prefix_bow_intermediate=39,
+                prefix_bow_intermediate_masked=40,
+                prefix_stem_intermediate=41,
+                prefix_pos_intermediate=42,
+            ),
 
             LinearDistanceFeatureGenerator(
                 distance=5,
