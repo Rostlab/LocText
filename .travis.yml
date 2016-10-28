@@ -33,7 +33,7 @@ install:
   - python -m loctext.download_corpora
 
 script:
-  - time py.test -v --capture=no --cov=./
+  - time py.test -v --cov=./
 
 after_success:
   - codecov
