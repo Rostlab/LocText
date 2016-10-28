@@ -40,7 +40,7 @@ def test_LocText(use_full_corpus):
         EXPECTED_F_SE = 0.0028
     else:
         corpus, _ = corpus.percentage_split(0.40)
-        EXPECTED_F = 0.5928
+        EXPECTED_F = 0.5984
         EXPECTED_F_SE = 0.0048
 
     annotator_fun = (lambda train_set: train(train_set, {'use_tk': False}))
