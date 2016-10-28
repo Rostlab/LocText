@@ -72,9 +72,6 @@ class LocTextRelationExtractor(RelationExtractor):
 
             # TODO doesn't add directly anything -- We shall check every feature indirectly added by the other gens.
             # TokenFeatureGenerator(
-            #     # TODO change variables
-            #     # TODO the used vars where not checked
-            # )
 
             EntityHeadTokenUpperCaseFeatureGenerator(
                 prefix_entity1_upper_case_middle=87.1,
