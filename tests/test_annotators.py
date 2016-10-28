@@ -39,9 +39,9 @@ def test_LocText(use_full_corpus):
         EXPECTED_F = 0.5433
         EXPECTED_F_SE = 0.0028
     else:
-        corpus, _ = corpus.percentage_split(0.2)
-        EXPECTED_F = 0.6230
-        EXPECTED_F_SE = 0.0048
+        corpus, _ = corpus.percentage_split(0.1)
+        EXPECTED_F = 0.4906
+        EXPECTED_F_SE = 0.0083
 
     annotator_fun = (lambda train_set: train(train_set, {'use_tk': False}))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
