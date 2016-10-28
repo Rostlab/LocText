@@ -81,7 +81,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                             feature_name = self.gen_prefix_feat_name("prefix_PWPE_pos", tok.features['pos'])
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
-                            feature_name = self.gen_prefix_feat_name("PWPE_bow_masked", tok.masked_text(edge.part))
+                            feature_name = self.gen_prefix_feat_name("prefix_PWPE_bow_masked", tok.masked_text(edge.part))
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                         all_walks = build_walks(path)
