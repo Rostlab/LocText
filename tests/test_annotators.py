@@ -26,8 +26,7 @@ def test_baseline():
     evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, k_num_folds, use_validation_set=use_validation_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F)
-    assert math.isclose(rel_evaluation.f_measure_SE, EXPECTED_F_SE, rel_tol=0.1)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
 
     return rel_evaluation
 
@@ -40,9 +39,9 @@ def test_LocText(use_full_corpus):
         EXPECTED_F = 0.5095
         EXPECTED_F_SE = 0.0028
     else:
-        corpus, _ = corpus.percentage_split(0.4)
-        EXPECTED_F = 0.5095
-        EXPECTED_F_SE = 0.0028
+        corpus, _ = corpus.percentage_split(0.40)
+        EXPECTED_F = 0.5199
+        EXPECTED_F_SE = 0.0048
 
     annotator_fun = (lambda train_set: train(train_set, {'use_tk': False}))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
@@ -50,8 +49,7 @@ def test_LocText(use_full_corpus):
     evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, k_num_folds, use_validation_set=use_validation_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.0001)
-    assert math.isclose(rel_evaluation.f_measure_SE, EXPECTED_F_SE, abs_tol=0.01)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
 
     return rel_evaluation
 
