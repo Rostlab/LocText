@@ -36,7 +36,7 @@ def test_LocText(use_full_corpus):
     print("use_full_corpus: " + str(use_full_corpus))
 
     if (use_full_corpus):
-        EXPECTED_F = 0.5095
+        EXPECTED_F = 0.5433
         EXPECTED_F_SE = 0.0028
     else:
         corpus, _ = corpus.percentage_split(0.40)
