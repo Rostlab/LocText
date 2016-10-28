@@ -10,7 +10,7 @@ from loctext.learning.annotators import LocTextBaselineRelationExtractor
 from loctext.learning.train import read_corpus, train
 from nalaf import print_verbose, print_debug
 import math
-
+import sys
 
 k_num_folds = 5
 use_validation_set = True
@@ -32,10 +32,17 @@ def test_baseline():
     return rel_evaluation
 
 
-def test_LocText():
+def test_LocText(use_full_corpus):
     corpus = read_corpus("LocText")
-    EXPECTED_F = 0.5095
-    EXPECTED_F_SE = 0.0028
+    print("use_full_corpus: " + str(use_full_corpus))
+
+    if (use_full_corpus):
+        EXPECTED_F = 0.5095
+        EXPECTED_F_SE = 0.0028
+    else:
+        corpus, _ = corpus.percentage_split(0.4)
+        EXPECTED_F = 0.5095
+        EXPECTED_F_SE = 0.0028
 
     annotator_fun = (lambda train_set: train(train_set, {'use_tk': False}))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
@@ -51,4 +58,4 @@ def test_LocText():
 
 if __name__ == "__main__":
     test_baseline()
-    test_LocText()
+    test_LocText(use_full_corpus=('--use-full-corpus' in sys.argv))
