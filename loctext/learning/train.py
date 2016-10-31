@@ -54,9 +54,13 @@ def evaluate(corpus, args):
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
     corpus = read_corpus(args.corpus)
-    print_corpus_stats(corpus)
 
-    return evaluate(corpus, args)
+    # Print the stats twice, before and after whole pipeline, so the info does not get lost in the possible long log
+    print_stats(corpus, args)
+    result = evaluate(corpus, args)
+    print_stats(corpus, args)
+
+    return result
 
 
 def read_corpus(corpus_name):
@@ -87,7 +91,14 @@ def read_corpus(corpus_name):
     return corpus
 
 
-def print_corpus_stats(corpus):
+def print_run_args(args):
+    print("Arguments: ")
+    for key, value in sorted((vars(args)).items()):
+        print("\t{} = {}".format(key, value))
+    print()
+
+
+def print_stats(corpus, args):
     from nalaf.preprocessing.edges import SimpleEdgeGenerator
     from nalaf.preprocessing.spliters import NLTKSplitter
     from nalaf.preprocessing.tokenizers import TmVarTokenizer
@@ -116,6 +127,7 @@ def print_corpus_stats(corpus):
     # with all (abstract+fulltext), P=614 vs N=1480
     # with only abstracts -- Corpus size: 100 -- #P=351 vs. #N=308
     print("Corpus size: {} -- #P={} vs. #N={}".format(len(corpus), P, N))
+    print_run_args(args)
 
     return (P, N)
 
