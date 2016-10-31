@@ -11,9 +11,9 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
-    parser.add_argument('--minority_class', typ=int, default=1, choices=[-1, 1])
-    parser.add_argument('--minority_undersampling', typ=float, default=1, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-    parser.add_argument('--svm_hyperparameter_c', typ=float, default=0.0005)
+    parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
+    parser.add_argument('--minority_undersampling', type=float, default=1, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    parser.add_argument('--svm_hyperparameter_c', type=float, default=0.0005)
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
     parser.add_argument('--use_tk', default=False, action='store_true')
