@@ -56,9 +56,11 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
             # head2 = edge.entity2.head_token
             sentence = edge.part.sentences[edge.sentence_id]
             protein_word_found = False
+
             for token in sentence:
                 if token.is_entity_part(edge.part) and token.word.lower().find(self.keyword) >= 0:
                     protein_word_found = True
+
                     token_from = token.features['dependency_from'][0]
 
                     if token_from == head1:
@@ -74,6 +76,9 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                         path = get_path(token, head1, edge.part, edge.sentence_id, self.graphs)
                         if path == []:
                             path = [token, head1]
+
+
+                        # TODO this may need to be indexed to the left, see original LocText: 5_
                         for tok in path:
                             feature_name = self.gen_prefix_feat_name("prefix_PWPE_bow", tok.word)
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
@@ -85,6 +90,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                         all_walks = build_walks(path)
+
                         for dep_list in all_walks:
                             dep_path = ''
                             for dep in dep_list:
