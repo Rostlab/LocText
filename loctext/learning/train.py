@@ -45,7 +45,7 @@ def evaluate(corpus, args):
     annotator_fun = (lambda training_set: train(training_set, args))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
 
-    evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, args.k_num_folds, use_validation_set=args.use_validation_set)
+    evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     return rel_evaluation
