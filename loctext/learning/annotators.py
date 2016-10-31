@@ -135,11 +135,11 @@ class LocTextRelationExtractor(RelationExtractor):
                 prefix_59_ann_edge_gram=None,  # None
                 prefix_60_edge_directions=63,
                 prefix_61_dep_1=49,
-                prefix_62_txt_dep_0=50,
+                prefix_62_masked_txt_dep_0=50,
                 prefix_63_pos_dep_0=51,
                 prefix_64_ann_type_1=52,
                 prefix_65_dep_to_1=None,
-                prefix_66_txt_dep_to_0_masked=53,
+                prefix_66_masked_txt_dep_to_0=53,
                 prefix_67_pos_to=54,
                 prefix_68_ann_type_2=55,
                 prefix_69_gov_g_text=56,
