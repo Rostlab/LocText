@@ -30,7 +30,7 @@ before_install:
 
 install:
   - pip install .
-  - python -m loctext.download_corpora
+  - python -m loctext.download_data
 
 script:
   - time py.test -v --cov=./
