@@ -17,8 +17,13 @@ use_validation_set = True
 
 def test_baseline():
     corpus = read_corpus("LocText")
-    EXPECTED_F = 0.4234297812279464
-    EXPECTED_F_SE = 0.0024623653397242064
+    # Absolute full: abstracts + full text
+    # EXPECTED_F = 0.4234297812279464
+    # EXPECTED_F_SE = 0.0024623653397242064
+
+    # Full: abstracts
+    EXPECTED_F = 0.4547
+    EXPECTED_F_SE = 0.0026
 
     annotator_fun = (lambda _: LocTextBaselineRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
@@ -33,9 +38,40 @@ def test_baseline():
 
 def test_LocText(use_full_corpus):
     corpus = read_corpus("LocText")
-    print("use_full_corpus: " + str(use_full_corpus))
+
+    from nalaf.preprocessing.edges import SimpleEdgeGenerator
+    from nalaf.preprocessing.spliters import NLTKSplitter
+    from nalaf.preprocessing.tokenizers import TmVarTokenizer
+
+    splitter = NLTKSplitter()
+    tokenizer = TmVarTokenizer()
+    edger = SimpleEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
+
+    splitter.split(corpus)
+    tokenizer.tokenize(corpus)
+    edger.generate(corpus)
+    corpus.label_edges()
+
+    P = 0
+    N = 0
+
+    for e in corpus.edges():
+        assert e.target != 0, str(e)
+        print(e, e.target)
+        if e.target > 0:
+            P += 1
+        else:
+            N += 1
+
+    # with all (abstract+fulltext), P=614 vs N=1480
+    # with only abstracts -- Corpus size: 100 -- #P=351 vs. #N=308
+    print("Corpus size: {} -- #P={} vs. #N={}".format(len(corpus), P, N))
 
     if (use_full_corpus):
+        # 0.1
+        # 0.4 0.618421052631579
+        # 0.5
+        # full 0.5807962529274006
         EXPECTED_F = 0.5433
         EXPECTED_F_SE = 0.0028
     else:

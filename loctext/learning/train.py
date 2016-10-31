@@ -32,7 +32,7 @@ def train(training_set, args):
     # Learn
     pipeline.execute(training_set, train=True)
     svmlight = SVMLightTreeKernels(use_tree_kernel=False)  # Beware: should use args, but conflict of Namespace vs object
-    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=1, undersampling=0.377)  # Test with ratio 1:5 or 1:10 or 1:4
+    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=1, undersampling=0.1)
     svmlight.learn(instancesfile, c=0.0005)
 
     # Alert: we should read the class ids from the corpus
@@ -51,6 +51,13 @@ def read_corpus(corpus_name):
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_master_json/pool/')
 
     corpus = HTMLReader(dir_html).read()
+
+    # Remove PMCs, full-text
+    del corpus.documents["PMC3596250"]
+    del corpus.documents["PMC2192646"]
+    del corpus.documents["PMC2483532"]
+    del corpus.documents["PMC2847216"]
+
     AnnJsonAnnotationReader(
         dir_annjson,
         read_relations=True,
