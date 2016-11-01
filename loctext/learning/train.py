@@ -15,6 +15,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
     parser.add_argument('--majority_class_undersampling', type=float, default=1.0, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
     parser.add_argument('--svm_hyperparameter_c', type=float, default=0.0005)
+    parser.add_argument('--svm_threshold', type=float, default=0)
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
     parser.add_argument('--use_tk', default=False, action='store_true')
@@ -38,9 +39,9 @@ def train(training_set, args):
     pipeline.execute(training_set, train=True)
     svmlight = SVMLightTreeKernels(use_tree_kernel=args.use_tk)
     instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
-    svmlight.learn(instancesfile, c=0.0005)
+    svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
 
-    annotator = LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, pipeline=pipeline, svmlight_bin_model=svmlight.model_path, svmlight=svmlight)
+    annotator = LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, pipeline=pipeline, svmlight_bin_model=svmlight.model_path, svmlight=svmlight, svm_threshold=args.svm_threshold)
 
     return annotator.annotate
 
