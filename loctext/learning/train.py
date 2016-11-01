@@ -19,7 +19,9 @@ def parse_arguments(argv=[]):
     parser.add_argument('--k_num_folds', type=int, default=5)
     parser.add_argument('--use_tk', default=False, action='store_true')
 
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+
+    return args
 
 
 def parse_arguments_string(arguments=""):
