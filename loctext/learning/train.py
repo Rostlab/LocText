@@ -125,7 +125,7 @@ def print_stats(corpus, args):
 
     for e in corpus.edges():
         assert e.target != 0, str(e)
-        print_verbose(e, e.target)
+        # print_verbose(e, e.target)
 
         if e.target > 0:
             P += 1
