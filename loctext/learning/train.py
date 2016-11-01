@@ -40,14 +40,16 @@ def train(training_set, args):
     instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
     svmlight.learn(instancesfile, c=0.0005)
 
-    return LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, svmlight.model_path, pipeline=pipeline, svmlight=svmlight)
+    annotator = LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, pipeline=pipeline, svmlight_bin_model=svmlight.model_path, svmlight=svmlight)
+
+    return annotator.annotate
 
 
 def evaluate(corpus, args):
-    annotator_fun = (lambda training_set: train(training_set, args))
+    annotator_gen_fun = (lambda training_set: train(training_set, args))
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
 
-    evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     return rel_evaluation

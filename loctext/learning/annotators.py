@@ -37,17 +37,20 @@ class LocTextRelationExtractor(RelationExtractor):
             entity1_class,
             entity2_class,
             rel_type,
-            bin_model,
             pipeline=None,
+            execute_pipeline=True,
+            svmlight_bin_model=None,
             svmlight=None,
-            execute_pipeline=True):
+            svm_threshold=0):
 
         super().__init__(entity1_class, entity2_class, rel_type)
-        self.bin_model = bin_model
-        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(model_path=self.bin_model, use_tree_kernel=False)
-        feature_generators = LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
+        feature_generators = pipeline.feature_generators if pipeline else LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
         self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
         self.execute_pipeline = execute_pipeline
+
+        self.svmlight_bin_model = svmlight_bin_model if svmlight_bin_model else None  # WARN No default yet, this will end up throwing an exception
+        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(model_path=self.svmlight_bin_model, use_tree_kernel=False)
+        self.svm_threshold = svm_threshold
 
 
     def annotate(self, corpus):
@@ -56,7 +59,7 @@ class LocTextRelationExtractor(RelationExtractor):
 
         instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.tag(instancesfile)
-        self.svmlight.read_predictions(corpus, predictionsfile, threshold=0)
+        self.svmlight.read_predictions(corpus, predictionsfile, threshold=self.svm_threshold)
 
         return corpus
 
