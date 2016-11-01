@@ -29,9 +29,9 @@ def parse_arguments_string(arguments=""):
 
 
 def train(training_set, args):
+    # WARN: we should read the class ids from the corpus
 
     feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
-    # Alert: we should read the class ids from the corpus
     pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=feature_generators)
 
     # Learn
@@ -40,7 +40,6 @@ def train(training_set, args):
     instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
     svmlight.learn(instancesfile, c=0.0005)
 
-    # Alert: we should read the class ids from the corpus
     return LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, svmlight.model_path, pipeline=pipeline, svmlight=svmlight)
 
 
