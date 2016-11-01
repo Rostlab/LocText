@@ -11,8 +11,9 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
+    parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
-    parser.add_argument('--majority_class_undersampling', type=float, default=1, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    parser.add_argument('--majority_class_undersampling', type=float, default=1.0, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
     parser.add_argument('--svm_hyperparameter_c', type=float, default=0.0005)
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
@@ -34,7 +35,7 @@ def train(training_set, args):
     # Learn
     pipeline.execute(training_set, train=True)
     svmlight = SVMLightTreeKernels(use_tree_kernel=args.use_tk)
-    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=1, undersampling=args.majority_class_undersampling)
+    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
     svmlight.learn(instancesfile, c=0.0005)
 
     # Alert: we should read the class ids from the corpus
@@ -54,11 +55,14 @@ def evaluate(corpus, args):
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
     corpus = read_corpus(args.corpus)
+    if (args.corpus_percentage < 1.0):
+        corpus, _ = corpus.percentage_split(args.corpus_percentage)
 
     # Print the stats twice, before and after whole pipeline, so the info does not get lost in the possible long log
     print_stats(corpus, args)
     result = evaluate(corpus, args)
     print_stats(corpus, args)
+    print(result)
 
     return result
 
