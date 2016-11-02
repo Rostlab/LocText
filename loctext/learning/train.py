@@ -32,7 +32,8 @@ def parse_arguments_string(arguments=""):
 def train(training_set, args):
     # WARN: we should read the class ids from the corpus
 
-    feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
+    # feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
+    feature_generators = None
     pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=feature_generators)
 
     # Learn
@@ -63,9 +64,9 @@ def evaluate_with_argv(argv=[]):
         corpus, _ = corpus.percentage_split(args.corpus_percentage)
 
     # Print the stats twice, before and after whole pipeline, so the info does not get lost in the possible long log
-    print_stats(corpus, args)
+    # print_stats(corpus, args)
     result = evaluate(corpus, args)
-    print_stats(corpus, args)
+    # print_stats(corpus, args)
     print(result)
 
     return result
@@ -112,7 +113,7 @@ def print_stats(corpus, args):
     from nalaf.preprocessing.tokenizers import TmVarTokenizer
 
     splitter = NLTKSplitter()
-    tokenizer = TmVarTokenizer()
+    tokenizer = TmVarTokenizer()  # TODO change
     edger = SimpleEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 
     splitter.split(corpus)
