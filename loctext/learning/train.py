@@ -11,7 +11,7 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
-    parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+    parser.add_argument('--corpus_percentage', type=float, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
     parser.add_argument('--majority_class_undersampling', type=float, default=1.0, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
     parser.add_argument('--svm_hyperparameter_c', type=float, default=0.0005)
@@ -59,8 +59,10 @@ def evaluate(corpus, args):
 
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
-    corpus = read_corpus(args.corpus)
-    if (args.corpus_percentage < 1.0):
+
+    if (args.corpus_percentage == 1.0):
+        corpus = read_corpus(args.corpus)
+    else:
         corpus, _ = corpus.percentage_split(args.corpus_percentage)
 
     # Print the stats twice, before and after whole pipeline, so the info does not get lost in the possible long log
