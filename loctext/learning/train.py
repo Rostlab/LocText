@@ -11,7 +11,7 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
-    parser.add_argument('--corpus_percentage', type=float, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+    parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
     parser.add_argument('--majority_class_undersampling', type=float, default=1.0, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
     parser.add_argument('--svm_hyperparameter_c', type=float, default=0.0005)
