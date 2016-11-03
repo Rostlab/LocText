@@ -63,7 +63,7 @@ def evaluate_with_argv(argv=[]):
     if (args.corpus_percentage == 1.0):
         corpus = read_corpus(args.corpus)
     else:
-        corpus, _ = corpus.percentage_split(args.corpus_percentage)
+        corpus, _ = read_corpus(args.corpus).percentage_split(args.corpus_percentage)
 
     # Print the stats twice, before and after whole pipeline, so the info does not get lost in the possible long log
     # print_stats(corpus, args)
