@@ -6,7 +6,7 @@ except SystemError: # Parent module '' not loaded, cannot perform relative impor
 
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
-from loctext.learning.annotators import LocTextBaselineRelationExtractor
+from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from loctext.learning.train import read_corpus, train, parse_arguments, evaluate_with_argv
 from nalaf import print_verbose, print_debug
 import math
@@ -25,13 +25,13 @@ def test_baseline():
     EXPECTED_F = 0.4547
     EXPECTED_F_SE = 0.0026
 
-    annotator_fun = (lambda _: LocTextBaselineRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
+    annotator_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
 
     evaluations = Evaluations.cross_validate(annotator_fun, corpus, evaluator, k_num_folds, use_validation_set=use_validation_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
 
     return rel_evaluation
 

@@ -13,23 +13,6 @@ from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, 
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
 
 
-
-
-class LocTextBaselineRelationExtractor(RelationExtractor):
-
-    def __init__(
-        self,
-        entity1_class,
-        entity2_class,
-        rel_type):
-
-        super().__init__(entity1_class, entity2_class, rel_type)
-        self.__annotator = StubSameSentenceRelationExtractor(entity1_class, entity2_class, rel_type)
-
-    def annotate(self, corpus):
-        return self.__annotator.annotate(corpus)
-
-
 class LocTextRelationExtractor(RelationExtractor):
 
     def __init__(
