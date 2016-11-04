@@ -49,7 +49,6 @@ class LocTextRelationExtractor(RelationExtractor):
 
     @staticmethod
     def default_feature_generators(prot_e_id, loc_e_id, graphs=None):
-        raise Exception
 
         GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
