@@ -66,9 +66,9 @@ def evaluate_with_argv(argv=[]):
         corpus, _ = read_corpus(args.corpus).percentage_split(args.corpus_percentage)
 
     # Print the stats twice, before and after whole pipeline, so the info does not get lost in the possible long log
-    # print_stats(corpus, args)
+    print_stats(corpus, args)
     result = evaluate(corpus, args)
-    # print_stats(corpus, args)
+    print_stats(corpus, args)
     print(result)
 
     return result
@@ -112,10 +112,10 @@ def print_run_args(args):
 def print_stats(corpus, args):
     from nalaf.preprocessing.edges import SimpleEdgeGenerator
     from nalaf.preprocessing.spliters import NLTKSplitter
-    from nalaf.preprocessing.tokenizers import TmVarTokenizer
+    from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER
 
     splitter = NLTKSplitter()
-    tokenizer = TmVarTokenizer()  # TODO change
+    tokenizer = NLTK_TOKENIZER  # TODO change
     edger = SimpleEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 
     splitter.split(corpus)
@@ -137,7 +137,7 @@ def print_stats(corpus, args):
 
     # with all (abstract+fulltext), P=614 vs N=1480
     # with only abstracts -- Corpus size: 100 -- #P=351 vs. #N=308
-    print("Corpus size: {} -- #P={} vs. #N={}".format(len(corpus), P, N))
+    print("Corpus stats; #docs={} -- #rels={} -- edges: #P={} vs. #N={}".format(len(corpus), len(list(corpus.relations())), P, N))
     print_run_args(args)
 
     return (P, N)
