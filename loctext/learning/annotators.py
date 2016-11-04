@@ -81,92 +81,92 @@ class LocTextRelationExtractor(RelationExtractor):
                 prefix_pos_intermediate=42,
             ),
 
-            # LinearDistanceFeatureGenerator(
-            #     distance=5,
-            #     prefix_entity_linear_distance_greater_than=43,
-            #     prefix_entity_linear_distance_lesser_than=44,
-            #     # prefix_entity_linear_distance=45
-            # ),
-            #
-            # EntityOrderFeatureGenerator(
-            #     prefix_order_entity1_entity2=46,
-            #     prefix_order_entity2_entity1=47,
-            # ),
-            #
-            # PathFeatureGenerator(
-            #     GRAPHS_CLOSURE_VARIABLE,
-            #
-            #     token_feature_generator=TokenFeatureGenerator(
-            #         # prefix_txt=78,  # 73 in relna
-            #         prefix_pos=79,  # 74
-            #         prefix_masked_txt=77,  # 75
-            #         prefix_stem_masked_txt=81,  # 76
-            #         prefix_ann_type=80,  # 77
-            #     ),
-            #
-            #     prefix_45_len_tokens=73,
-            #     prefix_46_len=None,  # None
-            #     prefix_47_word_in_path=None,  # None
-            #     prefix_48_dep_forward=65,
-            #     prefix_49_dep_reverse=66,
-            #     prefix_50_internal_pos=67,
-            #     prefix_51_internal_masked_txt=68,
-            #     prefix_52_internal_txt=69,
-            #     prefix_53_internal_stem=70,
-            #     prefix_54_internal_dep_forward=71,
-            #     prefix_55_internal_dep_reverse=72,
-            #     prefix_56_token_path=64,
-            #     prefix_57_dep_style_gram=60,
-            #     prefix_58_edge_gram=None,  # None
-            #     prefix_59_ann_edge_gram=None,  # None
-            #     prefix_60_edge_directions=63,
-            #     prefix_61_dep_1=49,
-            #     prefix_62_masked_txt_dep_0=50,
-            #     prefix_63_pos_dep_0=51,
-            #     prefix_64_ann_type_1=52,
-            #     prefix_65_dep_to_1=None,
-            #     prefix_66_masked_txt_dep_to_0=53,
-            #     prefix_67_pos_to=54,
-            #     prefix_68_ann_type_2=55,
-            #     prefix_69_gov_g_text=56,
-            #     prefix_70_gov_g_pos=57,
-            #     prefix_71_gov_anns=58,
-            #     prefix_72_triple=59,
-            # ),
-            #
-            # EntityHeadTokenUpperCaseFeatureGenerator(
-            #     prefix_entity1_upper_case_middle=87.1,
-            #     prefix_entity2_upper_case_middle=87.2,
-            # ),
-            #
-            # EntityHeadTokenDigitsFeatureGenerator(
-            #     prefix_entity1_has_hyphenated_digits=89.1,
-            #     prefix_entity2_has_hyphenated_digits=89.2,
-            # ),
-            #
-            # EntityHeadTokenPunctuationFeatureGenerator(
-            #     prefix_entity1_has_hyphen=90.1,
-            #     prefix_entity1_has_fslash=91.1,
-            #     prefix_entity2_has_hyphen=90.2,
-            #     prefix_entity2_has_fslash=91.2,
-            # ),
-            #
-            # BagOfWordsFeatureGenerator(
-            #     prefix_bow_text=2,
-            #     prefix_ne_bow_count=3,
-            # ),
-            #
-            # StemmedBagOfWordsFeatureGenerator(
-            #     prefix_bow_stem=4
-            # ),
-            #
-            # NamedEntityCountFeatureGenerator(
-            #     prot_e_id,
-            #     prefix=107
-            # ),
-            #
-            # NamedEntityCountFeatureGenerator(
-            #     loc_e_id,
-            #     prefix=108
-            # )
+            LinearDistanceFeatureGenerator(
+                distance=5,
+                prefix_entity_linear_distance_greater_than=43,
+                prefix_entity_linear_distance_lesser_than=44,
+                # prefix_entity_linear_distance=45
+            ),
+
+            EntityOrderFeatureGenerator(
+                prefix_order_entity1_entity2=46,
+                prefix_order_entity2_entity1=47,
+            ),
+
+            PathFeatureGenerator(
+                GRAPHS_CLOSURE_VARIABLE,
+
+                token_feature_generator=TokenFeatureGenerator(
+                    # prefix_txt=78,  # 73 in relna
+                    prefix_pos=79,  # 74
+                    prefix_masked_txt=77,  # 75
+                    prefix_stem_masked_txt=81,  # 76
+                    prefix_ann_type=80,  # 77
+                ),
+
+                prefix_45_len_tokens=73,
+                prefix_46_len=None,  # None
+                prefix_47_word_in_path=None,  # None
+                prefix_48_dep_forward=65,
+                prefix_49_dep_reverse=66,
+                prefix_50_internal_pos=67,
+                prefix_51_internal_masked_txt=68,
+                prefix_52_internal_txt=69,
+                prefix_53_internal_stem=70,
+                prefix_54_internal_dep_forward=71,
+                prefix_55_internal_dep_reverse=72,
+                prefix_56_token_path=64,
+                prefix_57_dep_style_gram=60,
+                prefix_58_edge_gram=None,  # None
+                prefix_59_ann_edge_gram=None,  # None
+                prefix_60_edge_directions=63,
+                prefix_61_dep_1=49,
+                prefix_62_masked_txt_dep_0=50,
+                prefix_63_pos_dep_0=51,
+                prefix_64_ann_type_1=52,
+                prefix_65_dep_to_1=None,
+                prefix_66_masked_txt_dep_to_0=53,
+                prefix_67_pos_to=54,
+                prefix_68_ann_type_2=55,
+                prefix_69_gov_g_text=56,
+                prefix_70_gov_g_pos=57,
+                prefix_71_gov_anns=58,
+                prefix_72_triple=59,
+            ),
+
+            EntityHeadTokenUpperCaseFeatureGenerator(
+                prefix_entity1_upper_case_middle=87.1,
+                prefix_entity2_upper_case_middle=87.2,
+            ),
+
+            EntityHeadTokenDigitsFeatureGenerator(
+                prefix_entity1_has_hyphenated_digits=89.1,
+                prefix_entity2_has_hyphenated_digits=89.2,
+            ),
+
+            EntityHeadTokenPunctuationFeatureGenerator(
+                prefix_entity1_has_hyphen=90.1,
+                prefix_entity1_has_fslash=91.1,
+                prefix_entity2_has_hyphen=90.2,
+                prefix_entity2_has_fslash=91.2,
+            ),
+
+            BagOfWordsFeatureGenerator(
+                prefix_bow_text=2,
+                prefix_ne_bow_count=3,
+            ),
+
+            StemmedBagOfWordsFeatureGenerator(
+                prefix_bow_stem=4
+            ),
+
+            NamedEntityCountFeatureGenerator(
+                prot_e_id,
+                prefix=107
+            ),
+
+            NamedEntityCountFeatureGenerator(
+                loc_e_id,
+                prefix=108
+            )
         ]
