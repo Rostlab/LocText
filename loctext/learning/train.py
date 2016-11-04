@@ -19,6 +19,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
     parser.add_argument('--use_tk', default=False, action='store_true')
+    parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
 
     args = parser.parse_args(argv)
 
@@ -32,7 +33,11 @@ def parse_arguments_string(arguments=""):
 def train(training_set, args):
     # WARN: we should read the class ids from the corpus
 
-    # feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
+    if args.feature_generators == "LocText":
+        feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
+    elif args.feature_generators == "default":
+        feature_generators = None
+
     feature_generators = None
     pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=feature_generators)
 
