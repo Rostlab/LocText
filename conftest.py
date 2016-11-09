@@ -1,8 +1,9 @@
 import pytest
 
 def pytest_addoption(parser):
-    parser.addoption("--use-full-corpus", action="store_true", default=False)
+    parser.addoption('--corpus_percentage', type=float, default=0.1, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+
 
 @pytest.fixture
-def use_full_corpus(request):
-    return request.config.getoption("--use-full-corpus")
+def corpus_percentage(request):
+    return request.config.getoption("--corpus_percentage")

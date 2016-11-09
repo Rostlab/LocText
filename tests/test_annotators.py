@@ -26,6 +26,7 @@ def test_baseline():
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    print(rel_evaluation)
 
     return rel_evaluation
 
@@ -41,9 +42,10 @@ def test_LocText(use_full_corpus):
         EXPECTED_F = 0.4906
         EXPECTED_F_SE = 0.0083
 
-    rel_evaluation = evaluate_with_argv()
+    rel_evaluation = evaluate_with_argv(['--corpus_percentage', '0.1'])
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
+    print(rel_evaluation)
 
     return rel_evaluation
 
