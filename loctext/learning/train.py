@@ -14,7 +14,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
     parser.add_argument('--majority_class_undersampling', type=float, default=1.0, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-    parser.add_argument('--svm_hyperparameter_c', type=float, default=0.0005)
+    parser.add_argument('--svm_hyperparameter_c', action="store", default=None)
     parser.add_argument('--svm_threshold', type=float, default=0)
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
@@ -22,6 +22,8 @@ def parse_arguments(argv=[]):
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
 
     args = parser.parse_args(argv)
+
+    assert args.svm_hyperparameter_c is None or args.svm_hyperparameter_c == 'None' or float(args.svm_hyperparameter_c), "svm_hyperparameter_c is None or float"
 
     return args
 
