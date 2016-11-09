@@ -38,7 +38,6 @@ def train(training_set, args):
     elif args.feature_generators == "default":
         feature_generators = None
 
-    feature_generators = None
     pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=feature_generators)
 
     # Learn
