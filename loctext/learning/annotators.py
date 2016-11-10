@@ -23,9 +23,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
-            svmlight_bin_model=None,
-            svmlight=None,
-            svm_threshold=0):
+            svmlight=None):
 
         super().__init__(entity1_class, entity2_class, rel_type)
 
@@ -42,9 +40,8 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
         self.execute_pipeline = execute_pipeline
 
-        self.svmlight_bin_model = svmlight_bin_model if svmlight_bin_model else None  # WARN No default yet, this will end up throwing an exception
-        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(model_path=self.svmlight_bin_model, use_tree_kernel=False)
-        self.svm_threshold = svm_threshold
+        # TODO this would require setting the default model_path
+        self.svmlight = svmlight if svmlight else SVMLightTreeKernels()
 
 
     def annotate(self, corpus):
@@ -52,8 +49,8 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             self.pipeline.execute(corpus, train=False)
 
         instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
-        predictionsfile = self.svmlight.tag(instancesfile)
-        self.svmlight.read_predictions(corpus, predictionsfile, threshold=self.svm_threshold)
+        predictionsfile = self.svmlight.classify(instancesfile)
+        self.svmlight.read_predictions(corpus, predictionsfile)
 
         return corpus
 

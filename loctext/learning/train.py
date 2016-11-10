@@ -39,7 +39,7 @@ def _select_annotator_model(args):
     loc_id = LOC_ID
     rel_id = REL_PRO_LOC_ID
 
-    svmlight = SVMLightTreeKernels(use_tree_kernel=args.use_tk)
+    svmlight = SVMLightTreeKernels(classification_threshold=args.svm_threshold, use_tree_kernel=args.use_tk)
 
     indirect_feature_generators = {
         "LocText": None,  # Uses annotator's default
@@ -48,7 +48,7 @@ def _select_annotator_model(args):
     }.get(args.feature_generators)
 
     annotator = {
-        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight_bin_model=svmlight.model_path, svmlight=svmlight, svm_threshold=args.svm_threshold),
+        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=svmlight),
         "DS": "???",
         "Combined": "???"
 
