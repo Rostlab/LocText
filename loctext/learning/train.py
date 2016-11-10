@@ -1,7 +1,7 @@
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.learning.svmlight import SVMLightTreeKernels
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextDSmodelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
 
@@ -49,7 +49,7 @@ def _select_annotator_model(args):
 
     annotator = {
         "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=svmlight),
-        "DS": "???",
+        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=svmlight),
         "Combined": "???"
 
     }.get(args.model)

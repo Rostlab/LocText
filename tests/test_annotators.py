@@ -32,38 +32,41 @@ def test_baseline():
     return rel_evaluation
 
 
-def _test_LocText(corpus_percentage, model):
+def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001):
+    # Note: EXPECTED_F=None will make the test fail for non-yet verified evaluations
+    # Note: the real StdErr's are around ~0.0027-0.0095. Decrease them by default to be more strict with tests
+
+    assert corpus_percentage in [0.1, 1.0], "corpus_percentage must == 0.1 or 1.0. You gave: " + str(corpus_percentage)
+
     corpus = read_corpus("LocText", corpus_percentage)
-
-    if (corpus_percentage == 1.0):
-        # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
-        EXPECTED_F = 0.6178
-        EXPECTED_F_SE = 0.0027
-
-    else:
-        assert corpus_percentage == 0.1, "corpus_percentage must == 1.0 or 0.1. You gave: " + str(corpus_percentage)
-
-        EXPECTED_F = 0.5510
-        EXPECTED_F_SE = 0.0095
 
     rel_evaluation = evaluate_with_argv(['--corpus_percentage', str(corpus_percentage), '--model', model])
 
+    print("LocText " + model, rel_evaluation)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
-    print("LocText", rel_evaluation)
 
     return rel_evaluation
 
 
 def test_LocText_SS(corpus_percentage):
-    _test_LocText(corpus_percentage, model='SS')
+    # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
+
+    if (corpus_percentage == 1.0):
+        EXPECTED_F = 0.6178
+        EXPECTED_F_SE = 0.0027
+    else:
+        EXPECTED_F = 0.5510
+        EXPECTED_F_SE = 0.0095
+
+    _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
 
-# def test_LocText_DS(corpus_percentage):
-#     _test_LocText(corpus_percentage, model='DS')
-#
-#
-# def test_LocText_Combined(corpus_percentage):
-#     _test_LocText(corpus_percentage, model='Combined')
+def test_LocText_DS(corpus_percentage):
+    _test_LocText(corpus_percentage, model='DS')
+
+
+def test_LocText_Combined(corpus_percentage):
+    _test_LocText(corpus_percentage, model='Combined')
 
 
 if __name__ == "__main__":

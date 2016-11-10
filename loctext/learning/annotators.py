@@ -56,7 +56,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
 
     def feature_generators(self):
-        return LocTextSSmodelRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
+        return __class__.default_feature_generators(self.entity1_class, self.entity2_class)
 
 
     @staticmethod
@@ -182,3 +182,57 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 prefix=108
             )
         ]
+
+
+class LocTextDSmodelRelationExtractor(RelationExtractor):
+
+    def __init__(
+            self,
+            entity1_class,
+            entity2_class,
+            rel_type,
+            feature_generators=None,
+            pipeline=None,
+            execute_pipeline=True,
+            svmlight=None):
+
+        super().__init__(entity1_class, entity2_class, rel_type)
+
+        if pipeline:
+            feature_generators = pipeline.feature_generators
+        elif feature_generators is not None:  # Trick: if [], this will use pipeline's default generators
+            feature_generators = feature_generators
+        else:
+            feature_generators = self.feature_generators()
+
+        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
+
+        assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
+
+        self.execute_pipeline = execute_pipeline
+
+        # TODO this would require setting the default model_path
+        self.svmlight = svmlight if svmlight else SVMLightTreeKernels()
+
+
+    def annotate(self, corpus):
+        if self.execute_pipeline:
+            self.pipeline.execute(corpus, train=False)
+
+        instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
+        predictionsfile = self.svmlight.classify(instancesfile)
+        self.svmlight.read_predictions(corpus, predictionsfile)
+
+        return corpus
+
+
+    def feature_generators(self):
+        return __class__.default_feature_generators(self.entity1_class, self.entity2_class)
+
+
+    @staticmethod
+    def default_feature_generators(prot_e_id, loc_e_id, graphs=None):
+
+        GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
+
+        return []
