@@ -1,7 +1,7 @@
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.learning.svmlight import SVMLightTreeKernels
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextDSmodelRelationExtractor
+from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextDSmodelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
 
@@ -33,7 +33,7 @@ def parse_arguments_string(arguments=""):
     return parse_arguments(arguments.split("\s+"))
 
 
-def _select_annotator_model(args):
+def _select_annotator_models(args):
     # WARN: we should read the class ids from the corpus
     pro_id = PRO_ID
     loc_id = LOC_ID
@@ -47,24 +47,33 @@ def _select_annotator_model(args):
 
     }.get(args.feature_generators)
 
-    annotator = {
+    ann_switcher = {
+        # TODO make sure that they are lazy-evaluated
         "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=svmlight),
         "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=svmlight),
-        "Combined": "???"
+    }
 
-    }.get(args.model)
+    if args.model == "Combined":
+        ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["SS"], ds_model=ann_switcher["DS"])
 
-    return annotator
+    ret = ann_switcher[args.model]
+
+    # Simple switch for either single or combined model
+    ret = ret.submodels if ret.submodels is not None else [ret]
+
+    return ret
 
 
 def train(training_set, args):
 
-    annotator = _select_annotator_model(args)
+    annotator_models = _select_annotator_models(args)
 
-    annotator.pipeline.execute(training_set, train=True)
+    for annotator in annotator_models:
 
-    instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
-    annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
+        annotator.pipeline.execute(training_set, train=True)
+
+        instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
+        annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
 
     return annotator.annotate
 

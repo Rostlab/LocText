@@ -205,6 +205,9 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         else:
             feature_generators = self.feature_generators()
 
+        #
+        # TODO the edge generator has to be the DS model!
+        #
         self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
@@ -236,3 +239,28 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return []
+
+
+class LocTextCombinedModelRelationExtractor(RelationExtractor):
+
+    def __init__(
+            self,
+            entity1_class,
+            entity2_class,
+            rel_type,
+            ss_model,
+            ds_model):
+
+        super().__init__(entity1_class, entity2_class, rel_type)
+
+        self.ss_model = ss_model
+        self.ds_model = ds_model
+        self.submodels = [self.ss_model, self.ds_model]
+
+
+    def annotate(self, corpus):
+
+        for model in self.submodels:
+            model.annotate(corpus)
+
+        return corpus
