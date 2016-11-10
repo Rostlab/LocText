@@ -61,12 +61,22 @@ def test_LocText_SS(corpus_percentage):
     _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
 
-def test_LocText_DS(corpus_percentage):
-    _test_LocText(corpus_percentage, model='DS')
-
-
+# def test_LocText_DS(corpus_percentage):
+#     _test_LocText(corpus_percentage, model='DS')
+#
+#
 def test_LocText_Combined(corpus_percentage):
-    _test_LocText(corpus_percentage, model='Combined')
+
+    # Should be now the same as SS results, since the DS model SHOULD DO NOTHING (as of now)
+
+    if (corpus_percentage == 1.0):
+        EXPECTED_F = 0.6178
+        EXPECTED_F_SE = 0.0027
+    else:
+        EXPECTED_F = 0.5510
+        EXPECTED_F_SE = 0.0095
+
+    _test_LocText(corpus_percentage, model='Combined', EXPECTED_F=EXPECTED_F)
 
 
 if __name__ == "__main__":

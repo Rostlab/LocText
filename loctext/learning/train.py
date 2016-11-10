@@ -59,7 +59,7 @@ def _select_annotator_models(args):
     ret = ann_switcher[args.model]
 
     # Simple switch for either single or combined model
-    ret = ret.submodels if ret.submodels is not None else [ret]
+    ret = ret.submodels if hasattr(ret, 'submodels') else [ret]
 
     return ret
 
