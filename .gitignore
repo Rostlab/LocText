@@ -2,6 +2,9 @@
 .*
 !.travis.yml
 
+# Full logs
+loctext_id*.log
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
