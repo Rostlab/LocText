@@ -16,6 +16,7 @@ import sys
 def test_baseline():
     corpus = read_corpus("LocText")
 
+    # Baseline Computation(precision=0.6077586206896551, precision_SE=0.002781236497769688, recall=0.6238938053097345, recall_SE=0.004052746798458239, f_measure=0.6157205240174672, f_measure_SE=0.002826453358117873)
     EXPECTED_F = 0.6157
     EXPECTED_F_SE = 0.0028
 
@@ -31,20 +32,21 @@ def test_baseline():
     return rel_evaluation
 
 
-def test_LocText(corpus_percentage):
-    corpus = read_corpus("LocText")
+def _test_LocText(corpus_percentage, model):
+    corpus = read_corpus("LocText", corpus_percentage)
 
     if (corpus_percentage == 1.0):
+        # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
         EXPECTED_F = 0.6178
         EXPECTED_F_SE = 0.0027
 
     else:
         assert corpus_percentage == 0.1, "corpus_percentage must == 1.0 or 0.1. You gave: " + str(corpus_percentage)
-        corpus, _ = corpus.percentage_split(corpus_percentage)
+
         EXPECTED_F = 0.5510
         EXPECTED_F_SE = 0.0095
 
-    rel_evaluation = evaluate_with_argv(['--corpus_percentage', str(corpus_percentage)])
+    rel_evaluation = evaluate_with_argv(['--corpus_percentage', str(corpus_percentage), '--model', model])
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
     print("LocText", rel_evaluation)
@@ -52,9 +54,21 @@ def test_LocText(corpus_percentage):
     return rel_evaluation
 
 
+def test_LocText_SS(corpus_percentage):
+    _test_LocText(corpus_percentage, model='SS')
+
+
+# def test_LocText_DS(corpus_percentage):
+#     _test_LocText(corpus_percentage, model='DS')
+#
+#
+# def test_LocText_Combined(corpus_percentage):
+#     _test_LocText(corpus_percentage, model='Combined')
+
+
 if __name__ == "__main__":
 
     test_baseline()
 
     corpus_percentage = float(sys.argv[2]) if len(sys.argv) == 3 else 0.1
-    test_LocText(corpus_percentage)
+    test_LocText_SS(corpus_percentage)

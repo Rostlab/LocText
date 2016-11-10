@@ -10,6 +10,7 @@ def parse_arguments(argv=[]):
 
     parser = argparse.ArgumentParser(description='dooh')
 
+    parser.add_argument('--model', required=True, choices=["SS", "DS", "Combined"])
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
@@ -32,23 +33,38 @@ def parse_arguments_string(arguments=""):
     return parse_arguments(arguments.split("\s+"))
 
 
-def train(training_set, args):
+def _select_annotator_model(args):
     # WARN: we should read the class ids from the corpus
+    pro_id = PRO_ID
+    loc_id = LOC_ID
+    rel_id = REL_PRO_LOC_ID
 
-    if args.feature_generators == "LocText":
-        feature_generators = LocTextSSmodelRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
-    elif args.feature_generators == "default":
-        feature_generators = None
-
-    pipeline = RelationExtractionPipeline(PRO_ID, LOC_ID, REL_PRO_LOC_ID, feature_generators=feature_generators)
-
-    # Learn
-    pipeline.execute(training_set, train=True)
     svmlight = SVMLightTreeKernels(use_tree_kernel=args.use_tk)
-    instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
-    svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
 
-    annotator = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, pipeline=pipeline, svmlight_bin_model=svmlight.model_path, svmlight=svmlight, svm_threshold=args.svm_threshold)
+    indirect_feature_generators = {
+        "LocText": None,  # Uses annotator's default
+        "default": []  # Uses RelationExtractionPipeline's default
+
+    }.get(args.feature_generators)
+
+    annotator = {
+        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight_bin_model=svmlight.model_path, svmlight=svmlight, svm_threshold=args.svm_threshold),
+        "DS": "???",
+        "Combined": "???"
+
+    }.get(args.model)
+
+    return annotator
+
+
+def train(training_set, args):
+
+    annotator = _select_annotator_model(args)
+
+    annotator.pipeline.execute(training_set, train=True)
+
+    instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
+    annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
 
     return annotator.annotate
 
@@ -66,21 +82,18 @@ def evaluate(corpus, args):
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
 
-    if (args.corpus_percentage == 1.0):
-        corpus = read_corpus(args.corpus)
-    else:
-        corpus, _ = read_corpus(args.corpus).percentage_split(args.corpus_percentage)
+    corpus = read_corpus(args.corpus, args.corpus_percentage)
 
-    # Print the stats twice, before and after whole pipeline, so the info does not get lost in the possible long log
     print_stats(corpus, args)
     result = evaluate(corpus, args)
     print_stats(corpus, args)
-    print(result)
+
+    print_debug(result)
 
     return result
 
 
-def read_corpus(corpus_name):
+def read_corpus(corpus_name, corpus_percentage=1.0):
     import os
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
@@ -104,6 +117,9 @@ def read_corpus(corpus_name):
         read_only_class_id=None,
         read_relations=True,
         delete_incomplete_docs=False).annotate(corpus)
+
+    if (corpus_percentage < 1.0):
+        corpus, _ = read_corpus(corpus_name).percentage_split(corpus_percentage)
 
     return corpus
 
@@ -151,4 +167,5 @@ def print_stats(corpus, args):
 
 if __name__ == "__main__":
     import sys
-    evaluate_with_argv(sys.argv[1:])
+    ret = evaluate_with_argv(sys.argv[1:])
+    print(ret)

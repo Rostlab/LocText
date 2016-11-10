@@ -20,6 +20,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             entity1_class,
             entity2_class,
             rel_type,
+            feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
             svmlight_bin_model=None,
@@ -27,8 +28,18 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             svm_threshold=0):
 
         super().__init__(entity1_class, entity2_class, rel_type)
-        feature_generators = pipeline.feature_generators if pipeline else LocTextSSmodelRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
+
+        if pipeline:
+            feature_generators = pipeline.feature_generators
+        elif feature_generators is not None:  # Trick: if [], this will use pipeline's default generators
+            feature_generators = feature_generators
+        else:
+            feature_generators = self.feature_generators()
+
         self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
+
+        assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
+
         self.execute_pipeline = execute_pipeline
 
         self.svmlight_bin_model = svmlight_bin_model if svmlight_bin_model else None  # WARN No default yet, this will end up throwing an exception
@@ -45,6 +56,10 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
         self.svmlight.read_predictions(corpus, predictionsfile, threshold=self.svm_threshold)
 
         return corpus
+
+
+    def feature_generators(self):
+        return LocTextSSmodelRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
 
 
     @staticmethod
