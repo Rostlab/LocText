@@ -31,18 +31,20 @@ def test_baseline():
     return rel_evaluation
 
 
-def test_LocText(use_full_corpus):
+def test_LocText(corpus_percentage):
     corpus = read_corpus("LocText")
 
-    if (use_full_corpus):
-        EXPECTED_F = 0.5433
-        EXPECTED_F_SE = 0.0028
-    else:
-        corpus, _ = corpus.percentage_split(0.1)
-        EXPECTED_F = 0.4906
-        EXPECTED_F_SE = 0.0083
+    if (corpus_percentage == 1.0):
+        EXPECTED_F = 0.6178
+        EXPECTED_F_SE = 0.0027
 
-    rel_evaluation = evaluate_with_argv(['--corpus_percentage', '0.1'])
+    else:
+        assert corpus_percentage == 0.1, "corpus_percentage must == 1.0 or 0.1. You gave: " + str(corpus_percentage)
+        corpus, _ = corpus.percentage_split(corpus_percentage)
+        EXPECTED_F = 0.5510
+        EXPECTED_F_SE = 0.0095
+
+    rel_evaluation = evaluate_with_argv(['--corpus_percentage', str(corpus_percentage)])
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
     print("LocText", rel_evaluation)
@@ -51,5 +53,8 @@ def test_LocText(use_full_corpus):
 
 
 if __name__ == "__main__":
+
     test_baseline()
-    test_LocText(use_full_corpus=('--corpus_percentage 1' in sys.argv))
+
+    corpus_percentage = float(sys.argv[2]) if len(sys.argv) == 3 else 0.1
+    test_LocText(corpus_percentage)
