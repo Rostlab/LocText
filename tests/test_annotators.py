@@ -61,10 +61,11 @@ def test_LocText_SS(corpus_percentage):
     _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
 
-# def test_LocText_DS(corpus_percentage):
-#     _test_LocText(corpus_percentage, model='DS')
-#
-#
+def test_LocText_DS(corpus_percentage):
+    _test_LocText(corpus_percentage, model='DS')
+
+
+# TODO find the way to do the training only once for each submodel
 def test_LocText_Combined(corpus_percentage):
 
     # Should be now the same as SS results, since the DS model SHOULD DO NOTHING (as of now)

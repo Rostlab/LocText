@@ -15,8 +15,11 @@ def parse_arguments(argv=[]):
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
     parser.add_argument('--majority_class_undersampling', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+
     parser.add_argument('--svm_hyperparameter_c', action="store", default=0.0080)
-    parser.add_argument('--svm_threshold', type=float, default=0)
+    parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
+    parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
+
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
     parser.add_argument('--use_tk', default=False, action='store_true')
@@ -39,8 +42,6 @@ def _select_annotator_models(args):
     loc_id = LOC_ID
     rel_id = REL_PRO_LOC_ID
 
-    svmlight = SVMLightTreeKernels(classification_threshold=args.svm_threshold, use_tree_kernel=args.use_tk)
-
     indirect_feature_generators = {
         "LocText": None,  # Uses annotator's default
         "default": []  # Uses RelationExtractionPipeline's default
@@ -49,8 +50,8 @@ def _select_annotator_models(args):
 
     ann_switcher = {
         # TODO make sure that they are lazy-evaluated
-        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=svmlight),
-        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=svmlight),
+        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk),
+        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
     }
 
     if args.model == "Combined":
@@ -68,11 +69,14 @@ def train(training_set, args):
 
     annotator_models = _select_annotator_models(args)
 
-    for annotator in annotator_models:
+    for index, annotator in enumerate(annotator_models):
 
         annotator.pipeline.execute(training_set, train=True)
 
+        print("\n\n\n***************\n\n\n", "\n", str(index), "\n", len(list(training_set.edges())), "\n", [e.target for e in training_set.edges()].count(1), "\n")
+
         instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
+        # TODO divide hyperparameter by ss & ds models
         annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
 
     return annotator.annotate
@@ -93,9 +97,9 @@ def evaluate_with_argv(argv=[]):
 
     corpus = read_corpus(args.corpus, args.corpus_percentage)
 
-    print_stats(corpus, args)
+    # print_stats(corpus, args)
     result = evaluate(corpus, args)
-    print_stats(corpus, args)
+    # print_stats(corpus, args)
 
     print_debug(result)
 
@@ -141,12 +145,14 @@ def print_run_args(args):
 
 
 def print_stats(corpus, args):
+     # TODO change for pipeline's values!
+
     from nalaf.preprocessing.edges import SimpleEdgeGenerator
     from nalaf.preprocessing.spliters import NLTKSplitter
     from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER
 
     splitter = NLTKSplitter()
-    tokenizer = NLTK_TOKENIZER  # TODO change
+    tokenizer = NLTK_TOKENIZER
     edger = SimpleEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 
     splitter.split(corpus)
