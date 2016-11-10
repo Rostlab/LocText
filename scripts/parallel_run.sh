@@ -2,7 +2,12 @@
 
 id=`date +%s%N`
 
-# Sort by F-Measure: tail -n 1 logs/*.log | sort -k 5 -t " "
+# Sort by F-Measure:
+#  * oldIFS=$IFS; IFS=$'\n'; time for f in `tail -n 1 logs/*.log | grep -oP "(?<=f_measure=).*" | sort -b -k 1,1 -t " " -h | tail -n 100`; do grep -o "f_measure=$f" logs/*.log; done; IFS=$oldIFS | tee loctext_best_rungs.log
+#  * oldIFS=$IFS; IFS="\n"; for f in `tail -n 1 logs/*.log | grep -oP "(?<=f_measure=).*" | sort -b -k 1,1 -t " " -h | tail -n 100`; do grep -o "f_measure=$f" logs/*.log; done; IFS=$oldIFS
+#  * tail -q -n 1 logs/*.log | sort -k 5 -t " "
+#  * tail -q -n 1 logs/*.log | grep "f_measure=[^,]*" -o | sort -h
+#  * tail -n 1 logs/*.log | grep -oP "(?<=f_measure=)[^,]*" | sort -b -k 1,1 -t " " -h
 
 for minority_class in `seq -1 2 +1`; do
   for c in None `seq 0.0005 0.0005 0.1000`; do # the None is intentional and means svm_learn default
