@@ -3,8 +3,7 @@
 id=`date +%s%N`
 
 # Sort by F-Measure:
-#  * oldIFS=$IFS; IFS=$'\n'; time for f in `tail -n 1 logs/*.log | grep -oP "(?<=f_measure=).*" | sort -b -k 1,1 -t " " -h | tail -n 100`; do grep -o "f_measure=$f" logs/*.log; done; IFS=$oldIFS | tee loctext_best_rungs.log
-#  * oldIFS=$IFS; IFS="\n"; for f in `tail -n 1 logs/*.log | grep -oP "(?<=f_measure=).*" | sort -b -k 1,1 -t " " -h | tail -n 100`; do grep -o "f_measure=$f" logs/*.log; done; IFS=$oldIFS
+#  * oldIFS=$IFS; IFS=$'\n'; time for f in `tail -n 1 logs/*.log | grep -oP "(?<=f_measure=).*" | sort -b -k 1,1 -t " " -h | tail -n 1000`; do grep -o "f_measure=$f" logs/*.log; done | tee logs/loctext_1000_best_runs.log; IFS=$oldIFS
 #  * tail -q -n 1 logs/*.log | sort -k 5 -t " "
 #  * tail -q -n 1 logs/*.log | grep "f_measure=[^,]*" -o | sort -h
 #  * tail -n 1 logs/*.log | grep -oP "(?<=f_measure=)[^,]*" | sort -b -k 1,1 -t " " -h
