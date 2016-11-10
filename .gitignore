@@ -3,7 +3,8 @@
 !.travis.yml
 
 # Full logs
-loctext_id*.log
+*.log
+!logs/training/*/loctext_best*.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
