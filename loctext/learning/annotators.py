@@ -13,7 +13,7 @@ from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, 
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
 
 
-class LocTextRelationExtractor(RelationExtractor):
+class LocTextSSmodelRelationExtractor(RelationExtractor):
 
     def __init__(
             self,
@@ -27,7 +27,7 @@ class LocTextRelationExtractor(RelationExtractor):
             svm_threshold=0):
 
         super().__init__(entity1_class, entity2_class, rel_type)
-        feature_generators = pipeline.feature_generators if pipeline else LocTextRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
+        feature_generators = pipeline.feature_generators if pipeline else LocTextSSmodelRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
         self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
         self.execute_pipeline = execute_pipeline
 

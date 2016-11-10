@@ -1,7 +1,7 @@
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from nalaf.learning.svmlight import SVMLightTreeKernels
-from loctext.learning.annotators import LocTextRelationExtractor
+from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
 
@@ -36,7 +36,7 @@ def train(training_set, args):
     # WARN: we should read the class ids from the corpus
 
     if args.feature_generators == "LocText":
-        feature_generators = LocTextRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
+        feature_generators = LocTextSSmodelRelationExtractor.default_feature_generators(PRO_ID, LOC_ID)
     elif args.feature_generators == "default":
         feature_generators = None
 
@@ -48,7 +48,7 @@ def train(training_set, args):
     instancesfile = svmlight.create_input_file(training_set, 'train', pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
     svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
 
-    annotator = LocTextRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, pipeline=pipeline, svmlight_bin_model=svmlight.model_path, svmlight=svmlight, svm_threshold=args.svm_threshold)
+    annotator = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, pipeline=pipeline, svmlight_bin_model=svmlight.model_path, svmlight=svmlight, svm_threshold=args.svm_threshold)
 
     return annotator.annotate
 
