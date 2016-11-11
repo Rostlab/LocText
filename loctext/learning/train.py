@@ -47,7 +47,7 @@ def parse_arguments_string(arguments=""):
     return parse_arguments(arguments.split("\s+"))
 
 
-def _select_annotator_models(args):
+def _select_annotator_model(args):
     # WARN: we should read the class ids from the corpus
     pro_id = PRO_ID
     loc_id = LOC_ID
@@ -60,7 +60,7 @@ def _select_annotator_models(args):
     }.get(args.feature_generators)
 
     ann_switcher = {
-        # TODO make sure that they are lazy-evaluated
+        # TODO evaluate them lazily
         "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk),
         "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
     }
@@ -70,18 +70,18 @@ def _select_annotator_models(args):
 
     ret = ann_switcher[args.model]
 
-    # Simple switch for either single or combined model
-    ret = ret.submodels if hasattr(ret, 'submodels') else [ret]
-
     return ret
 
 
 def train(training_set, args):
 
-    annotator_models = _select_annotator_models(args)
+    annotator_model = _select_annotator_model(args)
 
-    for index, annotator in enumerate(annotator_models):
-        print_debug("About to train model {}={}".format(index, annotator.__class__.__name__))
+    # Simple switch for either single or combined models
+    submodels = annotator_model.submodels if hasattr(annotator_model, 'submodels') else [annotator_model]
+
+    for index, annotator in enumerate(submodels):
+        print("About to train model {}={}".format(index, annotator.__class__.__name__))
 
         annotator.pipeline.execute(training_set, train=True)
 
@@ -91,7 +91,16 @@ def train(training_set, args):
 
         annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c_ss_model)
 
-    return annotator.annotate
+    return annotator_model.annotate
+
+    # Do nothing -- Note that we already trained AND annotated
+    # Also note that, if model == Combined, we are not using its method `annotate` directly
+    #   The reason is that otherwise, as current edge generator logic behavior, each submodel erases the edges
+    #   and consequently
+    # TODO
+    # annotator_gen_fun = (lambda evaluation: evaluation)
+    # return annotator_gen_fun
+    # return annotator.annotate
 
 
 def evaluate(corpus, args):
@@ -183,7 +192,7 @@ def print_corpus_pipeline_dependent_stats(corpus):
     # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
     # abstract + fulltext -- #docs: 104, P=614 vs N=1480
 
-    print("Corpus edges: #P={} vs. #N={}".format(P, N))
+    print("\tedges: #P={} vs. #N={}".format(P, N))
 
     return (P, N)
 

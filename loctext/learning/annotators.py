@@ -48,15 +48,15 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
         self.svmlight = svmlight if svmlight else SVMLightTreeKernels(**svmlight_params)
 
 
-    def annotate(self, corpus):
+    def annotate(self, target_corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(corpus, train=False)
+            self.pipeline.execute(target_corpus, train=False)
 
-        instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
+        instancesfile = self.svmlight.create_input_file(target_corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.classify(instancesfile)
-        self.svmlight.read_predictions(corpus, predictionsfile)
+        self.svmlight.read_predictions(target_corpus, predictionsfile)
 
-        return corpus
+        return target_corpus
 
 
     def feature_generators(self):
@@ -215,11 +215,7 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
-        # #
-        # # TODO force it for now to be empty
-        #
-        # TODO see below in feature_generators
-        # #
+        # TODO force it for now to be empty
         self.pipeline.feature_generators = []
 
         self.execute_pipeline = execute_pipeline
@@ -228,27 +224,19 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         self.svmlight = svmlight if svmlight else SVMLightTreeKernels(**svmlight_params)
 
 
-    def annotate(self, corpus):
-        #
-        # TODO do something!
-        #
-
+    def annotate(self, target_corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(corpus, train=False)
+            self.pipeline.execute(target_corpus, train=False)
 
-        #
-        # instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
-        # predictionsfile = self.svmlight.classify(instancesfile)
-        # self.svmlight.read_predictions(corpus, predictionsfile)
+        instancesfile = self.svmlight.create_input_file(target_corpus, 'predict', self.pipeline.feature_set)
+        predictionsfile = self.svmlight.classify(instancesfile)
+        self.svmlight.read_predictions(target_corpus, predictionsfile)
 
-        return corpus
+        return target_corpus
 
 
     def feature_generators(self):
-        # TODO define DS features
-        # return __class__.default_feature_generators(self.entity1_class, self.entity2_class)
-        return []
-        # return LocTextSSmodelRelationExtractor.default_feature_generators(self.entity1_class, self.entity2_class)
+        return __class__.default_feature_generators(self.entity1_class, self.entity2_class)
 
 
     @staticmethod
@@ -273,16 +261,12 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
 
         self.ss_model = ss_model
         self.ds_model = ds_model
-        self.submodels = [self.ss_model] # , self.ds_model]
+        self.submodels = [self.ss_model, self.ds_model]
 
 
-    def annotate(self, corpus):
-
-        # TODO fix & clean
+    def annotate(self, target_corpus):
 
         for model in self.submodels:
-            model.annotate(corpus)
+            model.annotate(target_corpus)
 
-        # self.ss_model(corpus)
-
-        return corpus
+        return target_corpus
