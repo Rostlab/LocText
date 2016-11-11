@@ -215,9 +215,6 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
-        # TODO force it for now to be empty
-        self.pipeline.feature_generators = []
-
         self.execute_pipeline = execute_pipeline
 
         # TODO this would require setting the default model_path
