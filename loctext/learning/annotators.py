@@ -11,7 +11,7 @@ from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
-from nalaf.preprocessing.edges import SimpleEdgeGenerator, SimpleD1EdgeGenerator
+from nalaf.preprocessing.edges import SimpleEdgeGenerator, SentenceDistanceEdgeGenerator
 from nalaf import print_verbose, print_debug
 
 
@@ -37,8 +37,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
         else:
             feature_generators = self.feature_generators()
 
-
-        edge_generator = SimpleEdgeGenerator(entity1_class, entity2_class, rel_type)
+        edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=0)
         self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, edge_generator=edge_generator, feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
@@ -211,7 +210,7 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         else:
             feature_generators = self.feature_generators()
 
-        edge_generator = SimpleD1EdgeGenerator(entity1_class, entity2_class, rel_type)
+        edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=1)
         self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, edge_generator=edge_generator, feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
