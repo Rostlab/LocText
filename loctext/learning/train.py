@@ -92,15 +92,6 @@ def train(training_set, args):
 
     return annotator_model.annotate
 
-    # Do nothing -- Note that we already trained AND annotated
-    # Also note that, if model == Combined, we are not using its method `annotate` directly
-    #   The reason is that otherwise, as current edge generator logic behavior, each submodel erases the edges
-    #   and consequently
-    # TODO
-    # annotator_gen_fun = (lambda evaluation: evaluation)
-    # return annotator_gen_fun
-    # return annotator.annotate
-
 
 def evaluate(corpus, args):
     annotator_gen_fun = (lambda training_set: train(training_set, args))
