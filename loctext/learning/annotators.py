@@ -236,8 +236,6 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         if self.execute_pipeline:
             self.pipeline.execute(corpus, train=False)
 
-        print("\n\n\n**************PUTA PUTA PUTA *\n\n\n", "\n", "\n", len(list(corpus.edges())), "\n", [e.target for e in corpus.edges()].count(1), "\n")
-
         #
         # instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
         # predictionsfile = self.svmlight.classify(instancesfile)
