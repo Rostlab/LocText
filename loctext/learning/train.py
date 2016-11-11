@@ -11,23 +11,34 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--model', required=True, choices=["SS", "DS", "Combined"])
+
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
-    parser.add_argument('--minority_class', type=int, default=1, choices=[-1, 1])
-    parser.add_argument('--majority_class_undersampling', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-
-    parser.add_argument('--svm_hyperparameter_c', action="store", default=0.0080)
-    parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
-    parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
-    parser.add_argument('--use_tk', default=False, action='store_true')
+
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
+    parser.add_argument('--use_tk', default=False, action='store_true')
+
+    parser.add_argument('--minority_class_ss_model', type=int, default=1, choices=[-1, 1])
+    parser.add_argument('--majority_class_undersampling_ss_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    parser.add_argument('--svm_hyperparameter_c_ss_model', action="store", default=0.0080)
+    parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
+
+    # TODO ignored for now
+    parser.add_argument('--minority_class_ds_model', type=int, default=1, choices=[-1, 1])
+    # TODO ignored for now
+    parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    # TODO ignored for now
+    parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
+    # This is actually being used
+    parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
     args = parser.parse_args(argv)
 
-    assert args.svm_hyperparameter_c is None or args.svm_hyperparameter_c == 'None' or float(args.svm_hyperparameter_c), "svm_hyperparameter_c is None or float"
+    assert args.svm_hyperparameter_c_ss_model is None or args.svm_hyperparameter_c_ss_model == 'None' or float(args.svm_hyperparameter_c_ss_model), "svm_hyperparameter_c_ss_model must be None or float"
+    assert args.svm_hyperparameter_c_ds_model is None or args.svm_hyperparameter_c_ds_model == 'None' or float(args.svm_hyperparameter_c_ds_model), "svm_hyperparameter_c_ds_model must be None or float"
 
     return args
 
@@ -70,14 +81,15 @@ def train(training_set, args):
     annotator_models = _select_annotator_models(args)
 
     for index, annotator in enumerate(annotator_models):
+        print_debug("About to train model {}={}".format(index, annotator.__class__.__name__))
 
         annotator.pipeline.execute(training_set, train=True)
 
-        print("\n\n\n***************\n\n\n", "\n", str(index), "\n", len(list(training_set.edges())), "\n", [e.target for e in training_set.edges()].count(1), "\n")
+        print_corpus_pipeline_dependent_stats(training_set)
 
-        instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=args.minority_class, majority_class_undersampling=args.majority_class_undersampling)
-        # TODO divide hyperparameter by ss & ds models
-        annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c)
+        instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=args.minority_class_ss_model, majority_class_undersampling=args.majority_class_undersampling_ss_model)
+
+        annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c_ss_model)
 
     return annotator.annotate
 
@@ -97,9 +109,9 @@ def evaluate_with_argv(argv=[]):
 
     corpus = read_corpus(args.corpus, args.corpus_percentage)
 
-    # print_stats(corpus, args)
+    print_run_args(args, corpus)
     result = evaluate(corpus, args)
-    # print_stats(corpus, args)
+    print_run_args(args, corpus)
 
     print_debug(result)
 
@@ -137,45 +149,41 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
     return corpus
 
 
-def print_run_args(args):
-    print("Arguments: ")
+def print_run_args(args, corpus):
+    print("Train Arguments: ")
     for key, value in sorted((vars(args)).items()):
         print("\t{} = {}".format(key, value))
+
+    print_corpus_hard_core_stats(corpus)
+
     print()
 
 
-def print_stats(corpus, args):
-     # TODO change for pipeline's values!
+def print_corpus_hard_core_stats(corpus):
 
-    from nalaf.preprocessing.edges import SimpleEdgeGenerator
-    from nalaf.preprocessing.spliters import NLTKSplitter
-    from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER
+    print("Corpus stats; #docs={} -- #rels={}".format(len(corpus), len(list(corpus.relations()))))
 
-    splitter = NLTKSplitter()
-    tokenizer = NLTK_TOKENIZER
-    edger = SimpleEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 
-    splitter.split(corpus)
-    tokenizer.tokenize(corpus)
-    edger.generate(corpus)
-    corpus.label_edges()
+def print_corpus_pipeline_dependent_stats(corpus):
+
+    # Assumes the edges have been generated
 
     P = 0
     N = 0
 
     for e in corpus.edges():
         assert e.target != 0, str(e)
-        # print_verbose(e, e.target)
 
         if e.target > 0:
             P += 1
         else:
             N += 1
 
-    # with all (abstract+fulltext), P=614 vs N=1480
-    # with only abstracts -- Corpus size: 100 -- #P=351 vs. #N=308
-    print("Corpus stats; #docs={} -- #rels={} -- edges: #P={} vs. #N={}".format(len(corpus), len(list(corpus.relations())), P, N))
-    print_run_args(args)
+    # Totals for whole corpus (test data too) and with SimpleEdgeGenerator (only same sentences)
+    # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
+    # abstract + fulltext -- #docs: 104, P=614 vs N=1480
+
+    print("Corpus edges: #P={} vs. #N={}".format(P, N))
 
     return (P, N)
 
