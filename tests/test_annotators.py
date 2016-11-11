@@ -13,6 +13,10 @@ import math
 import sys
 
 
+# See conftest.py too
+TEST_MIN_CORPUS_PERCENTAGE = 0.4
+
+
 def test_baseline():
     corpus = read_corpus("LocText")
 
@@ -36,7 +40,7 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
     # Note: EXPECTED_F=None will make the test fail for non-yet verified evaluations
     # Note: the real StdErr's are around ~0.0027-0.0095. Decrease them by default to be more strict with tests
 
-    assert corpus_percentage in [0.1, 1.0], "corpus_percentage must == 0.1 or 1.0. You gave: " + str(corpus_percentage)
+    assert corpus_percentage in [TEST_MIN_CORPUS_PERCENTAGE, 1.0], "corpus_percentage must == {} or 1.0. You gave: {}".format(str(TEST_MIN_CORPUS_PERCENTAGE), str(corpus_percentage))
 
     corpus = read_corpus("LocText", corpus_percentage)
 
@@ -49,14 +53,15 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
 
 
 def test_LocText_SS(corpus_percentage):
-    # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
 
     if (corpus_percentage == 1.0):
+        # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
         EXPECTED_F = 0.6178
         EXPECTED_F_SE = 0.0027
     else:
-        EXPECTED_F = 0.5510
-        EXPECTED_F_SE = 0.0095
+        # Computation(precision=0.7426470588235294, precision_SE=0.004447039958950779, recall=0.6121212121212121, recall_SE=0.005972946581336089, f_measure=0.6710963455149502, f_measure_SE=0.0043836182031360155)
+        EXPECTED_F = 0.6711
+        EXPECTED_F_SE = 0.0043
 
     _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
@@ -84,5 +89,5 @@ if __name__ == "__main__":
 
     test_baseline()
 
-    corpus_percentage = float(sys.argv[2]) if len(sys.argv) == 3 else 0.1
+    corpus_percentage = float(sys.argv[2]) if len(sys.argv) == 3 else TEST_MIN_CORPUS_PERCENTAGE
     test_LocText_SS(corpus_percentage)
