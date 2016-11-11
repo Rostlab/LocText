@@ -52,32 +52,32 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
     return rel_evaluation
 
 
-# def test_LocText_SS(corpus_percentage):
-#
-#     if (corpus_percentage == 1.0):
-#         # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
-#         EXPECTED_F = 0.6178
-#         EXPECTED_F_SE = 0.0027
-#     else:
-#         # Computation(precision=0.7426470588235294, precision_SE=0.004447039958950779, recall=0.6121212121212121, recall_SE=0.005972946581336089, f_measure=0.6710963455149502, f_measure_SE=0.0043836182031360155)
-#         EXPECTED_F = 0.6711
-#         EXPECTED_F_SE = 0.0043
-#
-#     _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
+def test_LocText_SS(corpus_percentage):
+
+    if (corpus_percentage == 1.0):
+        # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
+        EXPECTED_F = 0.6178
+        EXPECTED_F_SE = 0.0027
+    else:
+        # Computation(precision=0.7426470588235294, precision_SE=0.004447039958950779, recall=0.6121212121212121, recall_SE=0.005972946581336089, f_measure=0.6710963455149502, f_measure_SE=0.0043836182031360155)
+        EXPECTED_F = 0.6711
+        EXPECTED_F_SE = 0.0043
+
+    _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
 
-# def test_LocText_DS(corpus_percentage):
-#
-#     # So far DS model does nothing (at least, it _should_ to nothing)
-#     EXPECTED_F = 0.0
-#
-#     _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
-#
-#
-# # TODO find the way to do the training only once for each submodel
+def test_LocText_DS(corpus_percentage):
+
+    # So far DS model does nothing (at least, it _should_ to nothing)
+    EXPECTED_F = 0.0
+
+    _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
+
+
+# TODO find the way to do the training only once for each submodel
 def test_LocText_Combined(corpus_percentage):
 
-    # Should be now the same as SS results, since the DS model _SHOULD_ DO NOTHING (as of now)
+    # Should be now the same as SS results, since the DS model, as of now, _SHOULD_ DO NOTHING
     if (corpus_percentage == 1.0):
         EXPECTED_F = 0.6178
         EXPECTED_F_SE = 0.0027
