@@ -12,6 +12,7 @@ from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
 from nalaf.preprocessing.edges import SimpleEdgeGenerator, SimpleD1EdgeGenerator
+from nalaf import print_verbose, print_debug
 
 
 class LocTextSSmodelRelationExtractor(RelationExtractor):
