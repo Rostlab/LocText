@@ -11,6 +11,8 @@ from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
+from nalaf.preprocessing.edges import SimpleEdgeGenerator, SimpleD1EdgeGenerator
+from nalaf import print_verbose, print_debug
 
 
 class LocTextSSmodelRelationExtractor(RelationExtractor):
@@ -23,7 +25,8 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
-            svmlight=None):
+            svmlight=None,
+            **svmlight_params):
 
         super().__init__(entity1_class, entity2_class, rel_type)
 
@@ -34,25 +37,27 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
         else:
             feature_generators = self.feature_generators()
 
-        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
+
+        edge_generator = SimpleEdgeGenerator(entity1_class, entity2_class, rel_type)
+        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, edge_generator=edge_generator, feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
         self.execute_pipeline = execute_pipeline
 
         # TODO this would require setting the default model_path
-        self.svmlight = svmlight if svmlight else SVMLightTreeKernels()
+        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(**svmlight_params)
 
 
-    def annotate(self, corpus):
+    def annotate(self, target_corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(corpus, train=False)
+            self.pipeline.execute(target_corpus, train=False)
 
-        instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
+        instancesfile = self.svmlight.create_input_file(target_corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.classify(instancesfile)
-        self.svmlight.read_predictions(corpus, predictionsfile)
+        self.svmlight.read_predictions(target_corpus, predictionsfile)
 
-        return corpus
+        return target_corpus
 
 
     def feature_generators(self):
@@ -194,7 +199,8 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
             feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
-            svmlight=None):
+            svmlight=None,
+            **svmlight_params):
 
         super().__init__(entity1_class, entity2_class, rel_type)
 
@@ -205,28 +211,29 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         else:
             feature_generators = self.feature_generators()
 
-        #
-        # TODO the edge generator has to be the DS model!
-        #
-        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, feature_generators=feature_generators)
+        edge_generator = SimpleD1EdgeGenerator(entity1_class, entity2_class, rel_type)
+        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, edge_generator=edge_generator, feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
+
+        # TODO force it for now to be empty
+        self.pipeline.feature_generators = []
 
         self.execute_pipeline = execute_pipeline
 
         # TODO this would require setting the default model_path
-        self.svmlight = svmlight if svmlight else SVMLightTreeKernels()
+        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(**svmlight_params)
 
 
-    def annotate(self, corpus):
+    def annotate(self, target_corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(corpus, train=False)
+            self.pipeline.execute(target_corpus, train=False)
 
-        instancesfile = self.svmlight.create_input_file(corpus, 'predict', self.pipeline.feature_set)
+        instancesfile = self.svmlight.create_input_file(target_corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.classify(instancesfile)
-        self.svmlight.read_predictions(corpus, predictionsfile)
+        self.svmlight.read_predictions(target_corpus, predictionsfile)
 
-        return corpus
+        return target_corpus
 
 
     def feature_generators(self):
@@ -258,9 +265,9 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
         self.submodels = [self.ss_model, self.ds_model]
 
 
-    def annotate(self, corpus):
+    def annotate(self, target_corpus):
 
         for model in self.submodels:
-            model.annotate(corpus)
+            model.annotate(target_corpus)
 
-        return corpus
+        return target_corpus
