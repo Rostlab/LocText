@@ -54,7 +54,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
         for edge in dataset.edges():
             head1 = edge.entity1.head_token
             # head2 = edge.entity2.head_token
-            sentence = edge.part.sentences[edge.sentence_id]
+            sentence = edge.part.sentences[edge.same_sentence_id]
             protein_word_found = False
 
             for token in sentence:
@@ -73,7 +73,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                             feature_name = self.gen_prefix_feat_name("prefix_dependency_from_prot_word_to_prot_entity")
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
-                        path = get_path(token, head1, edge.part, edge.sentence_id, self.graphs)
+                        path = get_path(token, head1, edge.part, edge.same_sentence_id, self.graphs)
                         if path == []:
                             path = [token, head1]
 
@@ -158,7 +158,7 @@ class LocationWordFeatureGenerator(EdgeFeatureGenerator):
                 head1 = edge.entity2.head_token
                 head2 = edge.entity1.head_token
 
-            sentence = edge.part.sentences[edge.sentence_id]
+            sentence = edge.part.sentences[edge.same_sentence_id]
 
             for token in sentence:
                 if not token.is_entity_part(edge.part) and any(x in token.word.lower() for x in self.loc_tokens):
