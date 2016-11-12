@@ -54,11 +54,11 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
         for edge in dataset.edges():
             head1 = edge.entity1.head_token
             # head2 = edge.entity2.head_token
-            sentence = edge.part.sentences[edge.same_sentence_id]
+            sentence = edge.same_part.sentences[edge.same_sentence_id]
             protein_word_found = False
 
             for token in sentence:
-                if token.is_entity_part(edge.part) and token.word.lower().find(self.keyword) >= 0:
+                if token.is_entity_part(edge.same_part) and token.word.lower().find(self.keyword) >= 0:
                     protein_word_found = True
 
                     token_from = token.features['dependency_from'][0]
@@ -73,7 +73,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                             feature_name = self.gen_prefix_feat_name("prefix_dependency_from_prot_word_to_prot_entity")
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
-                        path = get_path(token, head1, edge.part, edge.same_sentence_id, self.graphs)
+                        path = get_path(token, head1, edge.same_part, edge.same_sentence_id, self.graphs)
                         if path == []:
                             path = [token, head1]
 
@@ -86,7 +86,7 @@ class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
                             feature_name = self.gen_prefix_feat_name("prefix_PWPE_pos", tok.features['pos'])
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
-                            feature_name = self.gen_prefix_feat_name("prefix_PWPE_bow_masked", tok.masked_text(edge.part))
+                            feature_name = self.gen_prefix_feat_name("prefix_PWPE_bow_masked", tok.masked_text(edge.same_part))
                             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
                         all_walks = build_walks(path)
@@ -158,10 +158,10 @@ class LocationWordFeatureGenerator(EdgeFeatureGenerator):
                 head1 = edge.entity2.head_token
                 head2 = edge.entity1.head_token
 
-            sentence = edge.part.sentences[edge.same_sentence_id]
+            sentence = edge.same_part.sentences[edge.same_sentence_id]
 
             for token in sentence:
-                if not token.is_entity_part(edge.part) and any(x in token.word.lower() for x in self.loc_tokens):
+                if not token.is_entity_part(edge.same_part) and any(x in token.word.lower() for x in self.loc_tokens):
                     location_word = True
                     if head1.features['id'] < token.features['id'] < head2.features['id']:
                         feature_name = self.mk_feature_name(self.prefix1, 'LocalizeWordInBetween')
