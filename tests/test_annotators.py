@@ -69,7 +69,7 @@ def test_LocText_SS(corpus_percentage):
 def test_LocText_DS(corpus_percentage):
 
     # So far DS model does nothing (at least, it _should_ to nothing)
-    EXPECTED_F = 0.0
+    EXPECTED_F = 0.1
 
     _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
 
