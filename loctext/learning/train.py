@@ -112,8 +112,6 @@ def evaluate_with_argv(argv=[]):
     result = evaluate(corpus, args)
     print_run_args(args, corpus)
 
-    print_debug(result)
-
     return result
 
 
