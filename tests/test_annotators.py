@@ -57,7 +57,7 @@ def test_LocText_SS(corpus_percentage):
 
     if (corpus_percentage == 1.0):
         # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
-        EXPECTED_F = 1.6178
+        EXPECTED_F = 0.6178
         EXPECTED_F_SE = 0.0027
     else:
         # Computation(precision=0.7426470588235294, precision_SE=0.004447039958950779, recall=0.6121212121212121, recall_SE=0.005972946581336089, f_measure=0.6710963455149502, f_measure_SE=0.0043836182031360155)
