@@ -102,18 +102,19 @@ def test_LocText_DS(corpus_percentage):
     _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
 
 
-# # TODO find the way to do the training only once for each submodel
-# def test_LocText_Combined(corpus_percentage):
-#
-#     # Should be now the same as SS results, since the DS model, as of now, _SHOULD_ DO NOTHING
-#     if (corpus_percentage == 1.0):
-#         EXPECTED_F = 0.6178
-#         EXPECTED_F_SE = 0.0027
-#     else:
-#         EXPECTED_F = 0.6711
-#         EXPECTED_F_SE = 0.0043
-#
-#     _test_LocText(corpus_percentage, model='Combined', EXPECTED_F=EXPECTED_F)
+# Note: would be way better to be able to reuse the already trained models in the other tests methods
+def test_LocText_Combined(corpus_percentage):
+
+    if (corpus_percentage == 1.0):
+        # Computation(precision=0.4774381368267831, precision_SE=0.002812150029056132, recall=0.7177242888402626, recall_SE=0.0038763518483362733, f_measure=0.5734265734265734, f_measure_SE=0.002422393130974523)
+        EXPECTED_F = 0.5734
+        EXPECTED_F_SE = 0.0024
+    else:
+        # Computation(precision=0.5844748858447488, precision_SE=0.0032793659586925978, recall=0.7710843373493976, recall_SE=0.004115510298431316, f_measure=0.6649350649350649, f_measure_SE=0.002684996682841366)
+        EXPECTED_F = 0.6649
+        EXPECTED_F_SE = 0.0027
+
+    _test_LocText(corpus_percentage, model='Combined', EXPECTED_F=EXPECTED_F)
 
 
 if __name__ == "__main__":
