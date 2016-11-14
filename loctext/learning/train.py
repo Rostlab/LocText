@@ -20,18 +20,14 @@ def parse_arguments(argv=[]):
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
     parser.add_argument('--use_tk', default=False, action='store_true')
 
-    parser.add_argument('--minority_class_ss_model', type=int, default=1, choices=[-1, 1])
+    parser.add_argument('--minority_class_ss_model', type=int, default=+1, choices=[-1, +1])
     parser.add_argument('--majority_class_undersampling_ss_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
     parser.add_argument('--svm_hyperparameter_c_ss_model', action="store", default=0.0080)
     parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
 
-    # TODO wrongly ignored for now
-    parser.add_argument('--minority_class_ds_model', type=int, default=1, choices=[-1, 1])
-    # TODO wrongly ignored for now
+    parser.add_argument('--minority_class_ds_model', type=int, default=+1, choices=[-1, +1])
     parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-    # TODO wrongly ignored for now
     parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
-    # This is actually being used
     parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
     args = parser.parse_args(argv)
@@ -72,6 +68,17 @@ def _select_annotator_model(args):
     return ret
 
 
+def _select_submodel_params(annotator, args):
+
+    if isinstance(annotator, LocTextSSmodelRelationExtractor):
+        return (args.minority_class_ss_model, args.majority_class_undersampling_ss_model, args.svm_hyperparameter_c_ss_model)
+
+    elif isinstance(annotator, LocTextDSmodelRelationExtractor):
+        return (args.minority_class_ds_model, args.majority_class_undersampling_ds_model, args.svm_hyperparameter_c_ds_model)
+
+    raise AssertionError()
+
+
 def train(training_set, args):
 
     annotator_model = _select_annotator_model(args)
@@ -86,9 +93,9 @@ def train(training_set, args):
 
         print_corpus_pipeline_dependent_stats(training_set)
 
-        instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=args.minority_class_ss_model, majority_class_undersampling=args.majority_class_undersampling_ss_model)
-
-        annotator.svmlight.learn(instancesfile, c=args.svm_hyperparameter_c_ss_model)
+        minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
+        instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=minority_class, majority_class_undersampling=majority_class_undersampling)
+        annotator.svmlight.learn(instancesfile, c=svm_hyperparameter_c)
 
     return annotator_model.annotate
 
