@@ -26,7 +26,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
 
     parser.add_argument('--minority_class_ds_model', type=int, default=+1, choices=[-1, +1])
-    parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.07, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
     parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
     parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
