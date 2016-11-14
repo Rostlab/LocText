@@ -102,7 +102,7 @@ def train(training_set, args):
 
 def evaluate(corpus, args):
     annotator_gen_fun = (lambda training_set: train(training_set, args))
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")

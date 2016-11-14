@@ -26,7 +26,7 @@ def test_SS_baseline():
     EXPECTED_F_SE = 0.0028
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
@@ -77,7 +77,7 @@ def test_DS_baseline():
     edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1)
 
     annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, match_case=False)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
