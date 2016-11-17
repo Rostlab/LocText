@@ -23,9 +23,15 @@ def relation_equals_uniprot_go(gold, pred):
 
     return _uniprot_ids_equiv(g_n_7, p_n_7) and _go_ids_equiv(g_n_8, p_n_8)
 
+
 def _uniprot_ids_equiv(gold, pred):
+    # Note, it was already verified in `relation_equals_uniprot_go` that they are equal, so this is not tested
+
+    # Temporal
     return gold == pred
 
 
 def _go_ids_equiv(gold, pred):
+    # Note, it was already verified in `relation_equals_uniprot_go` that they are equal, so this is not tested
+
     return gold == pred
