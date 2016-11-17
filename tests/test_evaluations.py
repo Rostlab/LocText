@@ -48,7 +48,12 @@ def test_relation_equals_uniprot_go_basic_ne():
         "r_5|n_7|xxx|n_8|yyy",
         "r_5|n_7|xxx_DIFFERENT|n_8|yyy_DIFERENT")
 
-    assert not are_equivalent(
+
+def test_relation_equals_uniprot_rel_type_is_not_compared():
+
+    are_equivalent = relation_equals_uniprot_go
+
+    assert are_equivalent(
         "r_5|n_7|xxx|n_8|yyy",
         "r_DIFFERENT|n_7|xxx|n_8|yyy")
 
