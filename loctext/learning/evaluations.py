@@ -21,4 +21,11 @@ def relation_equals_uniprot_go(gold, pred):
     assert p_pro_key == UNIPROT_NORM_ID
     assert p_loc_key == GO_NORM_ID
 
-    return False
+    return _uniprot_ids_equiv(g_n_7, p_n_7) and _go_ids_equiv(g_n_8, p_n_8)
+
+def _uniprot_ids_equiv(gold, pred):
+    return gold == pred
+
+
+def _go_ids_equiv(gold, pred):
+    return gold == pred
