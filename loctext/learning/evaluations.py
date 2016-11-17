@@ -7,4 +7,4 @@ GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go
 
 
 def relation_equals_uniprot_go(gold, pred):
-    return True
+    return False
