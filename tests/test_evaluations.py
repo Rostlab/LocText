@@ -4,7 +4,7 @@ try:
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
     pass
 
-import pytest
+from pytest import raises
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
 from loctext.learning.evaluations import relation_equals_uniprot_go, GO_TREE
 from nalaf import print_verbose, print_debug
@@ -57,28 +57,32 @@ def test_relation_equals_uniprot_go_exceptions():
 
     are_equivalent = relation_equals_uniprot_go
 
-    with pytest.raises(Exception) as puta:
+    with raises(Exception) as puta:
         assert are_equivalent(
             "",
             "")
 
-    with pytest.raises(Exception):
+    with raises(Exception):
         assert are_equivalent(
             "r_5|n_7|xxx|n_8|yyy",
             "r_5|n_INVALID|xxx|n_8|yyy")
 
+    with raises(Exception):
         assert are_equivalent(
             "r_5|n_7|xxx|n_8|yyy",
             "r_5|n_INVALID|xxx|n_8|yyy")
 
+    with raises(Exception):
         assert are_equivalent(
             "r_5|n_7|xxx|n_8|yyy",
             "r_5|n_7|xxx|n_INVALID|yyy")
 
+    with raises(Exception):
         assert are_equivalent(
             "r_5|n_INVALID|xxx|n_8|yyy",
             "r_5|n|xxx|n_8|yyy")
 
+    with raises(Exception):
         assert are_equivalent(
             "r_5|n_7|xxx|n_INVALID|yyy",
             "r_5|n|xxx|n_8|yyy")
