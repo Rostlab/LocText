@@ -232,5 +232,9 @@ def test_relation_equals_uniprot_uniprots_as_list():
 
 
 if __name__ == "__main__":
+
+    # selected tests:
+
     test_relation_equals_uniprot_go_direct_children_ORDER_DOES_MATTER()
     test_relation_equals_uniprot_go_all_children_of_root()
+    test_relation_equals_uniprot_uniprots_as_list()
