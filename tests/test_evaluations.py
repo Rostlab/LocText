@@ -141,24 +141,24 @@ def test_relation_equals_uniprot_go_indirect_children():
     are_equivalent = relation_equals_uniprot_go
 
     assert are_equivalent(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0044451")
+        "r_5|n_7|xxx|n_8|GO:0044451",
+        "r_5|n_7|xxx|n_8|GO:0000123")
 
     assert are_equivalent(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_8|GO:0031248",
+        "r_5|n_7|xxx|n_8|GO:0000123")
 
     assert are_equivalent(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_8|GO:0031248",
+        "r_5|n_7|xxx|n_8|GO:0000123")
 
     assert are_equivalent(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_8|GO:0031248",
+        "r_5|n_7|xxx|n_8|GO:0000123")
 
     assert are_equivalent(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0005575")
+        "r_5|n_7|xxx|n_8|GO:0005575",
+        "r_5|n_7|xxx|n_8|GO:0000123")
 
 
 def test_relation_equals_uniprot_go_all_children_of_root():
@@ -168,8 +168,8 @@ def test_relation_equals_uniprot_go_all_children_of_root():
 
     for go_term in GO_TREE:
         assert are_equivalent(
-            "r_5|n_7|xxx|n_8|" + go_term,
-            "r_5|n_7|xxx|n_8|GO:0005575")
+            "r_5|n_7|xxx|n_8|GO:0005575",
+            "r_5|n_7|xxx|n_8|" + go_term)
 
 
 def test_relation_equals_uniprot_uniprots_as_list():
@@ -178,23 +178,23 @@ def test_relation_equals_uniprot_uniprots_as_list():
 
     # Note, the following is a stub test relation and does not have to be biologically true
     assert are_equivalent(
-        "r_5|n_7|P04637|n_8|GO:0000123",
-        "r_5|n_7|P04637,P02340|n_8|GO:0000123")
+        "r_5|n_7|P04637|n_8|yyy",
+        "r_5|n_7|P04637,P02340|n_8|yyy")
 
     # Note, the following is stub test relation and does not have to be biologically true
     assert are_equivalent(
-        "r_5|n_7|P04637|n_8|GO:0000123",
-        "r_5|n_7|P02340,P04637|n_8|GO:0000123")
+        "r_5|n_7|P04637|n_8|yyy",
+        "r_5|n_7|P02340,P04637|n_8|yyy")
 
     # Note, the following is stub test relation and does not have to be biologically true
     assert are_equivalent(
-        "r_5|n_7|P04637,P02340|n_8|GO:0000123",
-        "r_5|n_7|P04637|n_8|GO:0000123")
+        "r_5|n_7|P04637,P02340|n_8|yyy",
+        "r_5|n_7|P04637|n_8|yyy")
 
     # Note, the following is stub test relation and does not have to be biologically true
     assert are_equivalent(
-        "r_5|n_7|P02340,P04637|n_8|GO:0000123",
-        "r_5|n_7|P04637|n_8|GO:0000123")
+        "r_5|n_7|P02340,P04637|n_8|yyy",
+        "r_5|n_7|P04637|n_8|yyy")
 
 
 if __name__ == "__main__":
