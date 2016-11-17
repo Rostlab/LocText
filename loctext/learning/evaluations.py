@@ -1,6 +1,7 @@
 from loctext.util import repo_path
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
 from loctext.util import simple_parse_GO
+from itertools import product
 
 
 GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
@@ -27,11 +28,15 @@ def relation_equals_uniprot_go(gold, pred):
 
 
 def _uniprot_ids_equiv(gold, pred):
-    # Temporal
-    return gold == pred
+
+    if gold == pred:
+        return True
+
+    return any(g == p for (g, p) in product(gold.split(','), pred.split(',')))
 
 
 def _verify_in_ontology(term):
+
     if term not in GO_TREE:
         raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
 
