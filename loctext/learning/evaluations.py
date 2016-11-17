@@ -6,5 +6,5 @@ from loctext.util import simple_parse_GO
 GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
 
 
-def relation_equals_uniprot_go(a, b):
-    return False
+def relation_equals_uniprot_go(gold, pred):
+    return True
