@@ -40,9 +40,11 @@ def test_relation_equals_uniprot_go_basic_ne():
         "r_5|n_7|xxx|n_8|yyy",
         "r_5|n_7|xxx_DIFFERENT|n_8|yyy")
 
-    assert not are_equivalent(
-        "r_5|n_7|xxx|n_8|yyy",
-        "r_5|n_7|xxx|n_8|yyy_DIFERENT")
+    # Note, the fake go terms are looked up in the GO ontology to assert parenthoold, which should fail
+    with raises(KeyError) as puta:
+        assert not are_equivalent(
+            "r_5|n_7|xxx|n_8|yyy",
+            "r_5|n_7|xxx|n_8|yyy_DIFERENT")
 
     assert not are_equivalent(
         "r_5|n_7|xxx|n_8|yyy",
@@ -94,6 +96,8 @@ def test_relation_equals_uniprot_go_exceptions():
 
 
 def test_relation_equals_uniprot_go_direct_children_ORDER_DOES_MATTER():
+     # gold must be parecent to accept the prediction, not the other way around
+
     # see: http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0000123#term=ancchart
 
     # GO:0000123 (histone acetyltransferase complex) is a:
@@ -103,22 +107,23 @@ def test_relation_equals_uniprot_go_direct_children_ORDER_DOES_MATTER():
     are_equivalent = relation_equals_uniprot_go
 
     assert are_equivalent(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0044451")
-
-    assert are_equivalent(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
-
-    # but...
-
-    assert are_equivalent(
         "r_5|n_7|xxx|n_8|GO:0044451",
         "r_5|n_7|xxx|n_8|GO:0000123")
 
-    assert not are_equivalent(
+    assert are_equivalent(
         "r_5|n_7|xxx|n_8|GO:0031248",
         "r_5|n_7|xxx|n_8|GO:0000123")
+
+    # but...
+
+    assert not are_equivalent(
+        "r_5|n_7|xxx|n_8|GO:0000123",
+        "r_5|n_7|xxx|n_8|GO:0044451")
+
+    assert not are_equivalent(
+        "r_5|n_7|xxx|n_8|GO:0000123",
+        "r_5|n_7|xxx|n_8|GO:0031248")
+
 
 
 def test_relation_equals_uniprot_go_indirect_children():

@@ -27,14 +27,17 @@ def relation_equals_uniprot_go(gold, pred):
 
 
 def _uniprot_ids_equiv(gold, pred):
-    # Note, it was already verified in `relation_equals_uniprot_go` that they are equal, so this is not tested
-
     # Temporal
     return gold == pred
 
 
 def _go_ids_equiv(gold, pred):
-    # Note, it was already verified in `relation_equals_uniprot_go` that they are equal, so this is not tested
+    """
+    the gold go term must be the parent to accept the go prediction, not the other way around
+    """
+
+    if gold == pred:
+        return True
 
     gold_is_parent_of_pred = gold in GO_TREE[pred]
 
