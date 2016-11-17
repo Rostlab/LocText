@@ -93,10 +93,10 @@ def test_relation_equals_uniprot_go_exceptions():
             "r_5|n|xxx|n_8|yyy")
 
 
-def test_relation_equals_uniprot_go_ORDER_DOES_MATTER():
+def test_relation_equals_uniprot_go_direct_children_ORDER_DOES_MATTER():
     # see: http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0000123#term=ancchart
 
-    # GO:0000123 is a:
+    # GO:0000123 (histone acetyltransferase complex) is a:
     # * direct child of GO:0044451 -- nucleoplasm part
     # * direct child of GO:0031248 -- protein acetyltransferase complex
 

@@ -4,7 +4,9 @@ from loctext.util import simple_parse_GO
 
 
 GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
-
+"""
+Dictionary with go term child --> to [list of go term parents] relationships
+"""
 
 def relation_equals_uniprot_go(gold, pred):
 
@@ -34,4 +36,8 @@ def _uniprot_ids_equiv(gold, pred):
 def _go_ids_equiv(gold, pred):
     # Note, it was already verified in `relation_equals_uniprot_go` that they are equal, so this is not tested
 
-    return gold == pred
+    gold_is_parent_of_pred = gold in GO_TREE[pred]
+
+    print(gold, pred, GO_TREE[pred], gold_is_parent_of_pred)
+
+    return gold_is_parent_of_pred
