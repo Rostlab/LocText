@@ -39,8 +39,8 @@ def _go_ids_equiv(gold, pred):
     if gold == pred:
         return True
 
-    gold_is_parent_of_pred = gold in GO_TREE[pred]
+    pred_parents = GO_TREE[pred]
 
-    print(gold, pred, GO_TREE[pred], gold_is_parent_of_pred)
+    print(gold, pred, pred_parents)
 
-    return gold_is_parent_of_pred
+    return gold in pred_parents
