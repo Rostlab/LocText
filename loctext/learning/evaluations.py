@@ -7,10 +7,11 @@ GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go
 
 
 def relation_equals_uniprot_go(gold, pred):
-    # Note: the | separator is defined by and depends on nalaf
 
-    if gold == pred:
+    if gold == pred and gold != "":
         return True
+
+    # Note: the | separator is defined by and depends on nalaf
 
     [_, g_pro_key, g_n_7, g_loc_key, g_n_8] = gold.split("|")
     assert g_pro_key == UNIPROT_NORM_ID

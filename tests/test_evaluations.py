@@ -158,7 +158,7 @@ def test_relation_equals_uniprot_go_all_children_of_root():
 
     for go_term in GO_TREE:
         assert are_equivalent(
-            go_term,
+            "r_5|n_7|xxx|n_8|" + go_term,
             "r_5|n_7|xxx|n_8|GO:0005575")
 
 
