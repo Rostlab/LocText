@@ -31,6 +31,11 @@ def _uniprot_ids_equiv(gold, pred):
     return gold == pred
 
 
+def _verify_in_ontology(term):
+    if term not in GO_TREE:
+        raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
+
+
 def _go_ids_equiv(gold, pred):
     """
     the gold go term must be the parent to accept the go prediction, not the other way around
@@ -39,8 +44,15 @@ def _go_ids_equiv(gold, pred):
     if gold == pred:
         return True
 
-    pred_parents = GO_TREE[pred]
+    _verify_in_ontology(gold)
+    _verify_in_ontology(pred)
 
-    print(gold, pred, pred_parents)
+    gold_is_root = len(GO_TREE.get(gold)) == 0
 
-    return gold in pred_parents
+    if gold_is_root:
+        return True
+
+    pred_parents = GO_TREE.get(pred)
+
+    # direct parent or indirect (recursive) parent
+    return gold in pred_parents or any(_go_ids_equiv(gold, pp) for pp in pred_parents if pp in GO_TREE)

@@ -13,9 +13,14 @@ __help__ = """  Simple parse a GO ontology .obo file.
 
                 Note: as a script, the GO Terms are printed to standard output. Redirect to a file if needed.
 
-                Note: obsolete terms (`is_obsolete`) are written and parsed for backwards-compatibility
+                Note: obsolete terms (`is_obsolete: true`) are kept and parsed for backwards-compatibility.
+                Their respective `replaced_by` or `consider`(ed) terms are put in as parents of the obsolete term.
+                Importantly note, that some of those replacements are actually not part of the same hierarchy
+                of the obsolete go term, example: GO:0016585 is considered by GO:0006338 (a Biological Process).
+                Also note, there are some terms that may even have multiple replacements/considerations, e.g GO:0019804.
+                Even some obsoleted terms have multiple replacements/considerations, where one is in the hierarchy
+                and another one is not.
            """
-
 
 def parse_arguments(argv=[]):
     import argparse
@@ -43,6 +48,7 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
 
     state = 'no_term'
     go_id = None
+    go_term_is_obsolete = False
     regex_go_id = re.compile('GO:[0-9]+')
 
     with open(args.go_file) as f:
@@ -65,16 +71,27 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
 
             elif line == f.newlines:
                 if state == 'print':
-                    if create_dictionary and go_id not in dictionary:
-                            dictionary[go_id] = []
+                    if create_dictionary and go_id not in dictionary and not go_term_is_obsolete:
+                        # Must be root of respective go hierarchy; no parents
+                        dictionary[go_id] = []
+
                     print_out(line)
 
+                go_term_is_obsolete = False
                 state = 'no_term'
 
             elif state == 'print':
                 print_out(line)
 
-                if create_dictionary and (line.startswith('is_a: ') or line.startswith('relationship: part_of')):
+                if not go_term_is_obsolete:
+                    go_term_is_obsolete = line.startswith("is_obsolete: true")
+
+                if create_dictionary and (
+                    line.startswith('is_a: ') or
+                        line.startswith('relationship: part_of') or
+                        line.startswith('replaced_by:') or
+                        line.startswith('consider:')):
+
                     parent = regex_go_id.search(line).group()
                     parents = dictionary.get(go_id, [])
                     parents = [*parents, parent]

@@ -40,8 +40,7 @@ def test_relation_equals_uniprot_go_basic_ne():
         "r_5|n_7|xxx|n_8|yyy",
         "r_5|n_7|xxx_DIFFERENT|n_8|yyy")
 
-    # Note, the fake go terms are looked up in the GO ontology to assert parenthoold, which should fail
-    with raises(KeyError) as puta:
+    with raises(KeyError):
         assert not are_equivalent(
             "r_5|n_7|xxx|n_8|yyy",
             "r_5|n_7|xxx|n_8|yyy_DIFERENT")
@@ -124,6 +123,15 @@ def test_relation_equals_uniprot_go_direct_children_ORDER_DOES_MATTER():
         "r_5|n_7|xxx|n_8|GO:0000123",
         "r_5|n_7|xxx|n_8|GO:0031248")
 
+    # and not related at all with with one another as parent or child...
+
+    assert not are_equivalent(
+        "r_5|n_7|xxx|n_8|GO:0031248",
+        "r_5|n_7|xxx|n_8|GO:0044451")
+
+    assert not are_equivalent(
+        "r_5|n_7|xxx|n_8|GO:0044451",
+        "r_5|n_7|xxx|n_8|GO:0031248")
 
 
 def test_relation_equals_uniprot_go_indirect_children():
@@ -162,14 +170,40 @@ def test_relation_equals_uniprot_go_indirect_children():
 
 
 def test_relation_equals_uniprot_go_all_children_of_root():
-    # all go terms are indirect children of the root (including the root itself)
+    # all go terms are indirect children of the root, cellular_component=GO:0005575, including the root itself
 
     are_equivalent = relation_equals_uniprot_go
 
     for go_term in GO_TREE:
+        pred_parents = GO_TREE[go_term]
+
+        no_parent_in_ontology = all(p not in GO_TREE for p in pred_parents)
+        is_root = len(pred_parents) == 0
+        not_in_ontology = no_parent_in_ontology and not is_root
+
+        # or not_in_ontology, go_term + " < " + ','.join(pred_parents)
+
         assert are_equivalent(
             "r_5|n_7|xxx|n_8|GO:0005575",
-            "r_5|n_7|xxx|n_8|" + go_term)
+            "r_5|n_7|xxx|n_8|" + go_term), go_term + " < " + ','.join(pred_parents)
+
+    assert are_equivalent(
+        "r_5|n_7|xxx|n_8|GO:0005575",
+        "r_5|n_7|xxx|n_8|GO:0005575")
+
+    # The following tests check that the root is appropriately handled without being an arbitrary/random/fake string
+
+    # Note, here the gold fake go term IS checked and that's why the expected error
+    with raises(KeyError):
+        assert not are_equivalent(
+            "r_5|n_7|xxx|n_8|GO:0005575",
+            "r_5|n_7|xxx|n_8|FAKE")
+
+    # Note, here the gold fake go term IS checked and that's why the expected error
+    with raises(KeyError):
+        assert not are_equivalent(
+            "r_5|n_7|xxx|n_8|FAKE",
+            "r_5|n_7|xxx|n_8|GO:0005575")
 
 
 def test_relation_equals_uniprot_uniprots_as_list():
@@ -198,5 +232,5 @@ def test_relation_equals_uniprot_uniprots_as_list():
 
 
 if __name__ == "__main__":
-
-    test_relation_equals_uniprot_go()
+    test_relation_equals_uniprot_go_direct_children_ORDER_DOES_MATTER()
+    test_relation_equals_uniprot_go_all_children_of_root()
