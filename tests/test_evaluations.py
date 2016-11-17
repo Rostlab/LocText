@@ -220,6 +220,11 @@ def test_relation_equals_uniprot_uniprots_as_list():
         "r_5|n_7|P04637|n_8|yyy",
         "r_5|n_7|P02340,P04637|n_8|yyy")
 
+    # Note, the following is a stub test relation and does not have to be biologically true
+    assert are_equivalent(
+        "r_5|n_7|P04637|n_8|yyy",
+        "r_5|n_7|in_the_middle:,P04637,P02340|n_8|yyy")
+
     # Note, the following is stub test relation and does not have to be biologically true
     assert are_equivalent(
         "r_5|n_7|P04637,P02340|n_8|yyy",
@@ -229,6 +234,32 @@ def test_relation_equals_uniprot_uniprots_as_list():
     assert are_equivalent(
         "r_5|n_7|P02340,P04637|n_8|yyy",
         "r_5|n_7|P04637|n_8|yyy")
+
+    # Note, the following is stub test relation and does not have to be biologically true
+    assert are_equivalent(
+        "r_5|n_7|P02340,P04637,:in_the_middle|n_8|yyy",
+        "r_5|n_7|P04637|n_8|yyy")
+
+
+def test_relation_equals_uniprot_uniprots_as_list_do_not_have_to_be_valid():
+
+    are_equivalent = relation_equals_uniprot_go
+
+    assert are_equivalent(
+        "r_5|n_7|a|n_8|yyy",
+        "r_5|n_7|a,b|n_8|yyy")
+
+    assert are_equivalent(
+        "r_5|n_7|a,b|n_8|yyy",
+        "r_5|n_7|a|n_8|yyy")
+
+    assert are_equivalent(
+        "r_5|n_7| a ,b,,|n_8|yyy",
+        "r_5|n_7| a |n_8|yyy")
+
+    assert are_equivalent(
+        "r_5|n_7| a |n_8|yyy",
+        "r_5|n_7| a ,b,,|n_8|yyy")
 
 
 if __name__ == "__main__":
