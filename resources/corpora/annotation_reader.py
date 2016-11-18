@@ -1,13 +1,17 @@
 import json
 import os
 
+# WARNING the folder names were changes changed after running the script so this are not valid anymores
 locText_json_files_path = './LocText/LocText_master_json/pool'
 pubMed_json_files_path = './LocText_With_Annotation'
 output_json_files_path = './output'
 
 """
-Finds all the annotated file and corresponding LocText json files and inserts either UniProt/GO/Taxonomy ID, name and
-confidence values to LocText json file. Specifically to normalization.
+Finds all the annotated file and corresponding LocText _PubAnnotation_ json files and
+fills in the normalizations (UniProt, GO, Taxonomy ID) values into the LocText _annjson_ json file.
+
+Example of how normalizations should look like in annjson format:
+
 normalizations: {
     "n_7":{
         "source":{
@@ -97,4 +101,3 @@ for file_name in os.listdir(locText_json_files_path):
                     json.dump(locText_data, output_file)
         else:
             print("File without pubMed file: " + file_name)
-
