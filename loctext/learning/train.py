@@ -130,16 +130,21 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
     __corpora_dir = repo_path(["resources", "corpora"])
 
     if corpus_name == "LocText":
-        dir_html = os.path.join(__corpora_dir, 'LocText/LocText_plain_html/pool/')
-        dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_master_json/pool/')
+        dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
+        dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations/')
+
+    if corpus_name == "LocText_original":
+        dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
+        dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_master_json/pool/')
 
     corpus = HTMLReader(dir_html).read()
 
-    # Remove PMCs, full-text
-    del corpus.documents["PMC3596250"]
-    del corpus.documents["PMC2192646"]
-    del corpus.documents["PMC2483532"]
-    del corpus.documents["PMC2847216"]
+    if corpus_name.startswith("LocText"):
+        # Remove PMCs, full-text
+        del corpus.documents["PMC3596250"]
+        del corpus.documents["PMC2192646"]
+        del corpus.documents["PMC2483532"]
+        del corpus.documents["PMC2847216"]
 
     AnnJsonAnnotationReader(
         dir_annjson,
