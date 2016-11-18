@@ -77,6 +77,7 @@ for file_name in os.listdir(locText_json_files_path):
                                     obj_type = "n_8"
                                     name = "GO"
                                 elif str(denotation['obj']).find('uniprot') != -1 and str(denotation['obj']).find('uniprot:uniprot') == -1:
+                                    # Note: some normalizations for UniProt were empty, that is, they could not be normalized
                                     obj_type, obj_id = str(denotation['obj']).split(":")
                                     obj_type = "n_7"
                                     name = "UniProt"

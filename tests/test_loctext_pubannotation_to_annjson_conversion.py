@@ -51,6 +51,12 @@ def test_same_stats():
 
     assert len(list(original.edges())) > 0 and (len(list(original.edges())) == len(list(newone.edges())) == (- num_d0 + len(list(newone.predicted_relations()))))
 
+    # Normalizations
+    assert all(len(e.normalisation_dict) == 0 for e in original.entities())
+    # assert all(len(e.normalisation_dict) > 0
+    for e in newone.entities():
+        assert len(e.normalisation_dict) > 0, e
+
 
 if __name__ == "__main__":
 
