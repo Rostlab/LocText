@@ -1,10 +1,9 @@
 import json
 import os
 
-# WARNING the folder names were changes changed after running the script so this are not valid anymores
-locText_json_files_path = './LocText/LocText_master_json/pool'
-pubMed_json_files_path = './LocText_With_Annotation'
-output_json_files_path = './output'
+locText_json_files_path = './LocText_anndoc_original_without_normalizations/LocText_master_json/pool'
+pubMed_json_files_path = './LocText_PubAnnotation_with_normalizations'
+output_json_files_path = './LocText_annjson_with_normalizations'
 
 """
 Finds all the annotated file and corresponding LocText _PubAnnotation_ json files and
