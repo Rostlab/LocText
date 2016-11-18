@@ -23,8 +23,8 @@ def test_same_stats():
     newone = read_corpus("LocText", corpus_percentage=1.0)
 
     # Verification
-    original.validate_annotation_offsets()
-    newone.validate_annotation_offsets()
+    original.validate_entity_offsets()
+    newone.validate_entity_offsets()
 
     # Basic
     assert 100 == len(original) == len(newone)
