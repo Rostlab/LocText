@@ -72,7 +72,8 @@ for file_name in os.listdir(locText_json_files_path):
                                 obj = {}
 
                                 if str(denotation['obj']).find('go:GO') != -1:
-                                    obj_type1, obj_type, obj_id = str(denotation['obj']).split(":")
+                                    _, obj_type, obj_id = str(denotation['obj']).split(":")
+                                    obj_id = "GO:" + obj_id
                                     obj_type = "n_8"
                                     name = "GO"
                                 elif str(denotation['obj']).find('uniprot') != -1 and str(denotation['obj']).find('uniprot:uniprot') == -1:
