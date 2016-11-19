@@ -53,9 +53,14 @@ def test_same_stats():
 
     # Normalizations
     assert all(len(e.normalisation_dict) == 0 for e in original.entities())
+
+    count_normalizations = 0
     # assert all(len(e.normalisation_dict) > 0
     for e in newone.entities():
-        assert len(e.normalisation_dict) > 0, e
+        assert len(e.normalisation_dict) == 1, e
+        count_normalizations += 1
+
+    assert count_normalizations == len(newone.entities()) == len(original.entities())
 
 
 if __name__ == "__main__":
