@@ -55,13 +55,21 @@ def test_same_stats():
     assert all(len(e.normalisation_dict) == 0 for e in original.entities())
 
     count_normalizations = 0
-    # assert all(len(e.normalisation_dict) > 0
+
     for e in newone.entities():
         if str(e.class_id) != "e_4":
             assert len(e.normalisation_dict) == 1, e
+            norm_id = next(iter(e.normalisation_dict.values()))
+            assert type(norm_id) is str, e   # do not write arrays, only comma-separated strings
+            assert ' ' not in norm_id, e   # We cannot have stuff like 'GO:0005811 lipid droplet' -- let's have only the GO id
+
+        assert not e.normalisation_dict or e.normalisation_dict
+
         count_normalizations += 1
 
     assert count_normalizations == len(list(newone.entities())) == len(list(original.entities()))
+
+
 
 
 if __name__ == "__main__":
