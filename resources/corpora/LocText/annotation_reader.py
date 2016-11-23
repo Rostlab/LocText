@@ -1,12 +1,13 @@
 import json
 import os
+import csv
 
 locText_json_files_path = './LocText_anndoc_original_without_normalizations/LocText_master_json/pool'
-pubMed_json_files_path = './LocText_PubAnnotation_with_normalizations'
+pubMed_tsv_file_path = './interFile_modified.tsv'
 output_json_files_path = './LocText_annjson_with_normalizations'
 
 """
-Finds all the annotated file and corresponding LocText _PubAnnotation_ json files and
+Finds the annotated file and uses the information in interFile_modified.tsv file and
 fills in the normalizations (UniProt, GO, Taxonomy ID) values into the LocText _annjson_ json file.
 
 Example of how normalizations should look like in annjson format:
@@ -30,75 +31,62 @@ normalizations: {
 }
 """
 
+# Fetch each file one by one from "LocText_anndoc_original_without_normalizations" folder
 for file_name in os.listdir(locText_json_files_path):
     with open(locText_json_files_path + "/" + file_name) as locText_data_file:
         start = file_name.find("-") + 1
         end = file_name.find(".ann.json")
+        pubMed_id = file_name[start:end]
+        counter = 0
 
-        if file_name[start:end].isdigit():
-            pubMed_file_path = pubMed_json_files_path + "/PubMed-" + str(file_name[start:end]) + ".json"
-            if os.path.exists(pubMed_file_path):
-                with open(pubMed_file_path) as pubMed_data_file:
-                    pubMed_data = json.load(pubMed_data_file)
-                    locText_data = json.load(locText_data_file)
+        # Check if PubMedID is digit or not.
+        if pubMed_id.isdigit():
+            with open(pubMed_tsv_file_path) as tsv_file:
+                tsv_data = csv.reader(tsv_file, delimiter="\t")
+                locText_data = json.load(locText_data_file)
+                segregated_rows = []
 
-                    locText_count = 0
+                # Extract only the required rows based on current PubMedID
+                for row in tsv_data:
+                    if row[0] == pubMed_id:
+                        segregated_rows.append(row)
 
-                    if 'denotations' in pubMed_data:
-                        pubMed_text = pubMed_data['text']
-                        pubMed_lineBreak = pubMed_data['text'].find('\n') + 1
+                # For each entity, add corresponding normalization information from segregated row
+                for entity in locText_data['entities']:
+                    text = entity['offsets'][0]['text']
+                    start_index = entity['offsets'][0]['start']
 
-                        for denotation in pubMed_data['denotations']:
-                            try:
-                                locText_entity = locText_data['entities'][locText_count]
-                            except IndexError:
-                                break
+                    for row in segregated_rows:
+                        if str(row[1]) == str(text) and str(row[-2]) == str(start_index):
+                            obj_type = ""
+                            obj_id = ""
+                            confidence = entity['confidence']
+                            obj = {}
 
-                            start = denotation['span']['begin']
-                            end = denotation['span']['end']
-                            protein_or_subCellular_component = pubMed_text[start:end]
-
-                            if start - pubMed_lineBreak > 0:
-                                pubMed_offset = start - pubMed_lineBreak
-                            else:
-                                pubMed_offset = start
-
-                            if locText_entity['offsets'][0]['text'] == protein_or_subCellular_component\
-                                    and pubMed_offset == locText_entity['offsets'][0]['start']:
-                                obj_type = ""
-                                obj_id = ""
-                                confidence = locText_entity['confidence']
-
-                                obj = {}
-
-                                if str(denotation['obj']).find('go:GO') != -1:
-                                    _, obj_type, obj_id = str(denotation['obj']).split(":")
-                                    obj_id = "GO:" + obj_id
-                                    obj_type = "n_8"
-                                    name = "GO"
-                                elif str(denotation['obj']).find('uniprot') != -1 and str(denotation['obj']).find('uniprot:uniprot') == -1:
-                                    # Note: some normalizations for UniProt were empty, that is, they could not be normalized
-                                    obj_type, obj_id = str(denotation['obj']).split(":")
-                                    obj_type = "n_7"
-                                    name = "UniProt"
-                                elif str(denotation['obj']).find('GO') != -1:
-                                    obj_type, obj_id = str(denotation['obj']).split(":")
-                                    obj_type = "n_8"
-                                    name = "GO"
-                                elif str(denotation['obj']).find('taxonomy') != -1:
-                                    obj_type, obj_id = str(denotation['obj']).split(":")
-                                    obj_type = "n_9"
-                                    name = "Taxonomy"
+                            if row[2] == "Protein":
+                                if row[3] == "Protein":
+                                    obj_id = None
                                 else:
-                                    obj_type = "n_7"
-                                    name = "UniProt"
-                                    obj_id = ""
+                                    obj_id = row[3:-3]
+                                obj_type = "n_7"
+                                name = "UniProt"
+                            elif row[2] == "Location":
+                                obj_id = row[3:-3]
+                                obj_type = "n_8"
+                                name = "GO"
+                            elif row[2] == "Organism":
+                                obj_id = row[3:-3]
+                                obj_type = "n_9"
+                                name = "Taxonomy"
 
-                                normalization_obj = {obj_type: {"source": {"name": name, "id": obj_id, "url": None}, "recName": None, "confidence": confidence}}
-                                locText_entity['normalizations'] = normalization_obj
+                            normalization_obj = {
+                                obj_type: {"source": {"name": name, "id": obj_id, "url": None}, "recName": None,
+                                           "confidence": confidence}}
+                            entity['normalizations'] = normalization_obj
 
-                            locText_count += 1
                 with open(output_json_files_path + "/" + file_name, "w") as output_file:
                     json.dump(locText_data, output_file)
+
+                # break
         else:
             print("File without pubMed file: " + file_name)
