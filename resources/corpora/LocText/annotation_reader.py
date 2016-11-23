@@ -64,18 +64,22 @@ for file_name in os.listdir(locText_json_files_path):
                             obj = {}
 
                             if row[2] == "Protein":
+                                # If UniProt ID is "Protein", then add empty string instead of text "Protein"
                                 if row[3] == "Protein":
-                                    obj_id = None
+                                    obj_id = ""
                                 else:
-                                    obj_id = row[3:-3]
+                                    # Remove unnecessary spaces between ID's
+                                    obj_id = row[3].replace(" ", "")
                                 obj_type = "n_7"
                                 name = "UniProt"
                             elif row[2] == "Location":
-                                obj_id = row[3:-3]
+                                # For GO ID's, try to extract only the GO ID. Strip rest of the content
+                                obj_id = obj_id.split(" ")[0]
                                 obj_type = "n_8"
                                 name = "GO"
                             elif row[2] == "Organism":
-                                obj_id = row[3:-3]
+                                # Remove unnecessary spaces between ID's
+                                obj_id = row[3].replace(" ", "")
                                 obj_type = "n_9"
                                 name = "Taxonomy"
 
@@ -87,6 +91,5 @@ for file_name in os.listdir(locText_json_files_path):
                 with open(output_json_files_path + "/" + file_name, "w") as output_file:
                     json.dump(locText_data, output_file)
 
-                # break
         else:
             print("File without pubMed file: " + file_name)

@@ -70,8 +70,6 @@ def test_same_stats():
     assert count_normalizations == len(list(newone.entities())) == len(list(original.entities()))
 
 
-
-
 if __name__ == "__main__":
 
     # selected tests:
