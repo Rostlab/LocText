@@ -66,7 +66,7 @@ for file_name in os.listdir(locText_json_files_path):
                             if row[2] == "Protein":
                                 # If UniProt ID is "Protein", then add empty string instead of text "Protein"
                                 if row[3] == "Protein":
-                                    obj_id = ""
+                                    obj_id = None
                                 else:
                                     # Remove unnecessary spaces between ID's
                                     obj_id = row[3].replace(" ", "")
