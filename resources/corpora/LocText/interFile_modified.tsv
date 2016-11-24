@@ -1,4 +1,4 @@
-PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End 
+PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 9346891	light-harvesting chlorophyll a/b protein	Protein	TR-Q9LMQ2	abs	732	772
 15342390	transcription factor AP-2	Protein	TR-Q92755	abs	500	525
 16731587	PINFORMED3	Protein	TR-M4NBC2,Q9S7Z8	abs	449	459
