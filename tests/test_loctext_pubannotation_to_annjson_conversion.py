@@ -77,6 +77,21 @@ def test_same_stats():
 
     assert count_normalizations == len(list(newone.entities())) == len(list(original.entities()))
 
+    # Document based
+
+    for docid, original_document in original.documents.items():
+        newone_document = newone.documents[docid]
+
+        original_count_entities = sum(1 for _ in original_document.entities())
+        newone_count_entities = sum(1 for _ in newone_document.entities())
+
+        assert original_count_entities == newone_count_entities, docid
+
+        original_count_relations = sum(1 for _ in original_document.relations())
+        newone_count_relations = sum(1 for _ in newone_document.relations())
+
+        assert original_count_relations == newone_count_relations, docid
+
 
 if __name__ == "__main__":
 
