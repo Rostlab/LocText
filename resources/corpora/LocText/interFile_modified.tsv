@@ -1384,7 +1384,7 @@ PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 21282530	CBX4	Protein	O00257	abs	1564	1568
 21282530	CBX4	Protein	O00257	abs	1613	1617
 21282530	CBX4	Protein	O00257	abs	1677	1681
-15143214	cell surface	Location	O:0009986	abs	366	378
+15143214	cell surface	Location	GO:0009986	abs	366	378
 12612081	cell periphery	Location	GO:0071944 cell periphery	abs	748	762
 12177201	synapse	Location	GO:0045202 synapse	abs	144	151
 15143214	lipid raft	Location	GO:0045121	abs	846	856
