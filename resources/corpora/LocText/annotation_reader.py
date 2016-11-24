@@ -72,11 +72,19 @@ for file_name in os.listdir(locText_json_files_path):
                                     obj_id = row[3].replace(" ", "")
                                 obj_type = "n_7"
                                 name = "UniProt"
+
                             elif row[2] == "Location":
                                 # For GO ID's, try to extract only the GO ID. Strip rest of the content
-                                obj_id = obj_id.split(" ")[0]
+                                obj_id = row[3]
+                                assert obj_id.count("GO:") == 1, obj_id
+                                obj_id_splitted = obj_id.split(" ")
+                                # assert len(obj_id_splitted) <= 2, pubMed_id + " -- " + obj_id
+                                obj_id = obj_id_splitted[0]
+                                assert obj_id != "", pubMed_id + " -- " + original + " --- line: " + '\t'.join(row)
+
                                 obj_type = "n_8"
                                 name = "GO"
+
                             elif row[2] == "Organism":
                                 # Remove unnecessary spaces between ID's
                                 obj_id = row[3].replace(" ", "")
