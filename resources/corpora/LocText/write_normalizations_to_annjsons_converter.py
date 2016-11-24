@@ -2,6 +2,14 @@ import json
 import os
 import csv
 
+
+#
+# The script currently converts from the .tsv (prepared by Tanya), not from the PubAnnotation annotations as we found errors in those
+#
+# See: https://github.com/juanmirocks/LocText/issues/2
+#
+
+
 locText_json_files_path = './LocText_anndoc_original_without_normalizations/LocText_master_json/pool'
 pubMed_tsv_file_path = './interFile_modified.tsv'
 output_json_files_path = './LocText_annjson_with_normalizations'
