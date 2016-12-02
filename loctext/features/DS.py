@@ -44,11 +44,12 @@ def _add_extra_links(edge, combined_sentence, sentence1, sentence2):
 
     _addWordSimilarityLinks(combined_sentence, sentence1, sentence2)
 
-    _addProteinLinks(edge, combined_sentence, sentence1, sentence2)
+    # TODO would be better to not use the constants PRO_ID (protRef) and LOC_ID (locRef) (below) here -- It's hardcoded
+    _addEntityLinks(edge, combined_sentence, sentence1, sentence2, PRO_ID, ['protein'], "protRef")
 
     # Just as we added the links from "protein" to actual protein entities
     # add the links from "location"/"localization" to location entity
-    # TODO addLocationLinks(combSentence, tokenOffset)
+    _addEntityLinks(edge, combined_sentence, sentence1, sentence2, LOC_ID, ['location', 'localiz', 'compartment'], "locRef")
 
     # addProteinFamilyLinks(combSentence, tokenOffset);
 
@@ -79,27 +80,32 @@ def _addWordSimilarityLinks(combined_sentence, sentence1, sentence2):
                 s2_token.features['user_dependency_from'].append((s1_token, "stemSim"))
 
 
-def _addEntityLinks(edge, combined_sentence, sentence1, sentence2, class_id, key_words):
+def _addEntityLinks(edge, combined_sentence, sentence1, sentence2, class_id, key_words, dependency_type):
     """
     `addProteinLinks` and `addLocationLinks` re-implementation of Shrikant's (java) into Python.
     """
 
-    assert edge.e1_sentence_id < edge.e2_sentence_id
+    assert edge.same_part
 
-    sent1_contains_entity = edge.entity1.class_id == class_id
-    if not sent1_contains_entity:
-        s1_tokens_that_match_key_words = (t for t in sentence1 if any(kw in t.lower() for kw in key_words))
+    def _do_one_direction(sent_a, sent_b):
 
-        for s1_token in s1_tokens_that_match_key_words:
+        sent_a_contains_entity = edge.entity1.class_id == class_id
+        if not sent_a_contains_entity:
+            sent_a_tokens_that_match_key_words = (t for t in sent_a if any(kw in t.word.lower() for kw in key_words))
 
-            for s2_token in sentence2:
-                if s2_token in entity and thisentity == class_id:
+            for sent_a_token in sent_a_tokens_that_match_key_words:
 
-                    s1_token.features['user_dependency_to'].append((s2_token, "protRef"))
-                    s2_token.features['user_dependency_from'].append((s1_token, "protRef"))
+                for sent_b_token in sent_b:
 
+                    sent_b_token_in_entity = sent_b_token.get_entity(edge.same_part)
+                    if sent_b_token_in_entity is not None and sent_b_token_in_entity.class_id == class_id:
 
+                        sent_a_token.features['user_dependency_to'].append((sent_b_token, dependency_type))
+                        sent_b_token.features['user_dependency_from'].append((sent_a_token, dependency_type))
 
+    # In combination: do both directions
+    _do_one_direction(sentence1, sentence2)
+    _do_one_direction(sentence2, sentence1)
 
 
 def _addRootLinks(combined_sentence, sentence1, sentence2):
