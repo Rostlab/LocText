@@ -24,14 +24,14 @@ def combine_sentences(sentence1, sentence2):
     return combined_sentence
 
 
-def get_root_token(sentence, feature_is_root='is_root'):
+def get_sentence_roots(sentence, feature_is_root='is_root'):
     """
     See parsers.py :: SpacyParser.
     """
     roots = [token for token in sentence if token.features[feature_is_root] is True]
-    assert len(roots) == 1, "The sentence contains {} roots (?). Expected: 1 -- Sentence: {}".format(len(roots), ' '.join((t.word for t in sentence)))
+    assert len(roots) >= 1, "The sentence contains {} roots (?). Expected: >= 1 -- Sentence: {}".format(len(roots), ' '.join((t.word for t in sentence)))
 
-    return roots[0]
+    return roots
 
 
 def _add_extra_links(combined_sentence, sentence1, sentence2):
@@ -62,20 +62,31 @@ def _addRootLinks(combined_sentence, sentence1, sentence2):
     """
     link roots of both the sentences
 
+    `addRootLinks` re-implementation of Shrikant's (java) into Python.
+
+
+    *IMPORTANT*:
+
+    * Shrikant/Java/CoreNLP code had one single root for every sentence
+    * Python/spaCy sentences can have more than 1 root
+    * --> Therefore, we create a product of links of all the roots
+    * --> see: (https://github.com/juanmirocks/LocText/issues/6#issue-177139892)
+
+
     Dependency directions:
 
     sentence1 -> sentence2
     sentence2 <- sentence1
     """
+    from itertools import product
 
-    root_sent_1 = get_root_token(sentence1)
-    root_sent_2 = get_root_token(sentence2)
+    for (root_sent_1, root_sent_2) in product(get_sentence_roots(sentence1), get_sentence_roots(sentence2)):
 
-    root_sent_1.features['dependency_to'] = (root_sent_2, "rootDepForward")
-    root_sent_1.features['dependency_from'] = (root_sent_2, "rootDepBackward")
+        root_sent_1.features['dependency_to'] = (root_sent_2, "rootDepForward")
+        root_sent_1.features['dependency_from'] = (root_sent_2, "rootDepBackward")
 
-    root_sent_2.features['dependency_from'] = (root_sent_1, "rootDepForward")
-    root_sent_2.features['dependency_to'] = (root_sent_1, "rootDepBackward")
+        root_sent_2.features['dependency_from'] = (root_sent_1, "rootDepForward")
+        root_sent_2.features['dependency_to'] = (root_sent_1, "rootDepBackward")
 
     return combined_sentence
 
