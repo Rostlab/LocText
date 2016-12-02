@@ -243,12 +243,15 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return [
+            NamedEntityCountFeatureGenerator(prot_e_id, prefix=1),
+            NamedEntityCountFeatureGenerator(loc_e_id, prefix=2),
+
             DS.BigramFeatureGenerator(
                 prefix_bow=5,
-                prefix_masked=6,
+                prefix_bow_masked=6,
                 prefix_pos=7,
                 prefix_stem=8
-            )
+            ),
         ]
 
 

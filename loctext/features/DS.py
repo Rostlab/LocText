@@ -99,7 +99,7 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
     def __init__(
         self,
         prefix_bow=None,
-        prefix_masked=None,
+        prefix_bow_masked=None,
         prefix_pos=None,
         prefix_stem=None
     ):
@@ -108,7 +108,7 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
         """an instance of the PorterStemmer"""
 
         self.prefix_bow = prefix_bow
-        self.prefix_masked = prefix_masked
+        self.prefix_bow_masked = prefix_bow_masked
         self.prefix_pos = prefix_pos
         self.prefix_stem = prefix_stem
 
@@ -127,29 +127,16 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
     def _generate(self, feature_set, is_training_mode, edge, combined_sentence):
 
         for currToken, nextToken, in zip(combined_sentence, combined_sentence[1:]):
-            pass
 
-            # # TODO should it be lowercase ???
-            # feature_name = self.gen_prefix_feat_name("prefix_bow", currToken.word, nextToken.word)
-            # self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-            #
-            # String textFeature = "bow_" + currTokenText + "_" + nextTokenText;
-            # addToFeatureSet("5_" + textFeature, 1, curEdgeFeatureSet);
-            #
-            # String cTokTextMask = currToken.getTokenTextMasked();
-            # String nTokTextMask = nextToken.getTokenTextMasked();
-            #
-            # String textMaskedFeature = "bowMasked_" + cTokTextMask + "_" + nTokTextMask;
-            # addToFeatureSet("6_" + textMaskedFeature, 1, curEdgeFeatureSet);
-            #
-            # String currTokenPOS = currToken.getPOSTag();
-            # String nextTokenPOS = nextToken.getPOSTag();
-            #
-            # String posFeature = "pos_" + currTokenPOS + "_" + nextTokenPOS;
-            # addToFeatureSet("7_" + posFeature, 1, curEdgeFeatureSet);
-            #
-            # String currTokStem = currToken.getStem();
-            # String nextTokStem = nextToken.getStem();
-            #
-            # String stemFeature = "stem_" + currTokStem + "_" + nextTokStem;
-            # addToFeatureSet("8_" + stemFeature, 1, curEdgeFeatureSet);
+            # TODO should it be lowercase ???
+            feature_name = self.gen_prefix_feat_name("prefix_bow", currToken.word, nextToken.word)
+            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+            feature_name = self.gen_prefix_feat_name("prefix_bow_masked", currToken.masked_text(edge.same_part), nextToken.masked_text(edge.same_part))
+            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+            feature_name = self.gen_prefix_feat_name("prefix_pos", currToken.features['pos'], nextToken.features['pos'])
+            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+            feature_name = self.gen_prefix_feat_name("prefix_stem", self.stemmer.stem(currToken.word), self.stemmer.stem(nextToken.word))
+            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
