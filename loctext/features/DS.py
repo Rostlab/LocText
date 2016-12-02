@@ -2,9 +2,10 @@ from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
 from nltk.stem import PorterStemmer
+from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
 
 
-def combine_sentences(sentence1, sentence2):
+def combine_sentences(edge, sentence1, sentence2):
     """
     Combine two simple simple normal sentences into a "chained" sentence with
     dependecies and paths created as necessary for the DS model.
@@ -19,7 +20,7 @@ def combine_sentences(sentence1, sentence2):
 
     combined_sentence = sentence1 + sentence2
 
-    combined_sentence = _add_extra_links(combined_sentence, sentence1, sentence2)
+    combined_sentence = _add_extra_links(edge, combined_sentence, sentence1, sentence2)
 
     return combined_sentence
 
@@ -34,7 +35,7 @@ def get_sentence_roots(sentence, feature_is_root='is_root'):
     return roots
 
 
-def _add_extra_links(combined_sentence, sentence1, sentence2):
+def _add_extra_links(edge, combined_sentence, sentence1, sentence2):
     """
     `addExtraLinks` re-implementation of Shrikant's (java) into Python.
 
@@ -43,7 +44,7 @@ def _add_extra_links(combined_sentence, sentence1, sentence2):
 
     _addWordSimilarityLinks(combined_sentence, sentence1, sentence2)
 
-    # TODO addProteinLinks(combSentence, tokenOffset)
+    _addProteinLinks(edge, combined_sentence, sentence1, sentence2)
 
     # Just as we added the links from "protein" to actual protein entities
     # add the links from "location"/"localization" to location entity
@@ -76,6 +77,29 @@ def _addWordSimilarityLinks(combined_sentence, sentence1, sentence2):
             if s1_token.features['lemma'] == s2_token.features['lemma']:
                 s1_token.features['user_dependency_to'].append((s2_token, "stemSim"))
                 s2_token.features['user_dependency_from'].append((s1_token, "stemSim"))
+
+
+def _addEntityLinks(edge, combined_sentence, sentence1, sentence2, class_id, key_words):
+    """
+    `addProteinLinks` and `addLocationLinks` re-implementation of Shrikant's (java) into Python.
+    """
+
+    assert edge.e1_sentence_id < edge.e2_sentence_id
+
+    sent1_contains_entity = edge.entity1.class_id == class_id
+    if not sent1_contains_entity:
+        s1_tokens_that_match_key_words = (t for t in sentence1 if any(kw in t.lower() for kw in key_words))
+
+        for s1_token in s1_tokens_that_match_key_words:
+
+            for s2_token in sentence2:
+                if s2_token in entity and thisentity == class_id:
+
+                    s1_token.features['user_dependency_to'].append((s2_token, "protRef"))
+                    s2_token.features['user_dependency_from'].append((s1_token, "protRef"))
+
+
+
 
 
 def _addRootLinks(combined_sentence, sentence1, sentence2):
@@ -134,7 +158,7 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
     def generate(self, dataset, feature_set, is_training_mode):
         for edge in dataset.edges():
             (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
-            combined_sentence = combine_sentences(sentence1, sentence2)
+            combined_sentence = combine_sentences(edge, sentence1, sentence2)
 
             # head1 = edge.entity1.head_token
             # head2 = edge.entity2.head_token
