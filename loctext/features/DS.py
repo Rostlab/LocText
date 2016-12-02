@@ -65,20 +65,17 @@ def _addWordSimilarityLinks(combined_sentence, sentence1, sentence2):
     from itertools import product
 
     for (s1_token, s2_token) in product(sentence1, sentence2):
-        print("SUPPP_pos", s1_token.features['pos'], s2_token.features['pos'])
-        # TODO note, here I'm using the (spacy) lemma, not the (Porter) stem
-        print("SUPPP_lemma", s1_token.features['lemma'], s2_token.features['lemma'])
 
-        # s1_token.features['pos'], s2_token.features['pos']
-        if False:
-
+        # NN, NNS, NNP, NNPS : https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
+        if "NN" == s1_token.features['pos'][0:2] == s2_token.features['pos'][0:2]:
             if s1_token.word == s2_token.word:
-                s1_token.features['dependency_to'].append((s2_token, "*wordSim"))
-                s2_token.features['dependency_from'].append((s1_token, "*wordSim"))
+                s1_token.features['user_dependency_to'].append((s2_token, "wordSim"))
+                s2_token.features['user_dependency_from'].append((s1_token, "wordSim"))
 
+            # TODO note, here I'm using the (spacy) lemma, not the (Porter) stem
             if s1_token.features['lemma'] == s2_token.features['lemma']:
-                s1_token.features['dependency_to'].append((s2_token, "*stemSim"))
-                s2_token.features['dependency_from'].append((s1_token, "*stemSim"))
+                s1_token.features['user_dependency_to'].append((s2_token, "stemSim"))
+                s2_token.features['user_dependency_from'].append((s1_token, "stemSim"))
 
 
 def _addRootLinks(combined_sentence, sentence1, sentence2):
@@ -105,11 +102,11 @@ def _addRootLinks(combined_sentence, sentence1, sentence2):
 
     for (s1_root, s2_root) in product(get_sentence_roots(sentence1), get_sentence_roots(sentence2)):
 
-        s1_root.features['dependency_to'].append((s2_root, "*rootDepForward"))
-        s1_root.features['dependency_from'].append((s2_root, "*rootDepBackward"))
+        s1_root.features['user_dependency_to'].append((s2_root, "rootDepForward"))
+        s1_root.features['user_dependency_from'].append((s2_root, "rootDepBackward"))
 
-        s2_root.features['dependency_from'].append((s1_root, "*rootDepForward"))
-        s2_root.features['dependency_to'].append((s1_root, "*rootDepBackward"))
+        s2_root.features['user_dependency_from'].append((s1_root, "rootDepForward"))
+        s2_root.features['user_dependency_to'].append((s1_root, "rootDepBackward"))
 
 
 class BigramFeatureGenerator(EdgeFeatureGenerator):
