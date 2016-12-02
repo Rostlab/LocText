@@ -238,10 +238,18 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
 
     @staticmethod
     def default_feature_generators(prot_e_id, loc_e_id, graphs=None):
+        from loctext.features import DS
 
         GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
-        return []
+        return [
+            DS.BigramFeatureGenerator(
+                prefix_bow=5,
+                prefix_masked=6,
+                prefix_pos=7,
+                prefix_stem=8
+            )
+        ]
 
 
 class LocTextCombinedModelRelationExtractor(RelationExtractor):

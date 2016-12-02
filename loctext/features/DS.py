@@ -29,7 +29,7 @@ def get_root_token(sentence, feature_is_root='is_root'):
     See parsers.py :: SpacyParser.
     """
     roots = [token for token in sentence if token.features[feature_is_root] is True]
-    assert len(roots) == 1, "The sentence contains {} roots (?). Expected: 1 -- Sentence: {}".format(len(roots), ' '.join(sentence))
+    assert len(roots) == 1, "The sentence contains {} roots (?). Expected: 1 -- Sentence: {}".format(len(roots), ' '.join((t.word for t in sentence)))
 
     return roots[0]
 
@@ -99,7 +99,7 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
         self.prefix_bow = prefix_bow
         self.prefix_masked = prefix_masked
         self.prefix_pos = prefix_pos
-        self.prefix_st = prefix_st
+        self.prefix_stem = prefix_stem
 
 
     def generate(self, dataset, feature_set, is_training_mode):
@@ -110,38 +110,35 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
             # head1 = edge.entity1.head_token
             # head2 = edge.entity2.head_token
 
-            self.generate(combined_sentence, feature_set, is_training_mode)
+            self._generate(feature_set, is_training_mode, edge, combined_sentence)
 
 
-    def generate(combined_sentence, feature_set, is_training_mode):
+    def _generate(self, feature_set, is_training_mode, edge, combined_sentence):
 
-        #for token i combined_sentence:
+        for currToken, nextToken, in zip(combined_sentence, combined_sentence[1:]):
+            pass
 
-        for(int i=0; i<sentence.getTokenList().size()-1; i++):
-            Token currToken = sentence.getTokenList().get(i);
-            Token nextToken = sentence.getTokenList().get(i+1);
-
-            String currTokenText = currToken.getTokenText();
-            String nextTokenText = nextToken.getTokenText();
-
-            String textFeature = "bow_" + currTokenText + "_" + nextTokenText;
-            addToFeatureSet("5_" + textFeature, 1, curEdgeFeatureSet);
-
-            String cTokTextMask = currToken.getTokenTextMasked();
-            String nTokTextMask = nextToken.getTokenTextMasked();
-
-            String textMaskedFeature = "bowMasked_" + cTokTextMask + "_" + nTokTextMask;
-            addToFeatureSet("6_" + textMaskedFeature, 1, curEdgeFeatureSet);
-
-            String currTokenPOS = currToken.getPOSTag();
-            String nextTokenPOS = nextToken.getPOSTag();
-
-            String posFeature = "pos_" + currTokenPOS + "_" + nextTokenPOS;
-            addToFeatureSet("7_" + posFeature, 1, curEdgeFeatureSet);
-
-            String currTokStem = currToken.getStem();
-            String nextTokStem = nextToken.getStem();
-
-            String stemFeature = "stem_" + currTokStem + "_" + nextTokStem;
-            addToFeatureSet("8_" + stemFeature, 1, curEdgeFeatureSet);
-            }
+            # # TODO should it be lowercase ???
+            # feature_name = self.gen_prefix_feat_name("prefix_bow", currToken.word, nextToken.word)
+            # self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+            #
+            # String textFeature = "bow_" + currTokenText + "_" + nextTokenText;
+            # addToFeatureSet("5_" + textFeature, 1, curEdgeFeatureSet);
+            #
+            # String cTokTextMask = currToken.getTokenTextMasked();
+            # String nTokTextMask = nextToken.getTokenTextMasked();
+            #
+            # String textMaskedFeature = "bowMasked_" + cTokTextMask + "_" + nTokTextMask;
+            # addToFeatureSet("6_" + textMaskedFeature, 1, curEdgeFeatureSet);
+            #
+            # String currTokenPOS = currToken.getPOSTag();
+            # String nextTokenPOS = nextToken.getPOSTag();
+            #
+            # String posFeature = "pos_" + currTokenPOS + "_" + nextTokenPOS;
+            # addToFeatureSet("7_" + posFeature, 1, curEdgeFeatureSet);
+            #
+            # String currTokStem = currToken.getStem();
+            # String nextTokStem = nextToken.getStem();
+            #
+            # String stemFeature = "stem_" + currTokStem + "_" + nextTokStem;
+            # addToFeatureSet("8_" + stemFeature, 1, curEdgeFeatureSet);
