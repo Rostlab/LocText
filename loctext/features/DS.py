@@ -1,6 +1,7 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
+from nltk.stem import PorterStemmer
 
 
 def combine_sentences(sentence1, sentence2):
@@ -85,28 +86,36 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
     """
 
     def __init__(
-    self,
-    prefix_dependency_from_prot_entity_to_prot_word=None,
-    prefix_dependency_from_prot_word_to_prot_entity=None,
-    prefix_PWPE_bow=None,
-    prefix_PWPE_pos=None,
-    prefix_PWPE_bow_masked=None,
-    prefix_PWPE_dep=None,
-    prefix_PWPE_dep_full=None,
-    prefix_PWPE_dep_gram=None,
-    prefix_protein_word_found=None,
-    prefix_protein_not_word_found=None
+        self,
+        prefix_bow=None,
+        prefix_masked=None,
+        prefix_pos=None,
+        prefix_stem=None
     ):
 
-    def generate(dataset, feature_set, is_training_mode):
+        self.stemmer = PorterStemmer()
+        """an instance of the PorterStemmer"""
+
+        self.prefix_bow = prefix_bow
+        self.prefix_masked = prefix_masked
+        self.prefix_pos = prefix_pos
+        self.prefix_st = prefix_st
+
+
+    def generate(self, dataset, feature_set, is_training_mode):
         for edge in dataset.edges():
             (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
+            combined_sentence = combine_sentences(sentence1, sentence2)
 
-            head1 = edge.entity1.head_token
-            head2 = edge.entity2.head_token
+            # head1 = edge.entity1.head_token
+            # head2 = edge.entity2.head_token
+
+            self.generate(combined_sentence, feature_set, is_training_mode)
 
 
     def generate(combined_sentence, feature_set, is_training_mode):
+
+        #for token i combined_sentence:
 
         for(int i=0; i<sentence.getTokenList().size()-1; i++):
             Token currToken = sentence.getTokenList().get(i);
