@@ -17,6 +17,7 @@ def is_POS_Verb(token):
 def get_tokens_within(sentence, token_1, token_2):
 
     if 'id' in token_1.features:
+        print("SUPPP", len(sentence), token_1.features['id'] + 1, token_2.features['id'], sentence)
         # That is, tokens have feature 'id' (Parser.py), which indicates the token index in the sentence
         return (sentence[i] for i in range(token_1.features['id'] + 1, token_2.features['id']))
 
@@ -225,6 +226,8 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
         prefix_WordVerbProtLocVerbWord=None,
         prefix_WordVerbProtWordVerbLoc=None,
     ):
+        self.e1_class = e1_class
+        self.e2_class = e2_class
 
         self.prefix_ProtVerbWord = prefix_ProtVerbWord
         self.prefix_WordVerbProt = prefix_WordVerbProt
@@ -239,8 +242,8 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
     def generate(self, dataset, feature_set, is_training_mode):
         from itertools import product
 
-        def exist_verb_token_within(token1, token2):
-            return any(is_POS_Verb(t) for t in get_tokens_within(token1, token2))
+        def exist_verb_token_within(sentence, token1, token2):
+            return any(is_POS_Verb(t) for t in get_tokens_within(sentence, token1, token2))
 
         def add_simple_binary_feature(prefix_name):
             feature_name = self.gen_prefix_feat_name(prefix_name)
@@ -249,16 +252,20 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
         for edge in dataset.edges():
             (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
 
-            assert edge.entity1.offset < edge.entity2.offset, \
-                "Assumed that the entities are sorted:\n{}\n{}\n{}\n{}".format(edge.entity1, edge.entity2, sentence1, sentence2)
+            # sort entities (by sentence)
+            e1 = edge.entity1
+            e2 = edge.entity2
+            if e2.offset < e1.offset:
+                e1, e2 = e2, e1
+            assert e1.offset < sentence2[0].start
 
-            is_prot_in_s1 = edge.entity1.class_id == e1_class
+            is_prot_in_s1 = e1.class_id == self.e1_class
             if is_prot_in_s1:
                 # protein in first sentence and localization in second
-                assert edge.entity2.class_id == e2_class
+                assert e2.class_id == self.e2_class
             else:
                 # location in first sentence and protein in second
-                assert edge.entity2.class_id == e1_class
+                assert e2.class_id == self.e1_class
 
             # Pattern, e.g. first: (protein token) then (token verb) then (some token that matches in other sentence)
             protVerbWord = False
@@ -275,23 +282,25 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
 
                     token_e1_sentence = s1_token
                     token_e2_sentence = s2_token
+                    s1 = sentence1
+                    s2 = sentence2
 
                     if not is_prot_in_s1:
                         token_e1_sentence, token_e2_sentence = token_e2_sentence, token_e1_sentence
+                        s1, s2 = s2, s1
 
-
-                    if edge.entity1.offset < token_e1_sentence:
-                        if exist_verb_token_within(edge.entity1, token_e1_sentence):
+                    if e1.offset < token_e1_sentence.start:
+                        if exist_verb_token_within(s1, e1.head_token, token_e1_sentence):
                             protVerbWord = True
                     else:
-                        if exist_verb_token_within(token_e1_sentence, edge.entity1):
+                        if exist_verb_token_within(s1, token_e1_sentence, e1.head_token):
                             wordVerbProt = True
 
-                    if edge.entity2.offset < token_e2_sentence:
-                        if exist_verb_token_within(edge.entity2, token_e2_sentence):
+                    if e2.offset < token_e2_sentence.start:
+                        if exist_verb_token_within(s2, e2.head_token, token_e2_sentence):
                             locVerbWord = True
                     else:
-                        if exist_verb_token_within(token_e2_sentence, edge.entity2):
+                        if exist_verb_token_within(s2, token_e2_sentence, e2.head_token):
                             wordVerbLoc = True
 
             if protVerbWord:
