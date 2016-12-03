@@ -253,15 +253,15 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_pos=3
             ),
 
-            DS.BigramFeatureGenerator(
+            # Bigram
+            DS.AnyNGramFeatureGenerator(
+                n_gram=2,
+                #
                 prefix_bow=5,
                 prefix_bow_masked=6,
                 prefix_pos=7,
                 prefix_stem=8
             ),
-
-
-
         ]
 
 

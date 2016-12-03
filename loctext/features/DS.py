@@ -139,57 +139,6 @@ def _addRootLinks(combined_sentence, sentence1, sentence2):
         s2_root.features['user_dependency_to'].append((s1_root, "rootDepBackward"))
 
 
-class BigramFeatureGenerator(EdgeFeatureGenerator):
-    """
-    `buildBigramFeatures` re-implementation of Shrikant's (java) into Python.
-    """
-
-    def __init__(
-        self,
-        prefix_bow=None,
-        prefix_bow_masked=None,
-        prefix_pos=None,
-        prefix_stem=None
-    ):
-
-        self.stemmer = PorterStemmer()
-        """an instance of the PorterStemmer"""
-
-        self.prefix_bow = prefix_bow
-        self.prefix_bow_masked = prefix_bow_masked
-        self.prefix_pos = prefix_pos
-        self.prefix_stem = prefix_stem
-
-
-    def generate(self, dataset, feature_set, is_training_mode):
-        for edge in dataset.edges():
-            (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
-            combined_sentence = combine_sentences(edge, sentence1, sentence2)
-
-            # head1 = edge.entity1.head_token
-            # head2 = edge.entity2.head_token
-
-            self._generate(feature_set, is_training_mode, edge, combined_sentence)
-
-
-    def _generate(self, feature_set, is_training_mode, edge, combined_sentence):
-
-        for currToken, nextToken, in zip(combined_sentence, combined_sentence[1:]):
-
-            # TODO should it be lowercase ???
-            feature_name = self.gen_prefix_feat_name("prefix_bow", currToken.word, nextToken.word)
-            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-
-            feature_name = self.gen_prefix_feat_name("prefix_bow_masked", currToken.masked_text(edge.same_part), nextToken.masked_text(edge.same_part))
-            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-
-            feature_name = self.gen_prefix_feat_name("prefix_pos", currToken.features['pos'], nextToken.features['pos'])
-            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-
-            feature_name = self.gen_prefix_feat_name("prefix_stem", self.stemmer.stem(currToken.word), self.stemmer.stem(nextToken.word))
-            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-
-
 class AnyNGramFeatureGenerator(EdgeFeatureGenerator):
     """
     `buildBigramFeatures` and `buildTrigramFeature` all-in-one re-implementation of Shrikant's (java) into Python.
