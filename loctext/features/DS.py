@@ -5,6 +5,25 @@ from nltk.stem import PorterStemmer
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
 
 
+def is_POS_Noun(token):
+    """ matches NN, NNS, NNP, NNPS : https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html"""
+    return "NN" == token.features['pos'][0:2]
+
+
+def is_POS_Verb(token):
+    return "V" == token.features['pos'][0]
+
+
+def get_tokens_within(sentence, token_1, token_2):
+
+    if 'id' in token_1.features:
+        # That is, tokens have feature 'id' (Parser.py), which indicates the token index in the sentence
+        return (sentence[i] for i in range(token_1.features['id'] + 1, token_2.features['id']))
+
+    else:
+        raise Exception("Not implemented")
+
+
 def combine_sentences(edge, sentence1, sentence2):
     """
     Combine two simple simple normal sentences into a "chained" sentence with
@@ -25,11 +44,11 @@ def combine_sentences(edge, sentence1, sentence2):
     return combined_sentence
 
 
-def get_sentence_roots(sentence, feature_is_root='is_root'):
+def get_sentence_roots(sentence, feature_key='is_root'):
     """
     See parsers.py :: SpacyParser.
     """
-    roots = [token for token in sentence if token.features[feature_is_root] is True]
+    roots = [token for token in sentence if token.features[feature_key] is True]
     assert len(roots) >= 1, "The sentence contains {} roots (?). Expected: >= 1 -- Sentence: {}".format(len(roots), ' '.join((t.word for t in sentence)))
 
     return roots
@@ -68,8 +87,8 @@ def _addWordSimilarityLinks(combined_sentence, sentence1, sentence2):
 
     for (s1_token, s2_token) in product(sentence1, sentence2):
 
-        # NN, NNS, NNP, NNPS : https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
-        if "NN" == s1_token.features['pos'][0:2] == s2_token.features['pos'][0:2]:
+        if is_POS_Noun(s1_token) and is_POS_Noun(s2_token):
+
             if s1_token.word == s2_token.word:
                 s1_token.features['user_dependency_to'].append((s2_token, "wordSim"))
                 s2_token.features['user_dependency_from'].append((s1_token, "wordSim"))
@@ -186,3 +205,107 @@ class AnyNGramFeatureGenerator(EdgeFeatureGenerator):
 
                     feature_name = self.gen_prefix_feat_name(feature_pair[0], str(self.n_gram)+"-gram", *transformed_tokens)
                     self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+
+class PatternFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `buildPatternFeature` re-implementation of Shrikant's (java) into Python.
+    """
+
+    def __init__(
+        self,
+        e1_class,
+        e2_class,
+        prefix_ProtVerbWord=None,
+        prefix_WordVerbProt=None,
+        prefix_LocVerbWord=None,
+        prefix_WordVerbLoc=None,
+        prefix_ProtVerbWordLocVerbWord=None,
+        prefix_ProtVerbWordVerbLoc=None,
+        prefix_WordVerbProtLocVerbWord=None,
+        prefix_WordVerbProtWordVerbLoc=None,
+    ):
+
+        self.prefix_ProtVerbWord = prefix_ProtVerbWord
+        self.prefix_WordVerbProt = prefix_WordVerbProt
+        self.prefix_LocVerbWord = prefix_LocVerbWord
+        self.prefix_WordVerbLoc = prefix_WordVerbLoc
+        self.prefix_ProtVerbWordLocVerbWord = prefix_ProtVerbWordLocVerbWord
+        self.prefix_ProtVerbWordVerbLoc = prefix_ProtVerbWordVerbLoc
+        self.prefix_WordVerbProtLocVerbWord = prefix_WordVerbProtLocVerbWord
+        self.prefix_WordVerbProtWordVerbLoc = prefix_WordVerbProtWordVerbLoc
+
+
+    def generate(self, dataset, feature_set, is_training_mode):
+        from itertools import product
+
+        def exist_verb_token_within(token1, token2):
+            return any(is_POS_Verb(t) for t in get_tokens_within(token1, token2))
+
+        def add_simple_binary_feature(prefix_name):
+            feature_name = self.gen_prefix_feat_name(prefix_name)
+            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+        for edge in dataset.edges():
+            (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
+
+            assert edge.entity1.offset < edge.entity2.offet, "Assume that the entities are sorted"s
+
+            is_prot_in_s1 = edge.entity1.class_id == e1_class
+            if is_prot_in_s1:
+                # protein in first sentence and localization in second
+                assert edge.entity2.class_id == e2_class
+            else:
+                # location in first sentence and protein in second
+                assert edge.entity2.class_id == e1_class
+
+            # Pattern, e.g. first: (protein token) then (token verb) then (some token that matches in other sentence)
+            protVerbWord = False
+            wordVerbProt = False
+            locVerbWord = False
+            wordVerbLoc = False
+
+            for (s1_token, s2_token) in product(sentence1, sentence2):
+
+                if (is_POS_Noun(s1_token) and
+                    # ⚠️ Note, I (Juanmi) decide to and compare in lower case. Shrikant's was code sensitive
+                    s1_token.word.lower() == s2_token.word.lower() and
+                    s1_token.get_entity(edge.same_part) is None):
+
+                    token_e1_sentence = s1_token
+                    token_e2_sentence = s2_token
+
+                    if not is_prot_in_s1:
+                        token_e1_sentence, token_e2_sentence = token_e2_sentence, token_e1_sentence
+
+
+                    if edge.entity1.offset < token_e1_sentence:
+                        if exist_verb_token_within(edge.entity1, token_e1_sentence):
+                            protVerbWord = True
+                    else:
+                        if exist_verb_token_within(token_e1_sentence, edge.entity1):
+                            wordVerbProt = True
+
+                    if edge.entity2.offset < token_e2_sentence:
+                        if exist_verb_token_within(edge.entity2, token_e2_sentence):
+                            locVerbWord = True
+                    else:
+                        if exist_verb_token_within(token_e2_sentence, edge.entity2):
+                            wordVerbLoc = True
+
+            if protVerbWord:
+                add_simple_binary_feature('prefix_ProtVerbWord')
+            if wordVerbProt:
+                add_simple_binary_feature('prefix_WordVerbProt')
+            if locVerbWord:
+                add_simple_binary_feature('prefix_LocVerbWord')
+            if wordVerbLoc:
+                add_simple_binary_feature('prefix_WordVerbLoc')
+            if protVerbWord and locVerbWord:
+                add_simple_binary_feature('prefix_ProtVerbWordLocVerbWord')
+            if protVerbWord and wordVerbLoc:
+                add_simple_binary_feature('prefix_ProtVerbWordVerbLoc')
+            if wordVerbProt and locVerbWord:
+                add_simple_binary_feature('prefix_WordVerbProtLocVerbWord')
+            if wordVerbProt and wordVerbLoc:
+                add_simple_binary_feature('prefix_WordVerbProtWordVerbLoc')

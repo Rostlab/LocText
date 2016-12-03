@@ -267,6 +267,17 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_pos=7,
                 prefix_stem=8
             ),
+
+            # buildPatternFeature
+            DS.PatternFeatureGenerator(
+                e1_class=prot_e_id,
+                e2_class=loc_e_id,
+                #
+                prefix_ProtVerbWord=39,
+                prefix_LocVerbWord=41,
+                prefix_ProtVerbWordLocVerbWord=43,
+                prefix_WordVerbProtLocVerbWord=45,
+            )
         ]
 
 
