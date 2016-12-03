@@ -246,12 +246,22 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
             NamedEntityCountFeatureGenerator(prot_e_id, prefix=1),
             NamedEntityCountFeatureGenerator(loc_e_id, prefix=2),
 
+            # Trigram
+            DS.AnyNGramFeatureGenerator(
+                n_gram=3,
+                #
+                prefix_pos=3
+            ),
+
             DS.BigramFeatureGenerator(
                 prefix_bow=5,
                 prefix_bow_masked=6,
                 prefix_pos=7,
                 prefix_stem=8
             ),
+
+
+
         ]
 
 
