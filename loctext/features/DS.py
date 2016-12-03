@@ -237,5 +237,3 @@ class AnyNGramFeatureGenerator(EdgeFeatureGenerator):
 
                     feature_name = self.gen_prefix_feat_name(feature_pair[0], *transformed_tokens)
                     self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
-
-            raise Exception()
