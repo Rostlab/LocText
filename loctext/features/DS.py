@@ -235,5 +235,5 @@ class AnyNGramFeatureGenerator(EdgeFeatureGenerator):
                 for feature_pair in self.features:
                     transformed_tokens = (feature_pair[1](t, edge) for t in tokens)
 
-                    feature_name = self.gen_prefix_feat_name(feature_pair[0], self.n_gram+"-gram", *transformed_tokens)
+                    feature_name = self.gen_prefix_feat_name(feature_pair[0], str(self.n_gram)+"-gram", *transformed_tokens)
                     self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
