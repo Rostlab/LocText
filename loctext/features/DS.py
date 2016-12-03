@@ -188,3 +188,54 @@ class BigramFeatureGenerator(EdgeFeatureGenerator):
 
             feature_name = self.gen_prefix_feat_name("prefix_stem", self.stemmer.stem(currToken.word), self.stemmer.stem(nextToken.word))
             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+
+class AnyNGramFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `buildBigramFeatures` and `buildTrigramFeature` all-in-one re-implementation of Shrikant's (java) into Python.
+    """
+
+    def __init__(
+        self,
+        n_gram,
+        prefix_bow=None,
+        prefix_bow_masked=None,
+        prefix_pos=None,
+        prefix_stem=None
+    ):
+
+        self.n_gram = n_gram
+
+        self.prefix_bow = prefix_bow
+        self.prefix_bow_masked = prefix_bow_masked
+        self.prefix_pos = prefix_pos
+        self.prefix_stem = prefix_stem
+
+        self.stemmer = PorterStemmer()
+        """an instance of the PorterStemmer"""
+
+        self.features = [
+            ("prefix_bow", lambda tok, _: tok.word),  # TODO should it be lowercase ???
+            ("prefix_bow_masked", lambda tok, edge: tok.masked_text(edge.same_part)),
+            ("prefix_pos", lambda tok, _: tok.features['pos']),
+            ("prefix_stem", lambda tok, _: self.stemmer.stem(tok.word))
+        ]
+
+
+    def generate(self, dataset, feature_set, is_training_mode):
+
+        for edge in dataset.edges():
+            (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
+            combined_sentence = combine_sentences(edge, sentence1, sentence2)
+
+            n_grams = zip(*(combined_sentence[start:] for start in range(0, self.n_gram)))
+
+            for tokens in n_grams:
+
+                for feature_pair in self.features:
+                    transformed_tokens = (feature_pair[1](t, edge) for t in tokens)
+
+                    feature_name = self.gen_prefix_feat_name(feature_pair[0], *transformed_tokens)
+                    self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+            raise Exception()
