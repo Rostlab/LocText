@@ -249,7 +249,8 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
         for edge in dataset.edges():
             (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
 
-            assert edge.entity1.offset < edge.entity2.offet, "Assume that the entities are sorted"s
+            assert edge.entity1.offset < edge.entity2.offset, \
+                "Assumed that the entities are sorted:\n{}\n{}\n{}\n{}".format(edge.entity1, edge.entity2, sentence1, sentence2)
 
             is_prot_in_s1 = edge.entity1.class_id == e1_class
             if is_prot_in_s1:
