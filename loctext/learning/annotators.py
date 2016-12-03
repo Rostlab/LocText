@@ -246,6 +246,11 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
             NamedEntityCountFeatureGenerator(prot_e_id, prefix=1),
             NamedEntityCountFeatureGenerator(loc_e_id, prefix=2),
 
+            # Comment from Shrikant:
+            # *TODO: Commenting follwing two function calls increases the overall Fscore by 0.3 points*
+
+            # TODO should we have features for unigram too?
+
             # Trigram
             DS.AnyNGramFeatureGenerator(
                 n_gram=3,
