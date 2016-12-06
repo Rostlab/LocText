@@ -22,7 +22,7 @@ def test_SS_baseline():
     corpus = read_corpus("LocText")
 
     # Computation(precision=0.6083150984682714, precision_SE=0.002974704942625582, recall=0.6233183856502242, recall_SE=0.004130201948613626, f_measure=0.6157253599114065, f_measure_SE=0.0030062001054202924)
-    EXPECTED_F = 0.6157
+    EXPECTED_F = 0.6157  # 62
     EXPECTED_F_SE = 0.0030
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
