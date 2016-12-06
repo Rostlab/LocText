@@ -13,6 +13,7 @@ from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, 
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
 from nalaf.preprocessing.edges import SimpleEdgeGenerator, SentenceDistanceEdgeGenerator
 from nalaf import print_verbose, print_debug
+from nalaf.learning.taggers import Tagger
 
 
 class LocTextSSmodelRelationExtractor(RelationExtractor):
@@ -267,3 +268,7 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
             model.annotate(target_corpus)
 
         return target_corpus
+
+class StringTagger(Tagger):
+    
+
