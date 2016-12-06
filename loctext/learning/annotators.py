@@ -243,8 +243,6 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return [
-            NamedEntityCountFeatureGenerator(prot_e_id, prefix=1),
-            NamedEntityCountFeatureGenerator(loc_e_id, prefix=2),
 
             # Comment from Shrikant:
             # *TODO: Commenting follwing two function calls increases the overall Fscore by 0.3 points*
@@ -277,7 +275,10 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_LocVerbWord=41,
                 prefix_ProtVerbWordLocVerbWord=43,
                 prefix_WordVerbProtLocVerbWord=45,
-            )
+            ),
+
+            NamedEntityCountFeatureGenerator(prot_e_id, prefix=130),
+            NamedEntityCountFeatureGenerator(loc_e_id, prefix=131),
         ]
 
 
