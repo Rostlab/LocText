@@ -243,11 +243,10 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         GRAPHS_CLOSURE_VARIABLE = {} if graphs is None else graphs
 
         return [
-
             # Comment from Shrikant:
-            # *TODO: Commenting follwing two function calls increases the overall Fscore by 0.3 points*
+            # TODO ...Commenting follwing two function calls increases the overall Fscore by 0.3 points...
 
-            # TODO should we have features for unigram too?
+            # TODO and, should we have features for unigram too?
 
             # Trigram
             DS.AnyNGramFeatureGenerator(
