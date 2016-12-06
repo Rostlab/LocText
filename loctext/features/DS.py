@@ -287,18 +287,20 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
                         s1_t1, s2_t2 = s2_t2, s1_t1
                         s1, s2 = s2, s1
 
+                    # ⚠️ Shrikant uses the **head token** of an entity (i.e. not necessarily the first token)
+
                     if e1.offset < s1_t1.start:
-                        if exist_verb_token_within(s1, e1.head_token, s1_t1):
+                        if exist_verb_token_within(s1, e1.tokens[0], s1_t1):
                             protVerbWord = True
                     else:
-                        if exist_verb_token_within(s1, s1_t1, e1.head_token):
+                        if exist_verb_token_within(s1, s1_t1, e1.tokens[0]):
                             wordVerbProt = True
 
                     if e2.offset < s2_t2.start:
-                        if exist_verb_token_within(s2, e2.head_token, s2_t2):
+                        if exist_verb_token_within(s2, e2.tokens[0], s2_t2):
                             locVerbWord = True
                     else:
-                        if exist_verb_token_within(s2, s2_t2, e2.head_token):
+                        if exist_verb_token_within(s2, s2_t2, e2.tokens[0]):
                             wordVerbLoc = True
 
             if protVerbWord:
