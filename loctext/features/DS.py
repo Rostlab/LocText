@@ -362,11 +362,11 @@ class SameWordFeatureGenerator(EdgeFeatureGenerator):
                         self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameWords", t1.word.lower())
 
                         if t1_POS == t2_POS:
-                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameWordsSamePOS", t1_POS)
+                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameWordsSamePOS", t1.word.lower(), t1_POS)
 
                     # ⚠️ note, here I'm using the (spacy) lemma, not the (Porter) stem as in Shrikant's
                     if t1.features['lemma'] == t2.features['lemma']:
                         self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameStem", t1.features['lemma'])
 
                         if t1_POS == t2_POS:
-                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameStemSamePOS", t1_POS)
+                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameStemSamePOS", t1.features['lemma'], t1_POS)
