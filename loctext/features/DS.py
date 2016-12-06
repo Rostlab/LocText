@@ -15,7 +15,8 @@ def is_POS_Verb(token):
 
 
 def get_tokens_within(sentence, token_1, token_2):
-    assert token_1.start < token_2.start, "The tokens must be sorted as such: t1 < t2"
+    assert token_1.start < token_2.start, \
+        "The tokens must be sorted as such: t1 ({}:{}) < t2 ({}:{})".format(token_1.start, token_1.word, token_2.start, token_2.word)
 
     if 'id' in token_1.features:
         # That is, tokens have feature 'id' (Parser.py), which indicates the token index in the sentence
