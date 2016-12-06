@@ -323,3 +323,54 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
                 add_simple_binary_feature('prefix_WordVerbProtLocVerbWord')
             if wordVerbProt and wordVerbLoc:
                 add_simple_binary_feature('prefix_WordVerbProtWordVerbLoc')
+
+
+class SameWordFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `buildSameWordFeature` re-implementation of Shrikant's (java) into Python.
+    """
+
+    def __init__(
+        self,
+        # e1_class,
+        # e2_class,
+        prefix_sameWords=None,
+        prefix_sameWordsSamePOS=None,
+        prefix_sameStem=None,
+        prefix_sameStemSamePOS=None,
+    ):
+
+        self.prefix_sameWords = prefix_sameWords
+        self.prefix_sameWordsSamePOS = prefix_sameWordsSamePOS
+        self.prefix_sameStem = prefix_sameStem
+        self.prefix_sameStemSamePOS = prefix_sameStemSamePOS
+
+
+    def generate(self, dataset, feature_set, is_training_mode):
+
+        for edge in dataset.edges():
+
+            s1, s2 = edge.get_sentences_pair(force_sort=False)
+
+            for t1 in s1:
+                for t2 in s2:
+                    t1_POS = t1.features['pos']
+                    t2_POS = t2.features['pos']
+
+                    # ⚠️ newly, I compare in lower case thus ignoring the case (different than Shrikant's)
+                    if t1.word.lower() == t2.word.lower():
+                        feature_name = self.gen_prefix_feat_name("prefix_sameWords", t1.word.lower())
+                        self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+                        if t1_POS == t2_POS:
+                            feature_name = self.gen_prefix_feat_name("prefix_sameWordsSamePOS", t1_POS)
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+                    # TODO note, here I'm using the (spacy) lemma, not the (Porter) stem as in Shrikant's
+                    if t1.features['lemma'] == t2.features['lemma']:
+                        feature_name = self.gen_prefix_feat_name("prefix_sameStem", t1.features['lemma'])
+                        self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+
+                        if t1_POS == t2_POS:
+                            feature_name = self.gen_prefix_feat_name("prefix_sameStemSamePOS", t1_POS)
+                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)

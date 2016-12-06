@@ -276,6 +276,11 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_WordVerbProtLocVerbWord=45,
             ),
 
+            DS.SameWordFeatureGenerator(
+                prefix_sameWordsSamePOS=48,
+                prefix_sameStemSamePOS=50,
+            ),
+
             NamedEntityCountFeatureGenerator(prot_e_id, prefix=130),
             NamedEntityCountFeatureGenerator(loc_e_id, prefix=131),
         ]
