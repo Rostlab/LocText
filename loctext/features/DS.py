@@ -262,20 +262,17 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
         # ---
 
         for edge in dataset.edges():
-            (s1, s2) = edge.get_sentences_pair(force_sort=True)
-
-            # sort entities (by sentence)
-            e1 = edge.entity1
-            e2 = edge.entity2
-            if e2.offset < e1.offset:
-                e1, e2 = e2, e1
-            assert e1.offset < s2[0].start, "entity 1 must be _before_ the start of sentence 2"
+            s1, s2 = edge.get_sentences_pair(force_sort=False)
+            e1, e2 = edge.entity1, edge.entity2
 
             is_prot_in_s1 = e1.class_id == self.e1_class
             if is_prot_in_s1:  # protein in first sentence and localization in second
                 assert e2.class_id == self.e2_class
             else:  # location in first sentence and protein in second
                 assert e2.class_id == self.e1_class
+                # Swap: put in (logically) the protein in the first sentence to simplify code later
+                s1, s2 = s2, s1
+                e1, e2 = e2, e1
 
             # Pattern, e.g. first: (protein token) then (token verb) then (some token that matches in other sentence)
             protVerbWord = False
@@ -288,13 +285,16 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
                 if (is_POS_Noun(s1_t1) and
                     # ⚠️ Note, I (Juanmi) decide to and compare in lower case. Shrikant's was code sensitive
                     s1_t1.word.lower() == s2_t2.word.lower() and
-                    s1_t1.get_entity(edge.same_part) is None):
 
-                    if not is_prot_in_s1:
-                        # Swap again: i.e., now regardless of real position, s1/t1 contain the protein (e1)
-                        e1, e2 = e2, e1
-                        s1_t1, s2_t2 = s2_t2, s1_t1
-                        s1, s2 = s2, s1
+                    # ⚠️ Shrikant uses the **head token** of an entity (i.e. not necessarily the first token)
+                    # ⚠️ I (Juanmi) use the first token and, instead of checking that s1_t1 is not an entity
+                    s1_t1.get_entity(edge.same_part) is None and
+                    # ⚠️ the following clause was not in Shrikant's code
+                    s2_t2.get_entity(edge.same_part) is None and
+                    # ⚠️ Note that entities can be within tokens, e.g. example_[P53], or or spand multiple ones, e.g. [cell surface]
+                    # that also means that entity.offset is not necessarily == entity.tokens.start
+                    s1_t1.start != e1.tokens[0].start and s2_t2.start != e2.tokens[0].start):
+
                     print("\n\n\n")
                     print("tokens: ", s1_t1, " and ", s2_t2)
                     print("entities: ", e1, " and ", e2)
@@ -302,17 +302,14 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
                     print("s2", s2)
                     print()
 
-
-                    # ⚠️ Shrikant uses the **head token** of an entity (i.e. not necessarily the first token)
-
-                    if e1.offset < s1_t1.start:
+                    if e1.tokens[0].start < s1_t1.start:
                         if exist_verb_token_within(s1, e1.tokens[0], s1_t1):
                             protVerbWord = True
                     else:
                         if exist_verb_token_within(s1, s1_t1, e1.tokens[0]):
                             wordVerbProt = True
 
-                    if e2.offset < s2_t2.start:
+                    if e2.tokens[0].start < s2_t2.start:
                         if exist_verb_token_within(s2, e2.tokens[0], s2_t2):
                             locVerbWord = True
                     else:
