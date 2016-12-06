@@ -359,18 +359,14 @@ class SameWordFeatureGenerator(EdgeFeatureGenerator):
 
                     # ⚠️ newly, I compare in lower case thus ignoring the case (different than Shrikant's)
                     if t1.word.lower() == t2.word.lower():
-                        feature_name = self.gen_prefix_feat_name("prefix_sameWords", t1.word.lower())
-                        self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                        self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameWords", t1.word.lower())
 
                         if t1_POS == t2_POS:
-                            feature_name = self.gen_prefix_feat_name("prefix_sameWordsSamePOS", t1_POS)
-                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameWordsSamePOS", t1_POS)
 
-                    # TODO note, here I'm using the (spacy) lemma, not the (Porter) stem as in Shrikant's
+                    # ⚠️ note, here I'm using the (spacy) lemma, not the (Porter) stem as in Shrikant's
                     if t1.features['lemma'] == t2.features['lemma']:
-                        feature_name = self.gen_prefix_feat_name("prefix_sameStem", t1.features['lemma'])
-                        self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                        self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameStem", t1.features['lemma'])
 
                         if t1_POS == t2_POS:
-                            feature_name = self.gen_prefix_feat_name("prefix_sameStemSamePOS", t1_POS)
-                            self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
+                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameStemSamePOS", t1_POS)
