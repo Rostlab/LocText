@@ -25,8 +25,6 @@ def get_tokens_within(sentence, token_1, token_2):
 
         ret = (sentence[i] for i in range(t1_index_plus_1, t2_index))
 
-        print("SUPPP ", "{} ({}|{}) ... {} ({}|{})\n    {}".format(token_1.word, t1_index_plus_1, token_1.start, token_2.word, t2_index, token_2.start, ' '.join(t.word for t in ret)))
-
         return ret
 
     else:
@@ -294,13 +292,6 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
                     # ⚠️ Note that entities can be within tokens, e.g. example_[P53], or or spand multiple ones, e.g. [cell surface]
                     # that also means that entity.offset is not necessarily == entity.tokens.start
                     s1_t1.start != e1.tokens[0].start and s2_t2.start != e2.tokens[0].start):
-
-                    print("\n\n\n")
-                    print("tokens: ", s1_t1, " and ", s2_t2)
-                    print("entities: ", e1, " and ", e2)
-                    print("s1", s1)
-                    print("s2", s2)
-                    print()
 
                     if e1.tokens[0].start < s1_t1.start:
                         if exist_verb_token_within(s1, e1.tokens[0], s1_t1):
