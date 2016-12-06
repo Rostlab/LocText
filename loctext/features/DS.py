@@ -15,11 +15,18 @@ def is_POS_Verb(token):
 
 
 def get_tokens_within(sentence, token_1, token_2):
+    assert token_1.start < token_2.start, "The tokens must be sorted as such: t1 < t2"
 
     if 'id' in token_1.features:
-        print("SUPPP", len(sentence), token_1.word, token_1.features['id'] + 1, token_2.word, token_2.features['id'], sentence)
         # That is, tokens have feature 'id' (Parser.py), which indicates the token index in the sentence
-        return (sentence[i] for i in range(token_1.features['id'] + 1, token_2.features['id']))
+        t1_index_plus_1 = token_1.features['id'] + 1   # + 1, first, because we do not want to include the token itself
+        t2_index = token_2.features['id']
+
+        ret = (sentence[i] for i in range(t1_index_plus_1, t2_index))
+
+        print("SUPPP ", "{} ({}|{}) ... {} ({}|{})\n    {}".format(token_1.word, t1_index_plus_1, token_1.start, token_2.word, t2_index, token_2.start, ' '.join(t.word for t in ret)))
+
+        return ret
 
     else:
         raise Exception("Not implemented")
@@ -283,9 +290,17 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
                     s1_t1.get_entity(edge.same_part) is None):
 
                     if not is_prot_in_s1:
-                        # Swap: i.e., now regardless of real position, s1/t1 contain the protein
+                        # Swap again: i.e., now regardless of real position, s1/t1 contain the protein (e1)
+                        e1, e2 = e2, e1
                         s1_t1, s2_t2 = s2_t2, s1_t1
                         s1, s2 = s2, s1
+                    print("\n\n\n")
+                    print("tokens: ", s1_t1, " and ", s2_t2)
+                    print("entities: ", e1, " and ", e2)
+                    print("s1", s1)
+                    print("s2", s2)
+                    print()
+
 
                     # ⚠️ Shrikant uses the **head token** of an entity (i.e. not necessarily the first token)
 
