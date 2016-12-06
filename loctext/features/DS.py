@@ -17,7 +17,7 @@ def is_POS_Verb(token):
 def get_tokens_within(sentence, token_1, token_2):
 
     if 'id' in token_1.features:
-        print("SUPPP", len(sentence), token_1.features['id'] + 1, token_2.features['id'], sentence)
+        print("SUPPP", len(sentence), token_1.word, token_1.features['id'] + 1, token_2.word, token_2.features['id'], sentence)
         # That is, tokens have feature 'id' (Parser.py), which indicates the token index in the sentence
         return (sentence[i] for i in range(token_1.features['id'] + 1, token_2.features['id']))
 
@@ -242,6 +242,8 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
     def generate(self, dataset, feature_set, is_training_mode):
         from itertools import product
 
+        # ---
+
         def exist_verb_token_within(sentence, token1, token2):
             return any(is_POS_Verb(t) for t in get_tokens_within(sentence, token1, token2))
 
@@ -249,22 +251,22 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
             feature_name = self.gen_prefix_feat_name(prefix_name)
             self.add_to_feature_set(feature_set, is_training_mode, edge, feature_name)
 
+        # ---
+
         for edge in dataset.edges():
-            (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
+            (s1, s2) = edge.get_sentences_pair(force_sort=True)
 
             # sort entities (by sentence)
             e1 = edge.entity1
             e2 = edge.entity2
             if e2.offset < e1.offset:
                 e1, e2 = e2, e1
-            assert e1.offset < sentence2[0].start
+            assert e1.offset < s2[0].start, "entity 1 must be _before_ the start of sentence 2"
 
             is_prot_in_s1 = e1.class_id == self.e1_class
-            if is_prot_in_s1:
-                # protein in first sentence and localization in second
+            if is_prot_in_s1:  # protein in first sentence and localization in second
                 assert e2.class_id == self.e2_class
-            else:
-                # location in first sentence and protein in second
+            else:  # location in first sentence and protein in second
                 assert e2.class_id == self.e1_class
 
             # Pattern, e.g. first: (protein token) then (token verb) then (some token that matches in other sentence)
@@ -273,34 +275,30 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
             locVerbWord = False
             wordVerbLoc = False
 
-            for (s1_token, s2_token) in product(sentence1, sentence2):
+            for (s1_t1, s2_t2) in product(s1, s2):
 
-                if (is_POS_Noun(s1_token) and
+                if (is_POS_Noun(s1_t1) and
                     # ⚠️ Note, I (Juanmi) decide to and compare in lower case. Shrikant's was code sensitive
-                    s1_token.word.lower() == s2_token.word.lower() and
-                    s1_token.get_entity(edge.same_part) is None):
-
-                    token_e1_sentence = s1_token
-                    token_e2_sentence = s2_token
-                    s1 = sentence1
-                    s2 = sentence2
+                    s1_t1.word.lower() == s2_t2.word.lower() and
+                    s1_t1.get_entity(edge.same_part) is None):
 
                     if not is_prot_in_s1:
-                        token_e1_sentence, token_e2_sentence = token_e2_sentence, token_e1_sentence
+                        # Swap: i.e., now regardless of real position, s1/t1 contain the protein
+                        s1_t1, s2_t2 = s2_t2, s1_t1
                         s1, s2 = s2, s1
 
-                    if e1.offset < token_e1_sentence.start:
-                        if exist_verb_token_within(s1, e1.head_token, token_e1_sentence):
+                    if e1.offset < s1_t1.start:
+                        if exist_verb_token_within(s1, e1.head_token, s1_t1):
                             protVerbWord = True
                     else:
-                        if exist_verb_token_within(s1, token_e1_sentence, e1.head_token):
+                        if exist_verb_token_within(s1, s1_t1, e1.head_token):
                             wordVerbProt = True
 
-                    if e2.offset < token_e2_sentence.start:
-                        if exist_verb_token_within(s2, e2.head_token, token_e2_sentence):
+                    if e2.offset < s2_t2.start:
+                        if exist_verb_token_within(s2, e2.head_token, s2_t2):
                             locVerbWord = True
                     else:
-                        if exist_verb_token_within(s2, token_e2_sentence, e2.head_token):
+                        if exist_verb_token_within(s2, s2_t2, e2.head_token):
                             wordVerbLoc = True
 
             if protVerbWord:
