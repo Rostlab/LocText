@@ -148,7 +148,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
 
     AnnJsonAnnotationReader(
         dir_annjson,
-        read_only_class_id=None, # TODO make sure that this is correct
+        read_only_class_id=None,
         read_relations=True,
         delete_incomplete_docs=False).annotate(corpus)
 
