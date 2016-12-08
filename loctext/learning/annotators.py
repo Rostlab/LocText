@@ -265,7 +265,6 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_stem=8
             ),
 
-            # buildPatternFeature
             DS.PatternFeatureGenerator(
                 e1_class=prot_e_id,
                 e2_class=loc_e_id,
@@ -286,8 +285,21 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_localizationVerb=51
             ),
 
-            NamedEntityCountFeatureGenerator(prot_e_id, prefix=130),
-            NamedEntityCountFeatureGenerator(loc_e_id, prefix=131),
+            DS.IndividualSentencesFeatureGenerator(
+                prefix_sentence_1_POS=54,
+                #
+                prefix_sentence_2_POS=57
+            ),
+
+            NamedEntityCountFeatureGenerator(
+                prot_e_id,
+                prefix=130
+            ),
+
+            NamedEntityCountFeatureGenerator(
+                loc_e_id,
+                prefix=131
+            ),
         ]
 
 

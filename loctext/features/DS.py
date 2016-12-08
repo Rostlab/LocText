@@ -375,3 +375,47 @@ class LocEntityFeatureGenerator(EdgeFeatureGenerator):
 
             if loc_entity.head_token.is_POS_Verb():
                 self.add(feature_set, is_training_mode, edge, "prefix_localizationVerb")
+
+
+class IndividualSentencesFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `buildFeaturesIndividualSentences` re-implementation of Shrikant's (java) into Python.
+    """
+
+    def __init__(
+        self,
+        prefix_sentence_1_Bow=None,
+        prefix_sentence_1_Stem=None,
+        prefix_sentence_1_POS=None,
+        #
+        prefix_sentence_2_Bow=None,
+        prefix_sentence_2_Stem=None,
+        prefix_sentence_2_POS=None,
+    ):
+
+        self.prefix_sentence_1_Bow = prefix_sentence_1_Bow
+        self.prefix_sentence_1_Stem = prefix_sentence_1_Stem
+        self.prefix_sentence_1_POS = prefix_sentence_1_POS
+        self.prefix_sentence_2_Bow = prefix_sentence_2_Bow
+        self.prefix_sentence_2_Stem = prefix_sentence_2_Stem
+        self.prefix_sentence_2_POS = prefix_sentence_2_POS
+
+
+    def generate(self, dataset, feature_set, is_training_mode):
+
+        for edge in dataset.edges():
+
+            s1, s2 = edge.get_sentences_pair(force_sort=False)
+            s1_e_class_id, s2_e_class_id = edge.entity1.class_id, edge.entity2.class_id
+
+            # ⚠️ Again, I use lowercase token word (instead of literal) AND lemma (instead of token)
+
+            for t in s1:
+                self.add(feature_set, is_training_mode, edge, 'prefix_sentence_1_Bow', s1_e_class_id, t.word.lower())
+                self.add(feature_set, is_training_mode, edge, 'prefix_sentence_2_Stem', s1_e_class_id, t.features['lemma'])
+                self.add(feature_set, is_training_mode, edge, 'prefix_sentence_2_POS', s1_e_class_id, t.features['pos'])
+
+            for t in s2:
+                self.add(feature_set, is_training_mode, edge, 'prefix_sentence_1_Bow', s2_e_class_id, t.word.lower())
+                self.add(feature_set, is_training_mode, edge, 'prefix_sentence_2_Stem', s2_e_class_id, t.features['lemma'])
+                self.add(feature_set, is_training_mode, edge, 'prefix_sentence_2_POS', s2_e_class_id, t.features['pos'])
