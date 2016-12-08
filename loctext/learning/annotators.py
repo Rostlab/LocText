@@ -346,3 +346,6 @@ class StringTagger(Tagger):
 
             # Set entity information to part.predicated_annotations list
             self.set_predicted_annotations(json_response, part)
+
+        # Verify entity offsets - No warnings should be displayed
+        dataset.validate_entity_offsets()
