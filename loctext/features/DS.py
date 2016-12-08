@@ -3,15 +3,7 @@ from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
 from nltk.stem import PorterStemmer
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
-
-
-def is_POS_Noun(token):
-    """ matches NN, NNS, NNP, NNPS : https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html"""
-    return "NN" == token.features['pos'][0:2]
-
-
-def is_POS_Verb(token):
-    return "V" == token.features['pos'][0]
+from nalaf.structures.data import Part
 
 
 def get_tokens_within(sentence, token_1, token_2):
@@ -51,16 +43,6 @@ def combine_sentences(edge, sentence1, sentence2):
     return combined_sentence
 
 
-def get_sentence_roots(sentence, feature_key='is_root'):
-    """
-    See parsers.py :: SpacyParser.
-    """
-    roots = [token for token in sentence if token.features[feature_key] is True]
-    assert len(roots) >= 1, "The sentence contains {} roots (?). Expected: >= 1 -- Sentence: {}".format(len(roots), ' '.join((t.word for t in sentence)))
-
-    return roots
-
-
 def _add_extra_links(edge, combined_sentence, sentence1, sentence2):
     """
     `addExtraLinks` re-implementation of Shrikant's (java) into Python.
@@ -94,7 +76,7 @@ def _addWordSimilarityLinks(combined_sentence, sentence1, sentence2):
 
     for (s1_token, s2_token) in product(sentence1, sentence2):
 
-        if is_POS_Noun(s1_token) and is_POS_Noun(s2_token):
+        if s1_token.is_POS_Noun() and s2_token.is_POS_Noun():
 
             if s1_token.word == s2_token.word:
                 s1_token.features['user_dependency_to'].append((s2_token, "wordSim"))
@@ -156,7 +138,7 @@ def _addRootLinks(combined_sentence, sentence1, sentence2):
     """
     from itertools import product
 
-    for (s1_root, s2_root) in product(get_sentence_roots(sentence1), get_sentence_roots(sentence2)):
+    for (s1_root, s2_root) in product(Part.get_sentence_roots(sentence1), Part.get_sentence_roots(sentence2)):
 
         s1_root.features['user_dependency_to'].append((s2_root, "rootDepForward"))
         s1_root.features['user_dependency_from'].append((s2_root, "rootDepBackward"))
@@ -251,7 +233,7 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
         # ---
 
         def exist_verb_token_within(sentence, token1, token2):
-            return any(is_POS_Verb(t) for t in get_tokens_within(sentence, token1, token2))
+            return any(t.is_POS_Verb() for t in get_tokens_within(sentence, token1, token2))
 
         def add_simple_binary_feature(prefix_name):
             feature_name = self.gen_prefix_feat_name(prefix_name)
@@ -280,7 +262,7 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
 
             for (s1_t1, s2_t2) in product(s1, s2):
 
-                if (is_POS_Noun(s1_t1) and
+                if (s1_t1.is_POS_Noun() and
                     # ⚠️ Note, I (Juanmi) decide to and compare in lower case. Shrikant's was code sensitive
                     s1_t1.word.lower() == s2_t2.word.lower() and
 
@@ -332,8 +314,6 @@ class SameWordFeatureGenerator(EdgeFeatureGenerator):
 
     def __init__(
         self,
-        # e1_class,
-        # e2_class,
         prefix_sameWords=None,
         prefix_sameWordsSamePOS=None,
         prefix_sameStem=None,
@@ -359,14 +339,14 @@ class SameWordFeatureGenerator(EdgeFeatureGenerator):
 
                     # ⚠️ newly, I compare in lower case thus ignoring the case (different than Shrikant's)
                     if t1.word.lower() == t2.word.lower():
-                        self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameWords", t1.word.lower())
+                        self.add(feature_set, is_training_mode, edge, "prefix_sameWords", t1.word.lower())
 
                         if t1_POS == t2_POS:
-                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameWordsSamePOS", t1.word.lower(), t1_POS)
+                            self.add(feature_set, is_training_mode, edge, "prefix_sameWordsSamePOS", t1.word.lower(), t1_POS)
 
                     # ⚠️ note, here I'm using the (spacy) lemma, not the (Porter) stem as in Shrikant's
                     if t1.features['lemma'] == t2.features['lemma']:
-                        self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameStem", t1.features['lemma'])
+                        self.add(feature_set, is_training_mode, edge, "prefix_sameStem", t1.features['lemma'])
 
                         if t1_POS == t2_POS:
-                            self.gen_preffeatname_add(feature_set, is_training_mode, edge, "prefix_sameStemSamePOS", t1.features['lemma'], t1_POS)
+                            self.add(feature_set, is_training_mode, edge, "prefix_sameStemSamePOS", t1.features['lemma'], t1_POS)
