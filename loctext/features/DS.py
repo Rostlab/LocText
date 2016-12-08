@@ -419,3 +419,74 @@ class IndividualSentencesFeatureGenerator(EdgeFeatureGenerator):
                 self.add(feature_set, is_training_mode, edge, 'prefix_sentence_1_Bow', s2_e_class_id, t.word.lower())
                 self.add(feature_set, is_training_mode, edge, 'prefix_sentence_2_Stem', s2_e_class_id, t.features['lemma'])
                 self.add(feature_set, is_training_mode, edge, 'prefix_sentence_2_POS', s2_e_class_id, t.features['pos'])
+
+
+class IntermediateTokenFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `buildIntermediateTokenFeats` re-implementation of Shrikant's (java) into Python.
+    """
+
+    from itertools import chain
+
+    def __init__(
+        self,
+        #
+        prefix_fwdBowIntermediate=None,
+        prefix_fwdBowInterMasked=None,
+        prefix_fwdStemIntermediate=None,
+        prefix_fwdPOSIntermeditate=None,
+        #
+        prefix_bkwdBowIntermediate=None,
+        prefix_bkwdBowInterMasked=None,
+        prefix_bkwdStemIntermediate=None,
+        prefix_bkwdPOSIntermeditate=None,
+        #
+        prefix_unorderedBowIntermediate=None,
+        prefix_unorderedBowInterMasked=None,
+        prefix_unorderedStemIntermediate=None,
+        prefix_unorderedPOSIntermeditate=None,
+    ):
+
+        self.prefix_fwdBowIntermediate = prefix_fwdBowIntermediate
+        self.prefix_fwdBowInterMasked = prefix_fwdBowInterMasked
+        self.prefix_fwdStemIntermediate = prefix_fwdStemIntermediate
+        self.prefix_fwdPOSIntermeditate = prefix_fwdPOSIntermeditate
+        self.prefix_bkwdBowIntermediate = prefix_bkwdBowIntermediate
+        self.prefix_bkwdBowInterMasked = prefix_bkwdBowInterMasked
+        self.prefix_bkwdStemIntermediate = prefix_bkwdStemIntermediate
+        self.prefix_bkwdPOSIntermeditate = prefix_bkwdPOSIntermeditate
+        self.prefix_unorderedBowIntermediate = prefix_unorderedBowIntermediate
+        self.prefix_unorderedBowInterMasked = prefix_unorderedBowInterMasked
+        self.prefix_unorderedStemIntermediate = prefix_unorderedStemIntermediate
+        self.prefix_unorderedPOSIntermeditate = prefix_unorderedPOSIntermeditate
+
+
+    def generate(self, dataset, feat_set, is_train):
+
+        for edge in dataset.edges():
+
+            s1, s2 = edge.get_sentences_pair(force_sort=True)
+            s1_e_class_id, s2_e_class_id = edge.entity1.class_id, edge.entity2.class_id
+
+            ordered = s1_e_class_id < s2_e_class_id
+            e1_start, e2_start = edge.entity1.head_token.start, edge.entity2.head_token.start
+            assert e1_start < e2_start, (ordered, edge.entity1, edge.entity2)
+
+            ordered = "fwd" if ordered else "bkwd"
+
+            # ⚠️ Again, I use lowercase token word (instead of literal) AND lemma (instead of token)
+
+            # ⚠️ Further, I solve Shrikant's code of not actually using the masked text (see original code comment)
+
+            chained_sentence = chain(s1, s2)
+
+            def add(direction):
+                for t in chained_sentence:
+                    if e1_start < t.start and t.start < e2_start:
+                        self.add(feat_set, is_train, edge, ('prefix_'+direction+'BowIntermediate'), t.word.lower())
+                        self.add(feat_set, is_train, edge, ('prefix_'+direction+'BowInterMasked'), t.masked_text(edge.same_part))
+                        self.add(feat_set, is_train, edge, ('prefix_'+direction+'StemIntermediate'), t.features['lemma'])
+                        self.add(feat_set, is_train, edge, ('prefix_'+direction+'POSIntermeditate'), t.features['pos'])
+
+            add(direction=ordered)
+            add(direction="unordered")

@@ -289,6 +289,14 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_sentence_2_POS=57
             ),
 
+            DS.IntermediateTokenFeatureGenerator(
+                prefix_fwdPOSIntermeditate=61,
+                prefix_bkwdPOSIntermeditate=65,
+                prefix_unorderedPOSIntermeditate=69,
+            ),
+
+            #####
+
             NamedEntityCountFeatureGenerator(
                 prot_e_id,
                 prefix=130
