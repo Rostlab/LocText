@@ -182,7 +182,7 @@ class AnyNGramFeatureGenerator(EdgeFeatureGenerator):
     def generate(self, dataset, feature_set, is_training_mode):
 
         for edge in dataset.edges():
-            (sentence1, sentence2) = edge.get_sentences_pair(force_sort=True)
+            (sentence1, sentence2) = edge.get_sentences_pair()
             combined_sentence = combine_sentences(edge, sentence1, sentence2)
 
             n_grams = zip(*(combined_sentence[start:] for start in range(0, self.n_gram)))
@@ -242,17 +242,23 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
         # ---
 
         for edge in dataset.edges():
-            s1, s2 = edge.get_sentences_pair(force_sort=False)
+            s1, s2 = edge.get_sentences_pair()
             e1, e2 = edge.entity1, edge.entity2
+            assert edge.e1_sentence_id < edge.e2_sentence_id
+            assert e1.offset < e2.offset
+            assert e1.class_id != e2.class_id
+            assert self.e1_class == 'e_1'  # Hardcoded indeed but just to be sure
 
             is_prot_in_s1 = e1.class_id == self.e1_class
-            if is_prot_in_s1:  # protein in first sentence and localization in second
-                assert e2.class_id == self.e2_class
-            else:  # location in first sentence and protein in second
-                assert e2.class_id == self.e1_class
-                # Swap: put in (logically) the protein in the first sentence to simplify code later
-                s1, s2 = s2, s1
-                e1, e2 = e2, e1
+
+            if is_prot_in_s1:
+                # protein in first sentence and localization in second
+                s_prot, s_loc = s1, s2
+                e_prot, e_loc = e1, e2
+            else:
+                # location in first sentence and protein in second
+                s_prot, s_loc = s2, s1
+                e_prot, e_loc = e2, e1
 
             # Pattern, e.g. first: (protein token) then (token verb) then (some token that matches in other sentence)
             protVerbWord = False
@@ -260,33 +266,40 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
             locVerbWord = False
             wordVerbLoc = False
 
-            for (s1_t1, s2_t2) in product(s1, s2):
+            for (t1, t2) in product(s1, s2):
 
-                if (s1_t1.is_POS_Noun() and
+                if (t1.is_POS_Noun() and
                     # ⚠️ Note, I (Juanmi) decide to and compare in lower case. Shrikant's was code sensitive
-                    s1_t1.word.lower() == s2_t2.word.lower() and
-
-                    # ⚠️ Shrikant uses the **head token** of an entity (i.e. not necessarily the first token)
-                    # ⚠️ I (Juanmi) use the first token and, instead of checking that s1_t1 is not an entity
-                    s1_t1.get_entity(edge.same_part) is None and
+                    t1.word.lower() == t2.word.lower() and
+                    (t1.get_entity(edge.same_part) is None and
+                        # ⚠️ the following clause was not in Shrikant's code
+                        t2.get_entity(edge.same_part) is None) and
                     # ⚠️ the following clause was not in Shrikant's code
-                    s2_t2.get_entity(edge.same_part) is None and
+                    # Note: I just make sure that the tokens are not part of the entities
+                    # ⚠️ Shrikant uses the **head token** of an entity (i.e. not necessarily the first token)
+                    #   I (Juanmi) use the first token
+                    #
                     # ⚠️ Note that entities can be within tokens, e.g. example_[P53], or or spand multiple ones, e.g. [cell surface]
                     # that also means that entity.offset is not necessarily == entity.tokens.start
-                    s1_t1.start != e1.tokens[0].start and s2_t2.start != e2.tokens[0].start):
+                    t1.start != e1.tokens[0].start and t2.start != e2.tokens[0].start):
 
-                    if e1.tokens[0].start < s1_t1.start:
-                        if exist_verb_token_within(s1, e1.tokens[0], s1_t1):
+                    if is_prot_in_s1:
+                        t_prot, t_loc = t1, t2
+                    else:
+                        t_prot, t_loc = t2, t1
+
+                    if e_prot.tokens[0].start < t_prot.start:
+                        if exist_verb_token_within(s_prot, e_prot.tokens[0], t_prot):
                             protVerbWord = True
                     else:
-                        if exist_verb_token_within(s1, s1_t1, e1.tokens[0]):
+                        if exist_verb_token_within(s_prot, t_prot, e_prot.tokens[0]):
                             wordVerbProt = True
 
-                    if e2.tokens[0].start < s2_t2.start:
-                        if exist_verb_token_within(s2, e2.tokens[0], s2_t2):
+                    if e_loc.tokens[0].start < t_loc.start:
+                        if exist_verb_token_within(s_loc, e_loc.tokens[0], t_loc):
                             locVerbWord = True
                     else:
-                        if exist_verb_token_within(s2, s2_t2, e2.tokens[0]):
+                        if exist_verb_token_within(s_loc, t_loc, e_loc.tokens[0]):
                             wordVerbLoc = True
 
             if protVerbWord:
@@ -330,7 +343,7 @@ class SameWordFeatureGenerator(EdgeFeatureGenerator):
 
         for edge in dataset.edges():
 
-            s1, s2 = edge.get_sentences_pair(force_sort=False)
+            s1, s2 = edge.get_sentences_pair()
 
             for t1 in s1:
                 for t2 in s2:
@@ -405,7 +418,7 @@ class IndividualSentencesFeatureGenerator(EdgeFeatureGenerator):
 
         for edge in dataset.edges():
 
-            s1, s2 = edge.get_sentences_pair(force_sort=False)
+            s1, s2 = edge.get_sentences_pair()
             s1_e_class_id, s2_e_class_id = edge.entity1.class_id, edge.entity2.class_id
 
             # ⚠️ Again, I use lowercase token word (instead of literal) AND lemma (instead of token)
@@ -425,8 +438,6 @@ class IntermediateTokenFeatureGenerator(EdgeFeatureGenerator):
     """
     `buildIntermediateTokenFeats` re-implementation of Shrikant's (java) into Python.
     """
-
-    from itertools import chain
 
     def __init__(
         self,
@@ -462,10 +473,11 @@ class IntermediateTokenFeatureGenerator(EdgeFeatureGenerator):
 
 
     def generate(self, dataset, feat_set, is_train):
+        from itertools import chain
 
         for edge in dataset.edges():
 
-            s1, s2 = edge.get_sentences_pair(force_sort=True)
+            s1, s2 = edge.get_sentences_pair()
             s1_e_class_id, s2_e_class_id = edge.entity1.class_id, edge.entity2.class_id
 
             ordered = s1_e_class_id < s2_e_class_id
