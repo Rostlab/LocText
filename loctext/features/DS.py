@@ -23,6 +23,20 @@ def get_tokens_within(sentence, token_1, token_2):
         raise Exception("Not implemented")
 
 
+def get_entities_tokens_position(sentence_1, sentence_2, entity_1, entity_2):
+    assert entity_1.offset < entity_2.offset, \
+        "The entities must be sorted as such: e1 ({}) < e2 ({})".format(entity_1, entity_2)
+
+    if 'id' in entity_1.tokens[0].features:
+        entity_1_index = entity_1.tokens[0].features['id']
+        entity_2_index = len(sentence_1) + entity_2.tokens[0].features['id']
+
+        return(entity_1_index, entity_2_index)
+
+    else:
+        raise Exception("Not implemented")
+
+
 def combine_sentences(edge, sentence1, sentence2):
     """
     Combine two simple simple normal sentences into a "chained" sentence with
@@ -519,6 +533,7 @@ class LinearDistanceFeatureGenerator(EdgeFeatureGenerator):
         prefix_entityLinearDistGreaterThan=None,
         prefix_entityLinearDistLessThanOrEqual=None,
         prefix_entityLinearDist=None,
+        prefix_entityLinearDistOffsets=None,
     ):
 
         self.distance_threshold = distance_threshold
@@ -526,18 +541,65 @@ class LinearDistanceFeatureGenerator(EdgeFeatureGenerator):
         self.prefix_entityLinearDistGreaterThan = prefix_entityLinearDistGreaterThan
         self.prefix_entityLinearDistLessThanOrEqual = prefix_entityLinearDistLessThanOrEqual
         self.prefix_entityLinearDist = prefix_entityLinearDist
+        self.prefix_entityLinearDistOffsets = prefix_entityLinearDistOffsets
 
 
     def generate(self, dataset, feat_set, is_train):
-        from itertools import chain
 
         for edge in dataset.edges():
 
-            abs_distance = (edge.entity1.head_token.start - edge.entity2.head_token.start)
+            s1, s2 = edge.get_sentences_pair()
+            (e1_index, e2_index) = get_entities_tokens_position(s1, s2, edge.entity1, edge.entity2)
 
-            if abs_distance > self.distance_threshold:
+            abs_distance_pos = abs(e2_index - e1_index)
+
+            # TODO This actually performans good for prefix_entityLinearDist
+            abs_distance_offsets = abs(edge.entity2.head_token.start - edge.entity1.head_token.start)
+
+            if abs_distance_pos > self.distance_threshold:
                 self.add(feat_set, is_train, edge, 'prefix_entityLinearDistGreaterThan', str(self.distance_threshold))
             else:
                 self.add(feat_set, is_train, edge, 'prefix_entityLinearDistLessThanOrEqual', str(self.distance_threshold))
 
-            self.add_with_value(feat_set, is_train, edge, 'prefix_entityLinearDist', value=abs_distance)
+            self.add_with_value(feat_set, is_train, edge, 'prefix_entityLinearDist', value=abs_distance_pos)
+
+            self.add_with_value(feat_set, is_train, edge, 'prefix_entityLinearDistOffsets', value=abs_distance_offsets)
+
+
+class BowFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `gatherBowFeatures` re-implementation of Shrikant's (java) into Python.
+    """
+
+    def __init__(
+        self,
+        #
+        prefix_bow_of_tokens_and_entities=None,
+    ):
+
+        self.prefix_bow_of_tokens_and_entities = prefix_bow_of_tokens_and_entities
+
+
+    def generate(self, dataset, feat_set, is_train):
+        from itertools import chain
+        from collections import Counter
+
+        for edge in dataset.edges():
+
+            s1, s2 = edge.get_sentences_pair()
+            chained_sentence = chain(s1, s2)
+
+            c = Counter()
+
+            for token in chained_sentence:
+                # ⚠️ Again, I use lowercase token word (instead of literal)
+                bowString = "bow_" + token.word.lower()
+                c.update([bowString])
+
+                if not token.get_entity(edge.same_part) is None:
+                    neString = "ne_" + bowString
+                    c.update([neString])
+
+            for (feature, count) in c.items():
+                assert count > 0
+                self.add_with_value(feat_set, is_train, edge, 'prefix_bow_of_tokens_and_entities', count, feature)
