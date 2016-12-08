@@ -505,3 +505,39 @@ class IntermediateTokenFeatureGenerator(EdgeFeatureGenerator):
 
             add(direction=protein_before_location)
             add(direction="unordered")
+
+
+class LinearDistanceFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `buildLinearDistanceFeature` re-implementation of Shrikant's (java) into Python.
+    """
+
+    def __init__(
+        self,
+        distance_threshold,  # Shrikant had it as 5 only -- we allow setting it as a parameter
+        #
+        prefix_entityLinearDistGreaterThan=None,
+        prefix_entityLinearDistLessThanOrEqual=None,
+        prefix_entityLinearDist=None,
+    ):
+
+        self.distance_threshold = distance_threshold
+
+        self.prefix_entityLinearDistGreaterThan = prefix_entityLinearDistGreaterThan
+        self.prefix_entityLinearDistLessThanOrEqual = prefix_entityLinearDistLessThanOrEqual
+        self.prefix_entityLinearDist = prefix_entityLinearDist
+
+
+    def generate(self, dataset, feat_set, is_train):
+        from itertools import chain
+
+        for edge in dataset.edges():
+
+            abs_distance = (edge.entity1.head_token.start - edge.entity2.head_token.start)
+
+            if abs_distance > self.distance_threshold:
+                self.add(feat_set, is_train, edge, 'prefix_entityLinearDistGreaterThan', str(self.distance_threshold))
+            else:
+                self.add(feat_set, is_train, edge, 'prefix_entityLinearDistLessThanOrEqual', str(self.distance_threshold))
+
+            self.add_with_value(feat_set, is_train, edge, 'prefix_entityLinearDist', value=abs_distance)

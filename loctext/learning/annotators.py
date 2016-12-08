@@ -295,6 +295,14 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_unorderedPOSIntermeditate=69,
             ),
 
+            DS.LinearDistanceFeatureGenerator(
+                distance_threshold=5,
+                #
+                prefix_entityLinearDistGreaterThan=70,
+                prefix_entityLinearDistLessThanOrEqual=71,
+                prefix_entityLinearDist=72,
+            ),
+
             #####
 
             NamedEntityCountFeatureGenerator(
