@@ -296,11 +296,17 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
             ),
 
             DS.LinearDistanceFeatureGenerator(
+                # TODO such a small distance doesn't seem to make sense
                 distance_threshold=5,
                 #
                 prefix_entityLinearDistGreaterThan=70,
                 prefix_entityLinearDistLessThanOrEqual=71,
                 prefix_entityLinearDist=72,
+                prefix_entityLinearDistOffsets=72.1,
+            ),
+
+            DS.BowFeatureGenerator(
+                prefix_bow_of_tokens_and_entities=129,
             ),
 
             #####
