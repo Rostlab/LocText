@@ -337,8 +337,12 @@ class StringTagger(Tagger):
 
     # Primary method which will be called to set predicated annotations based on JSON response from STRING tagger.
     def annotate(self, dataset):
+        # Verify entity offsets - No warnings should be displayed
+        dataset.validate_entity_offsets()
 
         for part in dataset.parts():
+            # Retrieve JSON response
             json_response = self.get_string_tagger_json_response(part.text)
 
+            # Set entity information to part.predicated_annotations list
             self.set_predicted_annotations(json_response, part)
