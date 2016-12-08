@@ -350,3 +350,28 @@ class SameWordFeatureGenerator(EdgeFeatureGenerator):
 
                         if t1_POS == t2_POS:
                             self.add(feature_set, is_training_mode, edge, "prefix_sameStemSamePOS", t1.features['lemma'], t1_POS)
+
+
+class LocEntityFeatureGenerator(EdgeFeatureGenerator):
+    """
+    `buildLocEntityFeature` re-implementation of Shrikant's (java) into Python.
+    """
+
+    def __init__(
+        self,
+        localization_class_id,
+        prefix_localizationVerb=None,
+    ):
+
+        self.localization_class_id = localization_class_id
+
+        self.prefix_localizationVerb = prefix_localizationVerb
+
+
+    def generate(self, dataset, feature_set, is_training_mode):
+
+        for edge in dataset.edges():
+            loc_entity = edge.entity1 if edge.entity1.class_id == self.localization_class_id else edge.entity2
+
+            if loc_entity.head_token.is_POS_Verb():
+                self.add(feature_set, is_training_mode, edge, "prefix_localizationVerb")

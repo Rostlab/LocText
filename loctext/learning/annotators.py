@@ -281,6 +281,11 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_sameStemSamePOS=50,
             ),
 
+            DS.LocEntityFeatureGenerator(
+                localization_class_id=loc_e_id,
+                prefix_localizationVerb=51
+            ),
+
             NamedEntityCountFeatureGenerator(prot_e_id, prefix=130),
             NamedEntityCountFeatureGenerator(loc_e_id, prefix=131),
         ]
