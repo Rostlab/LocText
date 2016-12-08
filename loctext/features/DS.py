@@ -247,7 +247,7 @@ class PatternFeatureGenerator(EdgeFeatureGenerator):
             assert edge.e1_sentence_id < edge.e2_sentence_id
             assert e1.offset < e2.offset
             assert e1.class_id != e2.class_id
-            assert self.e1_class == 'e_1'  # Hardcoded indeed but just to be sure
+            assert self.e1_class == 'e_1'  # Hardcoded indeed but just to be sure that this is the protein
 
             is_prot_in_s1 = e1.class_id == self.e1_class
 
@@ -479,26 +479,29 @@ class IntermediateTokenFeatureGenerator(EdgeFeatureGenerator):
 
             s1, s2 = edge.get_sentences_pair()
             s1_e_class_id, s2_e_class_id = edge.entity1.class_id, edge.entity2.class_id
-
-            ordered = s1_e_class_id < s2_e_class_id
             e1_start, e2_start = edge.entity1.head_token.start, edge.entity2.head_token.start
             assert e1_start < e2_start, (ordered, edge.entity1, edge.entity2)
 
-            ordered = "fwd" if ordered else "bkwd"
+            ordered = s1_e_class_id < s2_e_class_id
+            if ordered:
+                assert s1_e_class_id == 'e_1'  # Hardcoded indeed but just to be sure that this is the protein
+            else:
+                assert s1_e_class_id == 'e_2'  # Hardcoded indeed but just to be sure that this is the location
+
+            protein_before_location = "fwd" if ordered else "bkwd"
 
             # ⚠️ Again, I use lowercase token word (instead of literal) AND lemma (instead of token)
-
             # ⚠️ Further, I solve Shrikant's code of not actually using the masked text (see original code comment)
 
             chained_sentence = chain(s1, s2)
 
             def add(direction):
                 for t in chained_sentence:
-                    if e1_start < t.start and t.start < e2_start:
+                    if e1_start < t.start < e2_start:
                         self.add(feat_set, is_train, edge, ('prefix_'+direction+'BowIntermediate'), t.word.lower())
                         self.add(feat_set, is_train, edge, ('prefix_'+direction+'BowInterMasked'), t.masked_text(edge.same_part))
                         self.add(feat_set, is_train, edge, ('prefix_'+direction+'StemIntermediate'), t.features['lemma'])
                         self.add(feat_set, is_train, edge, ('prefix_'+direction+'POSIntermeditate'), t.features['pos'])
 
-            add(direction=ordered)
+            add(direction=protein_before_location)
             add(direction="unordered")
