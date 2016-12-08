@@ -246,8 +246,6 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
             # Comment from Shrikant:
             # TODO ...Commenting follwing two function calls increases the overall Fscore by 0.3 points...
 
-            # TODO and, should we have features for unigram too?
-
             # Trigram
             DS.AnyNGramFeatureGenerator(
                 n_gram=3,
