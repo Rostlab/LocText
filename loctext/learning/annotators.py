@@ -1,6 +1,7 @@
 from nalaf.learning.taggers import RelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
+from nalaf.preprocessing.tokenizers import TmVarTokenizer, NLTK_TOKENIZER
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from loctext.features.specific import LocationWordFeatureGenerator
 from loctext.features.specific import ProteinWordFeatureGenerator
@@ -38,7 +39,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             feature_generators = self.feature_generators()
 
         edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=0)
-        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, edge_generator=edge_generator, feature_generators=feature_generators)
+        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, tokenizer=NLTK_TOKENIZER, edge_generator=edge_generator, feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
