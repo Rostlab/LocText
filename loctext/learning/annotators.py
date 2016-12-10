@@ -16,12 +16,9 @@ from nalaf.utils.readers import StringReader
 from nalaf import print_verbose, print_debug
 from nalaf.learning.taggers import Tagger
 from loctext.util import UNIPROT_NORM_ID, STRING_NORM_ID
-#from nalaf.utils import MUT_CLASS_ID, PRO_CLASS_ID, PRO_REL_MUT_CLASS_ID, ENTREZ_GENE_ID, UNIPROT_ID
-import difflib
-from nalaf.utils.ncbi_utils import GNormPlus
-from nalaf.utils.uniprot_utils import Uniprot
 from nalaf.structures.data import Entity
 import requests
+import sys
 
 
 class LocTextSSmodelRelationExtractor(RelationExtractor):
@@ -279,14 +276,28 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
 
 
 class StringTagger(Tagger):
+    def __init__(self):
+        super().__init__([UNIPROT_NORM_ID, STRING_NORM_ID])
 
     # Gets String Tagger JSON response, by making a REST call.
     def get_string_tagger_json_response(self, payload):
 
-        base_url = ""
-        json_response = requests.post(base_url, data=payload)
-
-        return json_response
+        base_url = "http://127.0.0.1:5000/annotate/post"
+        try:
+            json_response = requests.post(base_url, json=dict(text=payload))
+            json_response.status_code = 200
+            response_data = json_response.json()
+        except requests.exceptions.Timeout as err:
+            #Maybe set up for a retry, or continue in a retry loop
+            print(err)
+        except requests.exceptions.TooManyRedirects as err:
+            print(err)
+            #Tell the user their URL was bad and try a different one
+        except requests.exceptions.RequestException as err:
+            #Catastrophic error. bail.
+            print(err)
+            sys.exit(1)
+        return response_data
 
     # Sets the predicted annotations of the parts based on JSON response entity values.
     def set_predicted_annotations(self, json_response, part):
