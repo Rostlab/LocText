@@ -44,9 +44,9 @@ def test_count_relations_dists_texts_with_repetitions():
     # Documents 100
 
     # Texts With Repetitions
-    # Counter({'D0': 648, 'D1': 223, 'D2': 174, 'D3': 97, 'D4': 72, 'D5': 52, 'D6': 32, 'D7': 19, 'D8': 15, 'D9': 9, 'D10': 3, 'D11': 1})
-    # Counter({'D0': 0.4817843866171004, 'D1': 0.1657992565055762, 'D2': 0.12936802973977696, 'D3': 0.07211895910780669, 'D4': 0.053531598513011154, 'D5': 0.038661710037174724, 'D6': 0.02379182156133829, 'D7': 0.01412639405204461, 'D8': 0.011152416356877323, 'D9': 0.006691449814126394, 'D10': 0.0022304832713754648, 'D11': 0.0007434944237918215})
-    # D0 + D1 ~= 0.65
+    # Counter({'D0': 351, 'D1': 95, 'D2': 53, 'D3': 23, 'D5': 9, 'D6': 8, 'D4': 7, 'D7': 2, 'D9': 2})
+    # Counter({'D0': 0.6381818181818182, 'D1': 0.17272727272727273, 'D2': 0.09636363636363636, 'D3': 0.04181818181818182, 'D5': 0.016363636363636365, 'D6': 0.014545454545454545, 'D4': 0.012727272727272728, 'D9': 0.0036363636363636364, 'D7': 0.0036363636363636364})
+    # D0 + D1 ~= 0.81 (just as Shrikant originally indicated)
 
     corpus = read_corpus("LocText")
 
@@ -56,7 +56,7 @@ def test_count_relations_dists_texts_with_repetitions():
     tokenizer.tokenize(corpus)
 
     print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances()
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID)
     print(counter_texts_nums)
     print(counter_texts_percts)
 
