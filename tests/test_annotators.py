@@ -40,8 +40,13 @@ def test_SS_baseline():
     return rel_evaluation
 
 
-def test_count_relations_dists():
+def test_count_relations_dists_texts_with_repetitions():
+    # Documents 100
+
+    # Texts With Repetitions
     # Counter({'D0': 648, 'D1': 223, 'D2': 174, 'D3': 97, 'D4': 72, 'D5': 52, 'D6': 32, 'D7': 19, 'D8': 15, 'D9': 9, 'D10': 3, 'D11': 1})
+    # Counter({'D0': 0.4817843866171004, 'D1': 0.1657992565055762, 'D2': 0.12936802973977696, 'D3': 0.07211895910780669, 'D4': 0.053531598513011154, 'D5': 0.038661710037174724, 'D6': 0.02379182156133829, 'D7': 0.01412639405204461, 'D8': 0.011152416356877323, 'D9': 0.006691449814126394, 'D10': 0.0022304832713754648, 'D11': 0.0007434944237918215})
+    # D0 + D1 ~= 0.65
 
     corpus = read_corpus("LocText")
 
@@ -50,9 +55,10 @@ def test_count_relations_dists():
     sentence_splitter.split(corpus)
     tokenizer.tokenize(corpus)
 
-    print(len(corpus))
-    counter_dist_rels = corpus.compute_stats_relations_distances()
-    print(counter_dist_rels)
+    print("# Documents", len(corpus))
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances()
+    print(counter_texts_nums)
+    print(counter_texts_percts)
 
 
 def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001):
