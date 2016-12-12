@@ -152,7 +152,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
         delete_incomplete_docs=False).annotate(corpus)
 
     if (corpus_percentage < 1.0):
-        corpus, _ = read_corpus(corpus_name).percentage_split(corpus_percentage)
+        corpus, _ = corpus.percentage_split(corpus_percentage)
 
     return corpus
 
