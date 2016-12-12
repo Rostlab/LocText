@@ -18,7 +18,8 @@ from nalaf.learning.taggers import Tagger
 from loctext.util import UNIPROT_NORM_ID, STRING_NORM_ID
 from nalaf.structures.data import Entity
 import requests
-import sys
+import os
+import urllib.request
 
 
 class LocTextSSmodelRelationExtractor(RelationExtractor):
@@ -279,25 +280,31 @@ class StringTagger(Tagger):
     def __init__(self):
         super().__init__([UNIPROT_NORM_ID, STRING_NORM_ID])
 
+    # def startServer(self):
+    #     os.popen("docker build -t tagg .")
+    #     os.popen("docker run -p 5000:5000 tagg:1.0")
+
     # Gets String Tagger JSON response, by making a REST call.
     def get_string_tagger_json_response(self, payload):
-
+        #self.startServer()
         base_url = "http://127.0.0.1:5000/annotate/post"
         try:
             json_response = requests.post(base_url, json=dict(text=payload))
             json_response.status_code = 200
             response_data = json_response.json()
-        except requests.exceptions.Timeout as err:
+        except requests.exceptions.ConnectionError as err:
             #Maybe set up for a retry, or continue in a retry loop
-            print(err)
-        except requests.exceptions.TooManyRedirects as err:
-            print(err)
-            #Tell the user their URL was bad and try a different one
-        except requests.exceptions.RequestException as err:
-            #Catastrophic error. bail.
-            print(err)
-            sys.exit(1)
+            print("Sever is not running. For this application you need to install Docker https://docs.docker.com/engine/installation/ \n"
+                  "You only need to build the docker image once, like this: '$docker build -t tagger .' \n"
+                  "To run the docker image, you type this command: '$docker run -p 5000:5000 tagger'")
+            #sys.exit(1)
         return response_data
+
+
+    # Return true if server is running (for testing purposes)
+    def server_is_running(host, url):
+        return urllib.request.urlopen(url).getcode() == 200
+
 
     # Sets the predicted annotations of the parts based on JSON response entity values.
     def set_predicted_annotations(self, json_response, part):
@@ -317,7 +324,7 @@ class StringTagger(Tagger):
                 if str(norm["type"]).isdigit():
                     if counter > 1:
                         string_id += ","
-                    string_id += str(norm["id"])
+                    string_id += "string:"+str(norm["id"])
                 else:
                     if counter > 1:
                         uniprot_id += ","
