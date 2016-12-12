@@ -12,6 +12,8 @@ from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator
 import math
 import sys
+from nalaf.preprocessing.spliters import NLTKSplitter
+from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER
 
 
 # See conftest.py too
@@ -29,12 +31,28 @@ def test_SS_baseline():
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
+
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("SS Baseline", rel_evaluation)
 
     return rel_evaluation
+
+
+def test_count_relations_dists():
+    # Counter({'D0': 648, 'D1': 223, 'D2': 174, 'D3': 97, 'D4': 72, 'D5': 52, 'D6': 32, 'D7': 19, 'D8': 15, 'D9': 9, 'D10': 3, 'D11': 1})
+
+    corpus = read_corpus("LocText")
+
+    sentence_splitter = NLTKSplitter()
+    tokenizer = NLTK_TOKENIZER
+    sentence_splitter.split(corpus)
+    tokenizer.tokenize(corpus)
+
+    print(len(corpus))
+    counter_dist_rels = corpus.compute_stats_relations_distances()
+    print(counter_dist_rels)
 
 
 def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001):
