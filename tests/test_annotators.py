@@ -40,27 +40,6 @@ def test_SS_baseline():
     return rel_evaluation
 
 
-def test_count_relations_dists_texts_with_repetitions():
-    # Documents 100
-
-    # Texts With Repetitions
-    # Counter({'D0': 351, 'D1': 95, 'D2': 53, 'D3': 23, 'D5': 9, 'D6': 8, 'D4': 7, 'D7': 2, 'D9': 2})
-    # Counter({'D0': 0.6381818181818182, 'D1': 0.17272727272727273, 'D2': 0.09636363636363636, 'D3': 0.04181818181818182, 'D5': 0.016363636363636365, 'D6': 0.014545454545454545, 'D4': 0.012727272727272728, 'D9': 0.0036363636363636364, 'D7': 0.0036363636363636364})
-    # D0 + D1 ~= 0.81 (just as Shrikant originally indicated)
-
-    corpus = read_corpus("LocText")
-
-    sentence_splitter = NLTKSplitter()
-    tokenizer = NLTK_TOKENIZER
-    sentence_splitter.split(corpus)
-    tokenizer.tokenize(corpus)
-
-    print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID)
-    print(counter_texts_nums)
-    print(counter_texts_percts)
-
-
 def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001):
     # Note: EXPECTED_F=None will make the test fail for non-yet verified evaluations
     # Note: the real StdErr's are around ~0.0027-0.0095. Decrease them by default to be more strict with tests
