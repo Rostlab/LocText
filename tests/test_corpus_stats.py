@@ -78,6 +78,7 @@ def test_count_relations_dists_normalizations_without_repetitions():
     # Texts With Repetitions
     Counter({'D0': 216, 'D1': 57, 'D2': 32, 'D3': 15, 'D5': 9, 'D6': 6, 'D4': 5, 'D9': 2})
     Counter({'D0': 0.631578947368421, 'D1': 0.16666666666666666, 'D2': 0.0935672514619883, 'D3': 0.043859649122807015, 'D5': 0.02631578947368421, 'D6': 0.017543859649122806, 'D4': 0.014619883040935672, 'D9': 0.005847953216374269})
+
     sum_0_1 = 0.80  # D0 + D1
 
     corpus = read_corpus("LocText")
