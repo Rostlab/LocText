@@ -23,6 +23,7 @@ __help__ = """  Simple parse a GO ontology .obo file.
                 Also note, there are some terms that may even have multiple replacements/considerations, e.g GO:0019804.
                 Even some obsoleted terms have multiple replacements/considerations, where one is in the hierarchy
                 and another one is not.
+                Finally, some obsolete terms are not replaced/considered by any other, at least yeat (e.g. GO:0031614)
            """
 
 
