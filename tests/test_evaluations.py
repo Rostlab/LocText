@@ -343,8 +343,6 @@ def test_relation_accept_uniprot_go_uniprots_do_not_create_spurious_ignores_None
         "r_5|n_7|xxx|n_8|GO:0005622")
 
 
-
-
 if __name__ == "__main__":
 
     # selected tests:
