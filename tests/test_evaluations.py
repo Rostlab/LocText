@@ -178,23 +178,23 @@ def test_relation_accept_uniprot_go_indirect_children():
 
     # Ignore when the prediciton is above gold (that is, the prediction is an in-/direct parent of gold)
 
-    assert accept_prediction(
+    assert ignore_prediction(
         "r_5|n_7|xxx|n_8|GO:0000123",
         "r_5|n_7|xxx|n_8|GO:0044451")
 
-    assert accept_prediction(
+    assert ignore_prediction(
         "r_5|n_7|xxx|n_8|GO:0000123",
         "r_5|n_7|xxx|n_8|GO:0031248")
 
-    assert accept_prediction(
+    assert ignore_prediction(
         "r_5|n_7|xxx|n_8|GO:0000123",
         "r_5|n_7|xxx|n_8|GO:0031248")
 
-    assert accept_prediction(
+    assert ignore_prediction(
         "r_5|n_7|xxx|n_8|GO:0000123",
         "r_5|n_7|xxx|n_8|GO:0031248")
 
-    assert accept_prediction(
+    assert ignore_prediction(
         "r_5|n_7|xxx|n_8|GO:0000123",
         "r_5|n_7|xxx|n_8|GO:0005575")
 
