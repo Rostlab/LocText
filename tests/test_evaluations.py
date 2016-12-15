@@ -17,7 +17,7 @@ from nalaf import print_verbose, print_debug
 
 def test_relation_accept_uniprot_go_basic_eq():
 
-    accept_prediction = relation_accept_uniprot_gon
+    accept_prediction = relation_accept_uniprot_go
 
     assert accept_prediction(
         "r_5|n_7|xxx|n_8|yyy",
