@@ -24,10 +24,10 @@ def relation_accept_uniprot_go(gold, pred):
     assert p_pro_key == UNIPROT_NORM_ID
     assert p_loc_key == GO_NORM_ID
 
-    return _uniprot_ids_equiv(g_n_7, p_n_7) and _go_ids_equiv(g_n_8, p_n_8)
+    return _uniprot_ids_accept(g_n_7, p_n_7) and _go_ids_accept(g_n_8, p_n_8)
 
 
-def _uniprot_ids_equiv(gold, pred):
+def _uniprot_ids_accept(gold, pred):
 
     if gold == pred:
         return True
@@ -41,9 +41,13 @@ def _verify_in_ontology(term):
         raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
 
 
-def _go_ids_equiv(gold, pred):
+def _go_ids_accept(gold, pred):
     """
-    the gold go term must be the parent to accept the go prediction, not the other way around
+    Three outcomes:
+
+    * gold is_parent_of pred --> accept (True)
+    * gold is_child_of pred --> ignore (None)
+    * else: no relationship whatsoever --> reject (False)
     """
 
     if gold == pred:
@@ -60,4 +64,4 @@ def _go_ids_equiv(gold, pred):
     pred_parents = GO_TREE.get(pred).parents
 
     # direct parent or indirect (recursive) parent
-    return gold in pred_parents or any(_go_ids_equiv(gold, pp) for pp in pred_parents if pp in GO_TREE)
+    return gold in pred_parents or any(_go_ids_accept(gold, pp) for pp in pred_parents if pp in GO_TREE)
