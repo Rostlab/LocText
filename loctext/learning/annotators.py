@@ -11,7 +11,7 @@ from nalaf.features.relations.context import EntityOrderFeatureGenerator
 from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
-from nalaf.features.relations.entityhead import EntityHeadTokenFeatureGenerator, EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
+from nalaf.features.relations.entityhead import EntityHeadTokenFeatureGenerator, EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator, EntityHeadTokenChainFeatureGenerator
 from nalaf.preprocessing.edges import SimpleEdgeGenerator, SentenceDistanceEdgeGenerator
 from nalaf import print_verbose, print_debug
 
@@ -331,6 +331,10 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_entity2_has_hyphen=115.2,
                 prefix_entity1_has_fslash=116.1,
                 prefix_entity2_has_fslash=116.2,
+            ),
+
+            EntityHeadTokenChainFeatureGenerator(
+
             ),
 
             DS.BowFeatureGenerator(
