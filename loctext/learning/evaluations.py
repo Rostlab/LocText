@@ -9,7 +9,7 @@ GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go
 Dictionary with go term child --> to [list of go term parents] relationships
 """
 
-def relation_equals_uniprot_go(gold, pred):
+def relation_accept_uniprot_go(gold, pred):
 
     if gold == pred and gold != "":
         return True
