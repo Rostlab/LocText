@@ -6,7 +6,6 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 
 from pytest import raises
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
-from loctext.learning.evaluations import relation_equals_uniprot_go, GO_TREE
 from nalaf import print_verbose, print_debug
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf.learning.taggers import StubRelationExtractor

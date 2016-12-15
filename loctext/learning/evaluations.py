@@ -52,12 +52,12 @@ def _go_ids_equiv(gold, pred):
     _verify_in_ontology(gold)
     _verify_in_ontology(pred)
 
-    gold_is_root = len(GO_TREE.get(gold)) == 0
+    gold_is_root = len(GO_TREE.get(gold).parents) == 0
 
     if gold_is_root:
         return True
 
-    pred_parents = GO_TREE.get(pred)
+    pred_parents = GO_TREE.get(pred).parents
 
     # direct parent or indirect (recursive) parent
     return gold in pred_parents or any(_go_ids_equiv(gold, pp) for pp in pred_parents if pp in GO_TREE)

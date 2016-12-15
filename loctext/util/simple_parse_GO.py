@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+from collections import namedtuple
 
 assert sys.version_info.major == 3, "the script requires Python 3"
 
@@ -11,6 +12,7 @@ __help__ = """  Simple parse a GO ontology .obo file.
                 This python file can be used as a:
                 1) script to filter and extract only a desired GO hierarchy, and
                 2) library to parse the parent-children relasionships of the ontology (`is_a` and `part_of`).
+                   As result, a dictionary keyed by the GO ids and values: name (str), parents (list), children (list)
 
                 Note: as a script, the GO Terms are printed to standard output. Redirect to a file if needed.
 
@@ -22,6 +24,10 @@ __help__ = """  Simple parse a GO ontology .obo file.
                 Even some obsoleted terms have multiple replacements/considerations, where one is in the hierarchy
                 and another one is not.
            """
+
+
+GOTerm = namedtuple('GOTerm', ['name', 'parents', 'children'])
+
 
 def parse_arguments(argv=[]):
     import argparse
@@ -59,6 +65,7 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                 go_id_line = next(f)
                 go_id = regex_go_id.search(go_id_line).group()
                 name_line = next(f)
+                name = name_line[len('name: '):]
                 namespace_line = next(f)
 
                 if namespace_line.startswith(args.namespace):
@@ -67,14 +74,20 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                     print_out(go_id_line)
                     print_out(name_line)
                     print_out(namespace_line)
+
+                    # Some parents relationships may appear before than the parents descriptions themselves (see below)
+                    term = dictionary.get(go_id, GOTerm(name=None, parents=[], children=[]))
+                    term = term._replace(name=name.strip())
+                    dictionary[go_id] = term
                 else:
                     state = 'ignore_term'
 
             elif line == f.newlines:
                 if state == 'accept_term':
                     if create_dictionary and go_id not in dictionary and not go_term_is_obsolete:
-                        # Must be root of respective go hierarchy; no parents
-                        dictionary[go_id] = []
+                        # Had we not put the children relationships in the dictionary too,
+                        # ...this would be the root of the respective go hierarchy
+                        assert False, "Cannot happen"
 
                     print_out(line)
 
@@ -94,9 +107,16 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                         line.startswith('consider:')):
 
                     parent = regex_go_id.search(line).group()
-                    parents = dictionary.get(go_id, [])
-                    parents = [*parents, parent]
-                    dictionary[go_id] = parents
+                    child_term = dictionary[go_id]
+                    parents = [*child_term.parents, parent]
+
+                    child_term = child_term._replace(parents=parents)
+                    dictionary[go_id] = child_term
+
+                    # Some parents relationships may appear before than the parents descriptions themselves
+                    parent_term = dictionary.get(parent, GOTerm(name="UNKNOWN", parents=[], children=[]))
+                    parent_term = parent_term._replace(children=[*parent_term.children, go_id])
+                    dictionary[parent] = parent_term
 
             else:
                 continue

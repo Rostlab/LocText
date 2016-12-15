@@ -175,7 +175,7 @@ def test_relation_equals_uniprot_go_all_children_of_root():
     are_equivalent = relation_equals_uniprot_go
 
     for go_term in GO_TREE:
-        pred_parents = GO_TREE[go_term]
+        pred_parents = GO_TREE[go_term].parents
 
         no_parent_in_ontology = all(p not in GO_TREE for p in pred_parents)
         is_root = len(pred_parents) == 0
