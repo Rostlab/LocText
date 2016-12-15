@@ -294,9 +294,8 @@ class StringTagger(Tagger):
             response_data = json_response.json()
         except requests.exceptions.ConnectionError as err:
             #Maybe set up for a retry, or continue in a retry loop
-            print("Sever is not running. For this application you need to install Docker https://docs.docker.com/engine/installation/ \n"
-                  "You only need to build the docker image once, like this: '$docker build -t tagger .' \n"
-                  "To run the docker image, you type this command: '$docker run -p 5000:5000 tagger'")
+            print("The docker STRING tagger REST server cannot be reached. \n"
+                  "For installation and running the server, please refer to https://github.com/juanmirocks/STRING-tagger-server/tree/feature/Testing")
             #sys.exit(1)
         return response_data
 
