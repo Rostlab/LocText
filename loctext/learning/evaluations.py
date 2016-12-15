@@ -56,12 +56,29 @@ def _go_ids_accept(gold, pred):
     _verify_in_ontology(gold)
     _verify_in_ontology(pred)
 
-    gold_is_root = len(GO_TREE.get(gold).parents) == 0
-
-    if gold_is_root:
-        return True
-
+    gold_parents = GO_TREE.get(gold).parents
     pred_parents = GO_TREE.get(pred).parents
 
-    # direct parent or indirect (recursive) parent
-    return gold in pred_parents or any(_go_ids_accept(gold, pp) for pp in pred_parents if pp in GO_TREE)
+    if len(gold_parents) == 0:  # gold is root
+        return True
+    if len(pred_parents) == 0:  # pred is root
+        return None
+
+    pred_parents = GO_TREE.get(pred).parents
+    pred_children = GO_TREE.get(pred).children
+
+    if gold in pred_parents:  # gold is direct parent of pred
+        return True
+    if pred in gold_parents:  # pred is direct parent of gold (i.e., gold is direct child of pred)
+        return None
+
+    accept_decisions = {_go_ids_accept(gold, pp) for pp in pred_parents if pp in GO_TREE}
+    # assert set.issubset(accept_decisions, {True, False, None})
+    assert not (True in accept_decisions and None in accept_decisions)
+
+    if True in accept_decisions:  # gold is indirect (recursive) parent of a prediction
+        return True
+    if None in accept_decisions:  # gold is indirect (recursive) child of a prediction
+        return None
+    else:
+        return False
