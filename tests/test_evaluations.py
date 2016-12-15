@@ -307,19 +307,28 @@ def test_relation_accept_uniprot_go_uniprots_as_list_do_not_have_to_be_valid():
 def test_relation_accept_uniprot_go_uniprots_do_not_create_spurious_ignores_Nones():
 
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0005737#term=ancchart
-    # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0043231#term=ancchart
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0044444#term=ancchart
+    # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0005783#term=ancchart
+    # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0043231#term=ancchart
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0012505#term=ancchart
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0044424#term=ancchart
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0005622#term=ancchart
 
-    assert False is relation_accept_uniprot_go(
+    assert True is relation_accept_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0043231")
+        "r_5|n_7|xxx|n_8|GO:0005737")
 
     assert True is relation_accept_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0044444")
+
+    assert True is relation_accept_uniprot_go(
+        "r_5|n_7|xxx|n_8|GO:0005737",
+        "r_5|n_7|xxx|n_8|GO:0005783")
+
+    assert False is relation_accept_uniprot_go(
+        "r_5|n_7|xxx|n_8|GO:0005737",
+        "r_5|n_7|xxx|n_8|GO:0043231")
 
     assert False is relation_accept_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
@@ -332,6 +341,8 @@ def test_relation_accept_uniprot_go_uniprots_do_not_create_spurious_ignores_None
     assert None is relation_accept_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0005622")
+
+
 
 
 if __name__ == "__main__":
