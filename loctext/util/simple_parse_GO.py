@@ -58,6 +58,7 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
     go_id = None
     go_term_is_obsolete = False
     regex_go_id = re.compile('GO:[0-9]+')
+    may_not_be_in_hierarchy = set()
 
     with open(args.go_file) as f:
         for line in f:
@@ -77,6 +78,9 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                     print_out(namespace_line)
 
                     # Some parents relationships may appear before than the parents descriptions themselves (see below)
+                    if go_id in may_not_be_in_hierarchy:
+                        may_not_be_in_hierarchy.remove(go_id)
+
                     term = dictionary.get(go_id, GOTerm(name=None, parents=[], children=[]))
                     term = term._replace(name=name.strip())
                     dictionary[go_id] = term
@@ -85,10 +89,20 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
 
             elif line == f.newlines:
                 if state == 'accept_term':
-                    if create_dictionary and go_id not in dictionary and not go_term_is_obsolete:
-                        # Had we not put the children relationships in the dictionary too,
-                        # ...this would be the root of the respective go hierarchy
-                        assert False, "Cannot happen"
+                    if create_dictionary:
+                        if go_id not in dictionary:
+                            # Had we not put the children relationships in the dictionary too,
+                            # ...this would be the root of the respective go hierarchy
+                            assert False, "Cannot happen"
+
+                        obsolete_term = dictionary[go_id]
+
+                        if go_term_is_obsolete:
+
+                            if 0 == len(obsolete_term.parents):  # no replacement / other considerations, yet
+                                # Put dummy UNKNOWN parent to keep the logic: if not parents --> is root
+                                obsolete_term = obsolete_term._replace(parents=["UNKNOWN"])
+                                dictionary[go_id] = obsolete_term
 
                     print_out(line)
 
@@ -114,13 +128,27 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                     child_term = child_term._replace(parents=parents)
                     dictionary[go_id] = child_term
 
-                    # Some parents relationships may appear before than the parents descriptions themselves
-                    parent_term = dictionary.get(parent, GOTerm(name="UNKNOWN", parents=[], children=[]))
+                    parent_term = dictionary.get(parent, None)
+
+                    if parent_term is None:
+                        # Some parents relationships may appear before than the parents descriptions themselves
+                        # Yet it can also be that they do not belong to the hierarchy
+                        may_not_be_in_hierarchy.update({parent})
+                        parent_term = GOTerm(name="UNKNOWN", parents=[], children=[])
+
                     parent_term = parent_term._replace(children=[*parent_term.children, go_id])
                     dictionary[parent] = parent_term
 
             else:
                 continue
+
+        if create_dictionary:
+            not_be_in_hierarchy = may_not_be_in_hierarchy
+
+            for go_id in not_be_in_hierarchy:
+                # Delete terms that actually do not belong to the hierarchy
+                # They were only added because the were "parents" of obsolete terms (replacements/considerations)
+                del dictionary[go_id]
 
     return dictionary
 
