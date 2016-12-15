@@ -43,14 +43,14 @@ def _verify_in_ontology(term):
 
 def _go_ids_accept(gold, pred):
     """
-    Three outcomes:
+    3 outcomes:
 
-    * gold is_parent_of pred --> accept (True)
-    * gold is_child_of pred --> ignore (None)
+    * gold is parent (direct or indirect) of pred --> accept (True)
+    * pred is parent (direct or indirect) of gold --> ignore (None)
     * else: no relationship whatsoever --> reject (False)
     """
 
-    if gold == pred:
+    if gold == pred:  # Arbitrarily, we do not test whether they belong to the ontology
         return True
 
     _verify_in_ontology(gold)
@@ -59,26 +59,30 @@ def _go_ids_accept(gold, pred):
     gold_parents = GO_TREE.get(gold).parents
     pred_parents = GO_TREE.get(pred).parents
 
-    if len(gold_parents) == 0:  # gold is root
+    if len(gold_parents) == 0:  # gold is root from the start
         return True
-    if len(pred_parents) == 0:  # pred is root
+    if len(pred_parents) == 0:  # pred is root from the start
         return None
 
-    pred_parents = GO_TREE.get(pred).parents
-    pred_children = GO_TREE.get(pred).children
-
-    if gold in pred_parents:  # gold is direct parent of pred
+    gold_is_parent_of_pred = _go_ids_accept_recursive(gold, pred, pred_parents)
+    if gold_is_parent_of_pred:
         return True
-    if pred in gold_parents:  # pred is direct parent of gold (i.e., gold is direct child of pred)
-        return None
-
-    accept_decisions = {_go_ids_accept(gold, pp) for pp in pred_parents if pp in GO_TREE}
-    # assert set.issubset(accept_decisions, {True, False, None})
-    assert not (True in accept_decisions and None in accept_decisions)
-
-    if True in accept_decisions:  # gold is indirect (recursive) parent of a prediction
-        return True
-    if None in accept_decisions:  # gold is indirect (recursive) child of a prediction
+    pred_is_parent_of_gold = _go_ids_accept_recursive(pred, gold, gold_parents)
+    if pred_is_parent_of_gold:
         return None
     else:
         return False
+
+
+def _go_ids_accept_recursive(a, b, b_parents):
+    """
+    2 outcomes:
+
+    * a is parent (direct or indirect) of b --> True
+    * else --> False
+    """
+
+    if a == b:
+        return True
+
+    return any(_go_ids_accept_recursive(a, pp, GO_TREE.get(pp).parents) for pp in b_parents if pp in GO_TREE)
