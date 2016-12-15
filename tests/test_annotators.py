@@ -14,6 +14,7 @@ import math
 import sys
 from nalaf.preprocessing.spliters import NLTKSplitter
 from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER
+from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
 
 
 # See conftest.py too
@@ -28,7 +29,7 @@ def test_SS_baseline():
     EXPECTED_F_SE = 0.0030
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun='normalized_first', relation_accept_fun=relation_accept_uniprot_go)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
 
