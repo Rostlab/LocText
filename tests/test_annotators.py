@@ -83,7 +83,7 @@ def test_baseline_DS():
     edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1)
 
     annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun='normalized_first', relation_accept_fun=relation_accept_uniprot_go)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")

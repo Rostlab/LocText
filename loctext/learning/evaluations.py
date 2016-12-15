@@ -24,13 +24,25 @@ def relation_accept_uniprot_go(gold, pred):
     assert p_pro_key == UNIPROT_NORM_ID
     assert p_loc_key == GO_NORM_ID
 
-    return _uniprot_ids_accept(g_n_7, p_n_7) and _go_ids_accept(g_n_8, p_n_8)
+    uniprot_accept = _uniprot_ids_accept(g_n_7, p_n_7)
+    go_accept = _go_ids_accept(g_n_8, p_n_8)
+    combined = {uniprot_accept, go_accept}
+
+    if combined == {True}:
+        return True
+    elif False in combined:
+        return False
+    else:
+        return None
 
 
 def _uniprot_ids_accept(gold, pred):
 
     if gold == pred:
         return True
+
+    if gold.startswith("UNKNOWN:"):  # see (nalaf) evaluators::_normalized_first
+        return None
 
     return any(g == p for (g, p) in product(gold.split(','), pred.split(',')))
 
