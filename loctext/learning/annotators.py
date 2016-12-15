@@ -11,7 +11,7 @@ from nalaf.features.relations.context import EntityOrderFeatureGenerator
 from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
-from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
+from nalaf.features.relations.entityhead import EntityHeadTokenFeatureGenerator, EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
 from nalaf.preprocessing.edges import SimpleEdgeGenerator, SentenceDistanceEdgeGenerator
 from nalaf import print_verbose, print_debug
 
@@ -306,11 +306,36 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
                 prefix_entityLinearDistOffsets=72.1,
             ),
 
+            #####
+
+            EntityHeadTokenFeatureGenerator(
+
+            ),
+
+            EntityHeadTokenUpperCaseFeatureGenerator(
+                prefix_entity1_upper_case_start=111.1,
+                prefix_entity2_upper_case_start=111.2,
+                prefix_entity1_upper_case_middle=112.1,
+                prefix_entity2_upper_case_middle=112.1,
+            ),
+
+            EntityHeadTokenDigitsFeatureGenerator(
+                prefix_entity1_has_digits=113.1,
+                prefix_entity2_has_digits=113.2,
+                prefix_entity1_has_hyphenated_digits=114.1,
+                prefix_entity2_has_hyphenated_digits=114.2,
+            ),
+
+            EntityHeadTokenPunctuationFeatureGenerator(
+                prefix_entity1_has_hyphen=115.1,
+                prefix_entity2_has_hyphen=115.2,
+                prefix_entity1_has_fslash=116.1,
+                prefix_entity2_has_fslash=116.2,
+            ),
+
             DS.BowFeatureGenerator(
                 prefix_bow_of_tokens_and_entities=129,
             ),
-
-            #####
 
             NamedEntityCountFeatureGenerator(
                 prot_e_id,
