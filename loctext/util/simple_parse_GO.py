@@ -8,8 +8,9 @@ __author__ = "Juan Miguel Cejuela (@juanmirocks)"
 
 __help__ = """  Simple parse a GO ontology .obo file.
 
-                This python file can be used 1) as a script to filter and extract only a desired GO hierarchy, and
-                2) as a library to parse the parent-children relasionships of the ontology (`is_a` and `part_of`).
+                This python file can be used as a:
+                1) script to filter and extract only a desired GO hierarchy, and
+                2) library to parse the parent-children relasionships of the ontology (`is_a` and `part_of`).
 
                 Note: as a script, the GO Terms are printed to standard output. Redirect to a file if needed.
 
@@ -61,16 +62,16 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                 namespace_line = next(f)
 
                 if namespace_line.startswith(args.namespace):
-                    state = 'print'
+                    state = 'accept_term'
                     print_out(term_token)
                     print_out(go_id_line)
                     print_out(name_line)
                     print_out(namespace_line)
                 else:
-                    state = 'no_print'
+                    state = 'ignore_term'
 
             elif line == f.newlines:
-                if state == 'print':
+                if state == 'accept_term':
                     if create_dictionary and go_id not in dictionary and not go_term_is_obsolete:
                         # Must be root of respective go hierarchy; no parents
                         dictionary[go_id] = []
@@ -80,7 +81,7 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                 go_term_is_obsolete = False
                 state = 'no_term'
 
-            elif state == 'print':
+            elif state == 'accept_term':
                 print_out(line)
 
                 if not go_term_is_obsolete:
