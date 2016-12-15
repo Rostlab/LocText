@@ -206,7 +206,8 @@ def test_relation_accept_uniprot_go_all_children_of_root():
     #   2) if pred=root, all predictions are None (ignore)
 
     accept_prediction = relation_accept_uniprot_go
-    ignore_prediction = (lambda gold, pred: relation_accept_uniprot_go(gold, pred) is None)
+
+    assert 0 == len(GO_TREE['GO:0005575'].parents)
 
     for go_term in GO_TREE:
         pred_parents = GO_TREE[go_term].parents
@@ -221,9 +222,10 @@ def test_relation_accept_uniprot_go_all_children_of_root():
             "r_5|n_7|xxx|n_8|GO:0005575",
             "r_5|n_7|xxx|n_8|" + go_term), go_term + " < " + ','.join(pred_parents)
 
-        assert ignore_prediction(
-            "r_5|n_7|xxx|n_8|" + go_term,
-            "r_5|n_7|xxx|n_8|GO:0005575"), go_term + " < " + ','.join(pred_parents)
+        if not go_term == "GO:0005575":
+            assert None is relation_accept_uniprot_go(
+                "r_5|n_7|xxx|n_8|" + go_term,
+                "r_5|n_7|xxx|n_8|GO:0005575"), (go_term, GO_TREE[go_term])
 
     # The following tests the root with itself
 
