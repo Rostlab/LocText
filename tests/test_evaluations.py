@@ -231,10 +231,6 @@ def test_relation_accept_uniprot_go_all_children_of_root():
         "r_5|n_7|xxx|n_8|GO:0005575",
         "r_5|n_7|xxx|n_8|GO:0005575")
 
-    assert ignore_prediction(
-        "r_5|n_7|xxx|n_8|GO:0005575",
-        "r_5|n_7|xxx|n_8|GO:0005575")
-
     # The following tests check that the root is appropriately handled without being an arbitrary/random/fake string
 
     # Note, here the gold fake go term IS checked and that's why the expected error
