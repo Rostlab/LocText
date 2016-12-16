@@ -123,7 +123,7 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
     tokenizer.tokenize(corpus)
 
     print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun)
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun, relation_accept_uniprot_go)
     print(counter_texts_nums)
     print(counter_texts_percts)
 
