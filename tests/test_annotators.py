@@ -14,11 +14,15 @@ import math
 import sys
 from nalaf.preprocessing.spliters import NLTKSplitter
 from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER
-from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
+from loctext.learning.evaluations import relation_accept_uniprot_go
+from nalaf.structures.data import Entity
 
 
 # See conftest.py too
 TEST_MIN_CORPUS_PERCENTAGE = 0.4
+
+ENTITY_MAP_FUN = 'lowercased'
+RELATION_ACCEPT_FUN = str.__eq__  # relation_accept_uniprot_go
 
 
 def test_baseline_SS():
@@ -29,7 +33,7 @@ def test_baseline_SS():
     EXPECTED_F_SE = 0.0030
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun='normalized_first', relation_accept_fun=relation_accept_uniprot_go)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
 
