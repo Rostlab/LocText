@@ -121,7 +121,7 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
     nums = Counter({'D0': 176, 'D1': 44, 'D2': 22, 'D3': 12, 'D5': 7, 'D6': 5, 'D4': 4, 'D9': 2})
     percts = Counter({'D0': 0.6470588235294118, 'D1': 0.16176470588235295, 'D2': 0.08088235294117647, 'D3': 0.04411764705882353, 'D5': 0.025735294117647058, 'D6': 0.01838235294117647, 'D4': 0.014705882352941176, 'D9': 0.007352941176470588})
 
-    sum_perct_d0_d1 = 0.81
+    sum_perct_d0_d1 = 0.81  # D0 + D1
 
     corpus = read_corpus("LocText")
 
