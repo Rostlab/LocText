@@ -101,11 +101,9 @@ def test_count_relations_dists_normalizations_without_repetitions():
 
 
 def test_count_relations_dists_normalizations_without_repetitions_considering_hierarchy():
-    # TODO not implemented
-
-    relation_accept_uniprot_go
 
     entity_map_fun = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first']
+    relation_accept_fun = relation_accept_uniprot_go
 
     # Documents 100
 
@@ -123,7 +121,7 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
     tokenizer.tokenize(corpus)
 
     print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun, relation_accept_uniprot_go)
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun, relation_accept_fun)
     print(counter_texts_nums)
     print(counter_texts_percts)
 
