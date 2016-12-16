@@ -19,8 +19,13 @@ from collections import Counter
 from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
 
 
+SENTENCE_SPLITTER = NLTKSplitter()
+TOKENIZER = NLTK_TOKENIZER
+
+
 def test_count_relations_dists_texts_with_repetitions():
-    entity_map_fun = Entity.__repr__
+    ENTITY_MAP_FUN = Entity.__repr__
+    RELATION_ACCEPT_FUN = None  # meaning: str.__eq__
 
     # Documents 100
     nums = Counter({'D0': 351, 'D1': 95, 'D2': 53, 'D3': 23, 'D5': 9, 'D6': 8, 'D4': 7, 'D7': 2, 'D9': 2})
@@ -32,13 +37,11 @@ def test_count_relations_dists_texts_with_repetitions():
 
     corpus = read_corpus("LocText")
 
-    sentence_splitter = NLTKSplitter()
-    tokenizer = NLTK_TOKENIZER
-    sentence_splitter.split(corpus)
-    tokenizer.tokenize(corpus)
+    SENTENCE_SPLITTER.split(corpus)
+    TOKENIZER.tokenize(corpus)
 
     print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun)
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print(counter_texts_nums)
     print(counter_texts_percts)
 
@@ -46,7 +49,8 @@ def test_count_relations_dists_texts_with_repetitions():
 
 
 def test_count_relations_dists_texts_without_repetitions():
-    entity_map_fun = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['lowercased']
+    ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['lowercased']
+    RELATION_ACCEPT_FUN = None  # meaning: str.__eq__
 
     # Documents 100
     nums = Counter({'D0': 292, 'D1': 78, 'D2': 48, 'D3': 22, 'D5': 9, 'D6': 7, 'D4': 7, 'D9': 2, 'D7': 1})
@@ -58,13 +62,11 @@ def test_count_relations_dists_texts_without_repetitions():
 
     corpus = read_corpus("LocText")
 
-    sentence_splitter = NLTKSplitter()
-    tokenizer = NLTK_TOKENIZER
-    sentence_splitter.split(corpus)
-    tokenizer.tokenize(corpus)
+    SENTENCE_SPLITTER.split(corpus)
+    TOKENIZER.tokenize(corpus)
 
     print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun)
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print(counter_texts_nums)
     print(counter_texts_percts)
 
@@ -72,7 +74,8 @@ def test_count_relations_dists_texts_without_repetitions():
 
 
 def test_count_relations_dists_normalizations_without_repetitions():
-    entity_map_fun = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first']
+    ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first']
+    RELATION_ACCEPT_FUN = None  # meaning: str.__eq__
 
     # Documents 100
 
@@ -84,26 +87,21 @@ def test_count_relations_dists_normalizations_without_repetitions():
 
     corpus = read_corpus("LocText")
 
-    sentence_splitter = NLTKSplitter()
-    tokenizer = NLTK_TOKENIZER
-    sentence_splitter.split(corpus)
-    tokenizer.tokenize(corpus)
+    SENTENCE_SPLITTER.split(corpus)
+    TOKENIZER.tokenize(corpus)
 
     print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun)
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print(counter_texts_nums)
     print(counter_texts_percts)
-
-    # for e in corpus.entities():
-    #     print(e, e.normalisation_dict, is_empty)
 
     assert math.isclose(sum_0_1, (counter_texts_percts['D0'] + counter_texts_percts['D1']), abs_tol=0.01)
 
 
 def test_count_relations_dists_normalizations_without_repetitions_considering_hierarchy():
 
-    entity_map_fun = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first']
-    relation_accept_fun = relation_accept_uniprot_go
+    ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first']
+    RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
     # Documents 100
 
@@ -115,17 +113,12 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
 
     corpus = read_corpus("LocText")
 
-    sentence_splitter = NLTKSplitter()
-    tokenizer = NLTK_TOKENIZER
-    sentence_splitter.split(corpus)
-    tokenizer.tokenize(corpus)
+    SENTENCE_SPLITTER.split(corpus)
+    TOKENIZER.tokenize(corpus)
 
     print("# Documents", len(corpus))
-    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun, relation_accept_fun)
+    (counter_texts_nums, counter_texts_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print(counter_texts_nums)
     print(counter_texts_percts)
-
-    # for e in corpus.entities():
-    #     print(e, e.normalisation_dict, is_empty)
 
     assert math.isclose(sum_0_1, (counter_texts_percts['D0'] + counter_texts_percts['D1']), abs_tol=0.01)
