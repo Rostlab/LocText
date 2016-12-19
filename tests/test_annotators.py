@@ -33,9 +33,8 @@ TEST_MIN_CORPUS_PERCENTAGE = 0.4
 ENTITY_MAP_FUN = 'normalized_first'
 RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
-
-def test_baseline_SS():
-    corpus = read_corpus("LocText")
+def test_baseline_SS(corpus_percentage):
+    corpus = read_corpus("LocText", corpus_percentage)
 
     # Computation(precision=0.6083150984682714, precision_SE=0.002974704942625582, recall=0.6233183856502242, recall_SE=0.004130201948613626, f_measure=0.6157253599114065, f_measure_SE=0.0030062001054202924)
     EXPECTED_F = 0.6157  # 62
@@ -86,8 +85,8 @@ def test_LocText_SS(corpus_percentage):
     _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
 
-def test_baseline_DS():
-    corpus = read_corpus("LocText")
+def test_baseline_DS(corpus_percentage):
+    corpus = read_corpus("LocText", corpus_percentage)
 
     # Computation(precision=0.4196969696969697, precision_SE=0.0024518002206926812, recall=0.6210762331838565, recall_SE=0.0038995731275083797, f_measure=0.5009041591320074, f_measure_SE=0.002367560805132471)
     EXPECTED_F = 0.5009
