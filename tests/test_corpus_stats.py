@@ -26,6 +26,9 @@ TOKENIZER = NLTK_TOKENIZER  # GenericTokenizer(lambda string: (tok.text for tok 
 # TOKENIZER = GenericTokenizer(lambda string: (tok.text for tok in nlp.tokenizer(string)))
 
 
+CORPUS_PERCENTANGE = 1.0
+
+
 def test_count_relations_dists_with_repetitions():
     ENTITY_MAP_FUN = Entity.__repr__
     RELATION_ACCEPT_FUN = None  # meaning: str.__eq__
@@ -39,12 +42,12 @@ def test_count_relations_dists_with_repetitions():
 
     #
 
-    corpus = read_corpus("LocText")
+    corpus = read_corpus("LocText", CORPUS_PERCENTANGE)
 
     SENTENCE_SPLITTER.split(corpus)
     TOKENIZER.tokenize(corpus)
 
-    print("# Documents", len(corpus))
+    print("# Documents", len(corpus), corpus.documents.keys())
     (counter_nums, counter_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print("# Relations", sum(counter_nums.values()))
     print("  ", counter_nums)
@@ -67,12 +70,12 @@ def test_count_relations_dists_without_repetitions():
 
     #
 
-    corpus = read_corpus("LocText")
+    corpus = read_corpus("LocText", CORPUS_PERCENTANGE)
 
     SENTENCE_SPLITTER.split(corpus)
     TOKENIZER.tokenize(corpus)
 
-    print("# Documents", len(corpus))
+    print("# Documents", len(corpus), corpus.documents.keys())
     (counter_nums, counter_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print("# Relations", sum(counter_nums.values()))
     print("  ", counter_nums)
@@ -95,12 +98,12 @@ def test_count_relations_dists_normalizations_without_repetitions():
 
     sum_perct_d0_d1 = 0.80  # D0 + D1
 
-    corpus = read_corpus("LocText")
+    corpus = read_corpus("LocText", CORPUS_PERCENTANGE)
 
     SENTENCE_SPLITTER.split(corpus)
     TOKENIZER.tokenize(corpus)
 
-    print("# Documents", len(corpus))
+    print("# Documents", len(corpus), corpus.documents.keys())
     (counter_nums, counter_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print("# Relations", sum(counter_nums.values()))
     print("  ", counter_nums)
@@ -123,12 +126,12 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
 
     sum_perct_d0_d1 = 0.81  # D0 + D1
 
-    corpus = read_corpus("LocText")
+    corpus = read_corpus("LocText", CORPUS_PERCENTANGE)
 
     SENTENCE_SPLITTER.split(corpus)
     TOKENIZER.tokenize(corpus)
 
-    print("# Documents", len(corpus))
+    print("# Documents", len(corpus), corpus.documents.keys())
     (counter_nums, counter_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, ENTITY_MAP_FUN, RELATION_ACCEPT_FUN)
     print("# Relations", sum(counter_nums.values()))
     print("  ", counter_nums)
