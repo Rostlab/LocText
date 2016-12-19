@@ -187,7 +187,7 @@ def print_corpus_pipeline_dependent_stats(corpus):
         else:
             N += 1
 
-    # Totals for whole corpus (test data too) and with SimpleEdgeGenerator (only same sentences)
+    # Totals for whole corpus (test data too) and with SentenceDistanceEdgeGenerator (only same sentences)
     # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
     # abstract + fulltext -- #docs: 104, P=614 vs N=1480
 

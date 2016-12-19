@@ -12,7 +12,7 @@ from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenFeatureGenerator, EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator, EntityHeadTokenChainFeatureGenerator
-from nalaf.preprocessing.edges import SimpleEdgeGenerator, SentenceDistanceEdgeGenerator
+from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator
 from nalaf import print_verbose, print_debug
 
 
