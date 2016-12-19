@@ -21,17 +21,21 @@ from nalaf.structures.data import Entity
 # See conftest.py too
 TEST_MIN_CORPUS_PERCENTAGE = 0.4
 
-# ENTITY_MAP_FUN = Entity.__repr__
-# RELATION_ACCEPT_FUN = str.__eq__
-#
-# ENTITY_MAP_FUN = 'lowercased'
-# RELATION_ACCEPT_FUN = str.__eq__
-#
-# ENTITY_MAP_FUN = 'normalized_first'
-# RELATION_ACCEPT_FUN = str.__eq__
+EVALUATION_LEVEL = 4
 
-ENTITY_MAP_FUN = 'normalized_first'
-RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+if EVALUATION_LEVEL == 1:
+    ENTITY_MAP_FUN = Entity.__repr__
+    RELATION_ACCEPT_FUN = str.__eq__
+elif EVALUATION_LEVEL == 2:
+    ENTITY_MAP_FUN = 'lowercased'
+    RELATION_ACCEPT_FUN = str.__eq__
+elif EVALUATION_LEVEL == 3:
+    ENTITY_MAP_FUN = 'normalized_first'
+    RELATION_ACCEPT_FUN = str.__eq__
+elif EVALUATION_LEVEL == 4:
+    ENTITY_MAP_FUN = 'normalized_first'
+    RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+
 
 def test_baseline_SS(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
