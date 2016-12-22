@@ -9,7 +9,7 @@ from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluation
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv
 from nalaf import print_verbose, print_debug
-from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator
+from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator, CombinatorEdgeGenerator
 import math
 import sys
 from nalaf.preprocessing.spliters import NLTKSplitter
@@ -122,6 +122,35 @@ def test_LocText_DS(corpus_percentage):
         EXPECTED_F_SE = 0.0043
 
     _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
+
+
+def test_baseline_Combined(corpus_percentage):
+    corpus = read_corpus("LocText", corpus_percentage)
+
+    # Computation(precision=0.4196969696969697, precision_SE=0.0024518002206926812, recall=0.6210762331838565, recall_SE=0.0038995731275083797, f_measure=0.5009041591320074, f_measure_SE=0.002367560805132471)
+    EXPECTED_F = 0.5009
+    EXPECTED_F_SE = 0.0024
+
+    edge_generator = CombinatorEdgeGenerator(
+        SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=0, rewrite_edges=False),
+        SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1, rewrite_edges=False),  # Recall: 88.52
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=2, rewrite_edges=False),
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=3, rewrite_edges=False),  #
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=4, rewrite_edges=False),
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=5, rewrite_edges=False),  #
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=6, rewrite_edges=False),  # Recall: 99.70
+    )
+
+    annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
+
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
+    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    print("DS Baseline", rel_evaluation)
+
+    return rel_evaluation
 
 
 # Note: would be way better to be able to reuse the already trained models in the other tests methods
