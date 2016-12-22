@@ -40,9 +40,8 @@ elif EVALUATION_LEVEL == 4:
 def test_baseline_SS(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
-    # Computation(precision=0.6083150984682714, precision_SE=0.002974704942625582, recall=0.6233183856502242, recall_SE=0.004130201948613626, f_measure=0.6157253599114065, f_measure_SE=0.0030062001054202924)
-    EXPECTED_F = 0.6157  # 62
-    EXPECTED_F_SE = 0.0030
+    EXPECTED_F = 0.7109
+    EXPECTED_F_SE = 0.0028
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
@@ -53,6 +52,62 @@ def test_baseline_SS(corpus_percentage):
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("SS Baseline", rel_evaluation)
+
+    return rel_evaluation
+
+
+def test_baseline_DS(corpus_percentage):
+    corpus = read_corpus("LocText", corpus_percentage)
+
+    if corpus_percentage == 1.0:
+        EXPECTED_F = 0.6137
+        EXPECTED_F_SE = 0.0027
+    else:
+        EXPECTED_F = 0.6483
+        EXPECTED_F_SE = 0.0034
+
+    edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1)
+
+    annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
+
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
+    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    print("DS Baseline", rel_evaluation)
+
+    return rel_evaluation
+
+
+def test_baseline_Combined(corpus_percentage):
+    corpus = read_corpus("LocText", corpus_percentage)
+
+    if corpus_percentage == 1.0:
+        EXPECTED_F = 0.6652
+        EXPECTED_F_SE = 0.0026
+    else:
+        EXPECTED_F = 0.6918
+        EXPECTED_F_SE = 0.0031
+
+    edge_generator = CombinatorEdgeGenerator(
+        SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=0, rewrite_edges=False),
+        SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1, rewrite_edges=False),  # Recall: 88.52
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=2, rewrite_edges=False),
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=3, rewrite_edges=False),  #
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=4, rewrite_edges=False),
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=5, rewrite_edges=False),  #
+        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=6, rewrite_edges=False),  # Recall: 99.70
+    )
+
+    annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
+    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
+
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
+    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    print("DS Baseline", rel_evaluation)
 
     return rel_evaluation
 
@@ -89,27 +144,6 @@ def test_LocText_SS(corpus_percentage):
     _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
 
-def test_baseline_DS(corpus_percentage):
-    corpus = read_corpus("LocText", corpus_percentage)
-
-    # Computation(precision=0.4196969696969697, precision_SE=0.0024518002206926812, recall=0.6210762331838565, recall_SE=0.0038995731275083797, f_measure=0.5009041591320074, f_measure_SE=0.002367560805132471)
-    EXPECTED_F = 0.5009
-    EXPECTED_F_SE = 0.0024
-
-    edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1)
-
-    annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
-
-    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
-    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
-    print("DS Baseline", rel_evaluation)
-
-    return rel_evaluation
-
-
 def test_LocText_DS(corpus_percentage):
 
     if (corpus_percentage == 1.0):
@@ -123,34 +157,6 @@ def test_LocText_DS(corpus_percentage):
 
     _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
 
-
-def test_baseline_Combined(corpus_percentage):
-    corpus = read_corpus("LocText", corpus_percentage)
-
-    # Computation(precision=0.4196969696969697, precision_SE=0.0024518002206926812, recall=0.6210762331838565, recall_SE=0.0038995731275083797, f_measure=0.5009041591320074, f_measure_SE=0.002367560805132471)
-    EXPECTED_F = 0.5009
-    EXPECTED_F_SE = 0.0024
-
-    edge_generator = CombinatorEdgeGenerator(
-        SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=0, rewrite_edges=False),
-        SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1, rewrite_edges=False),  # Recall: 88.52
-        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=2, rewrite_edges=False),
-        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=3, rewrite_edges=False),  #
-        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=4, rewrite_edges=False),
-        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=5, rewrite_edges=False),  #
-        # SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=6, rewrite_edges=False),  # Recall: 99.70
-    )
-
-    annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
-
-    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
-    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
-    print("DS Baseline", rel_evaluation)
-
-    return rel_evaluation
 
 
 # Note: would be way better to be able to reuse the already trained models in the other tests methods
