@@ -40,8 +40,14 @@ elif EVALUATION_LEVEL == 4:
 def test_baseline_SS(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
-    EXPECTED_F = 0.7109
-    EXPECTED_F_SE = 0.0028
+    if (corpus_percentage == 1.0):
+        # Computation(precision=0.6945244956772334, precision_SE=0.0028956219539813754, recall=0.7280966767371602, recall_SE=0.004139235568395008, f_measure=0.7109144542772862, f_measure_SE=0.002781031509621811)
+        EXPECTED_F = 0.7109
+        EXPECTED_F_SE = 0.0028
+    else:
+        # Computation(precision=0.7657657657657657, precision_SE=0.004062515118259012, recall=0.6640625, recall_SE=0.006891900506329359, f_measure=0.7112970711297071, f_measure_SE=0.004544881638992179)
+        EXPECTED_F = 0.7113
+        EXPECTED_F_SE = 0.0046
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
     evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
@@ -131,13 +137,9 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
 def test_LocText_SS(corpus_percentage):
 
     if (corpus_percentage == 1.0):
-        # TODO Computation(precision=0.6743515850144092, precision_SE=0.0029906794627101553, recall=0.5246636771300448, recall_SE=0.003956801825290298, f_measure=0.5901639344262295, f_measure_SE=0.002994553617880869)
-
-        # Computation(precision=0.6624365482233503, precision_SE=0.0029261497595035445, recall=0.5787139689578714, recall_SE=0.004036629092741261, f_measure=0.6177514792899409, f_measure_SE=0.0027412422752843557)
         EXPECTED_F = 0.6178
         EXPECTED_F_SE = 0.0027
     else:
-        # Computation(precision=0.753731343283582, precision_SE=0.004064280002070562, recall=0.6158536585365854, recall_SE=0.006147889829984894, f_measure=0.6778523489932885, f_measure_SE=0.004461978434634661)
         EXPECTED_F = 0.6779
         EXPECTED_F_SE = 0.0045
 
@@ -147,11 +149,9 @@ def test_LocText_SS(corpus_percentage):
 def test_LocText_DS(corpus_percentage):
 
     if (corpus_percentage == 1.0):
-        # Computation(precision=0.41743119266055045, precision_SE=0.0030117270329129047, recall=0.40176600441501104, recall_SE=0.0032167797183620065, f_measure=0.4094488188976378, f_measure_SE=0.0025398561212811644)
         EXPECTED_F = 0.4094
         EXPECTED_F_SE = 0.0024
     else:
-        # Computation(precision=0.5217391304347826, precision_SE=0.004661534209213446, recall=0.36585365853658536, recall_SE=0.00518652082659298, f_measure=0.43010752688172044, f_measure_SE=0.004278857080197886)
         EXPECTED_F = 0.4301
         EXPECTED_F_SE = 0.0043
 
@@ -163,11 +163,9 @@ def test_LocText_DS(corpus_percentage):
 def test_LocText_Combined(corpus_percentage):
 
     if (corpus_percentage == 1.0):
-        # Computation(precision=0.4774381368267831, precision_SE=0.002812150029056132, recall=0.7177242888402626, recall_SE=0.0038763518483362733, f_measure=0.5734265734265734, f_measure_SE=0.002422393130974523)
         EXPECTED_F = 0.5734
         EXPECTED_F_SE = 0.0024
     else:
-        # Computation(precision=0.5887850467289719, precision_SE=0.0033947585471817603, recall=0.7682926829268293, recall_SE=0.004128234454709121, f_measure=0.6666666666666666, f_measure_SE=0.0027263757211551205)
         EXPECTED_F = 0.6667
         EXPECTED_F_SE = 0.0027
 
