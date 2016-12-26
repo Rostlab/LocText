@@ -19,7 +19,7 @@ from nalaf.structures.data import Entity
 
 
 # See conftest.py too
-TEST_MIN_CORPUS_PERCENTAGE = 0.4
+TEST_MIN_CORPUS_PERCENTAGE = 0.5
 
 EVALUATION_LEVEL = 4
 
