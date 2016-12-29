@@ -2,6 +2,7 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextDSmodelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
+from loctext.learning.evaluations import relation_accept_uniprot_go
 
 def parse_arguments(argv=[]):
     import argparse
@@ -12,6 +13,7 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+    parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
 
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
@@ -30,6 +32,21 @@ def parse_arguments(argv=[]):
     parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
     args = parser.parse_args(argv)
+
+    if args.evaluation_level == 1:
+        ENTITY_MAP_FUN = Entity.__repr__
+        RELATION_ACCEPT_FUN = str.__eq__
+    elif args.evaluation_level == 2:
+        ENTITY_MAP_FUN = 'lowercased'
+        RELATION_ACCEPT_FUN = str.__eq__
+    elif args.evaluation_level == 3:
+        ENTITY_MAP_FUN = 'normalized_first'
+        RELATION_ACCEPT_FUN = str.__eq__
+    elif args.evaluation_level == 4:
+        ENTITY_MAP_FUN = 'normalized_first'
+        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+
+    args.evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
     assert args.svm_hyperparameter_c_ss_model is None or args.svm_hyperparameter_c_ss_model == 'None' or float(args.svm_hyperparameter_c_ss_model), "svm_hyperparameter_c_ss_model must be None or float"
     assert args.svm_hyperparameter_c_ds_model is None or args.svm_hyperparameter_c_ds_model == 'None' or float(args.svm_hyperparameter_c_ds_model), "svm_hyperparameter_c_ds_model must be None or float"
@@ -101,7 +118,7 @@ def train(training_set, args):
 
 def evaluate(corpus, args):
     annotator_gen_fun = (lambda training_set: train(training_set, args))
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
+    evaluator = args.evaluator
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")

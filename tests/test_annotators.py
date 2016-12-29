@@ -19,7 +19,7 @@ from nalaf.structures.data import Entity
 
 
 # See conftest.py too
-TEST_MIN_CORPUS_PERCENTAGE = 0.5
+TEST_MIN_CORPUS_PERCENTAGE = 0.4
 
 EVALUATION_LEVEL = 4
 
@@ -36,11 +36,15 @@ elif EVALUATION_LEVEL == 4:
     ENTITY_MAP_FUN = 'normalized_first'
     RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
+EVALUATOR = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
+
 
 def test_baseline_SS(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if (corpus_percentage == 1.0):
+        # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
+        # r_5	241	106	90	0	0	0.6945	0.7281	0.7109	0.0028	0.6945	0.7281	0.7109	0.0028
         # Computation(precision=0.6945244956772334, precision_SE=0.0028956219539813754, recall=0.7280966767371602, recall_SE=0.004139235568395008, f_measure=0.7109144542772862, f_measure_SE=0.002781031509621811)
         EXPECTED_F = 0.7109
         EXPECTED_F_SE = 0.0028
@@ -50,16 +54,28 @@ def test_baseline_SS(corpus_percentage):
         EXPECTED_F_SE = 0.0046
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
-    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
-
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("SS Baseline", rel_evaluation)
 
     return rel_evaluation
+
+
+def test_LocText_SS(corpus_percentage):
+
+    if (corpus_percentage == 1.0):
+        # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
+        # r_5	234	132	212	0	0	0.6393	0.5247	0.5764	0.0033	0.6393	0.5247	0.5764	0.0031
+        EXPECTED_F = 0.6178
+        EXPECTED_F_SE = 0.0027
+    else:
+        EXPECTED_F = 0.6779
+        EXPECTED_F_SE = 0.0045
+
+    _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
 
 
 def test_baseline_DS(corpus_percentage):
@@ -73,17 +89,27 @@ def test_baseline_DS(corpus_percentage):
         EXPECTED_F_SE = 0.0034
 
     edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1)
-
     annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
-    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("DS Baseline", rel_evaluation)
 
     return rel_evaluation
+
+
+def test_LocText_DS(corpus_percentage):
+
+    if (corpus_percentage == 1.0):
+        EXPECTED_F = 0.4094
+        EXPECTED_F_SE = 0.0024
+    else:
+        EXPECTED_F = 0.4301
+        EXPECTED_F_SE = 0.0043
+
+    _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
 
 
 def test_baseline_Combined(corpus_percentage):
@@ -107,15 +133,27 @@ def test_baseline_Combined(corpus_percentage):
     )
 
     annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
-    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, k_num_folds=5, use_validation_set=True)
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("DS Baseline", rel_evaluation)
 
     return rel_evaluation
+
+
+# Note: would be way better to be able to reuse the already trained models in the other tests methods
+def test_LocText_Combined(corpus_percentage):
+
+    if (corpus_percentage == 1.0):
+        EXPECTED_F = 0.5734
+        EXPECTED_F_SE = 0.0024
+    else:
+        EXPECTED_F = 0.6667
+        EXPECTED_F_SE = 0.0027
+
+    _test_LocText(corpus_percentage, model='Combined', EXPECTED_F=EXPECTED_F)
 
 
 def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001):
@@ -132,44 +170,6 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
 
     return rel_evaluation
-
-
-def test_LocText_SS(corpus_percentage):
-
-    if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.6178
-        EXPECTED_F_SE = 0.0027
-    else:
-        EXPECTED_F = 0.6779
-        EXPECTED_F_SE = 0.0045
-
-    _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
-
-
-def test_LocText_DS(corpus_percentage):
-
-    if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.4094
-        EXPECTED_F_SE = 0.0024
-    else:
-        EXPECTED_F = 0.4301
-        EXPECTED_F_SE = 0.0043
-
-    _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
-
-
-
-# Note: would be way better to be able to reuse the already trained models in the other tests methods
-def test_LocText_Combined(corpus_percentage):
-
-    if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.5734
-        EXPECTED_F_SE = 0.0024
-    else:
-        EXPECTED_F = 0.6667
-        EXPECTED_F_SE = 0.0027
-
-    _test_LocText(corpus_percentage, model='Combined', EXPECTED_F=EXPECTED_F)
 
 
 if __name__ == "__main__":
