@@ -1,4 +1,4 @@
-from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextDSmodelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
@@ -147,7 +147,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
 
     AnnJsonAnnotationReader(
         dir_annjson,
-        read_only_class_id=None,
+        read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
         read_relations=True,
         delete_incomplete_docs=False).annotate(corpus)
 
