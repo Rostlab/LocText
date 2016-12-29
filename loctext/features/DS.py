@@ -77,6 +77,7 @@ def _add_extra_links(edge, combined_sentence, sentence1, sentence2):
 
     _addRootLinks(combined_sentence, sentence1, sentence2)
 
+    # TODO
     # addShortFormLinks(combSentence, prevSentence, currSentence)
 
     return combined_sentence
