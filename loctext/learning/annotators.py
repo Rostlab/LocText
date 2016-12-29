@@ -70,7 +70,13 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
         return [
             SentenceFeatureGenerator(
-                f_counts=1
+                f_counts=1,
+                f_counts_in_between=2,
+                f_order=None,  # 3
+                f_bow=None,  # 5
+                f_pos=None,  # 6
+                f_tokens_count=7
+
             ),
         ]
 
