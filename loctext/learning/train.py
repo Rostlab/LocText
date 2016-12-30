@@ -197,9 +197,7 @@ def print_corpus_pipeline_dependent_stats(corpus):
     N = 0
 
     for e in corpus.edges():
-        assert e.target != 0 and e.target in [-1, +1], str(e)
-
-        if e.target == 1:
+        if e.is_relation():
             P += 1
         else:
             N += 1
