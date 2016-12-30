@@ -17,7 +17,6 @@ from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER, GenericTokenizer
 from nalaf.structures.data import Entity
 from collections import Counter
 from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
-from nalaf.features import get_spacy_nlp_english
 
 
 CORPUS_PERCENTANGE = 1.0
