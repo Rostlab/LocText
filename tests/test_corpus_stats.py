@@ -12,8 +12,6 @@ from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator
 import math
 import sys
-from nalaf.preprocessing.spliters import NLTKSplitter
-from nalaf.preprocessing.tokenizers import NLTK_TOKENIZER, GenericTokenizer
 from nalaf.structures.data import Entity
 from collections import Counter
 from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
