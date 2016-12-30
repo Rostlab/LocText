@@ -1,5 +1,4 @@
 from nalaf.features.relations import EdgeFeatureGenerator
-from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
 from nltk.stem import PorterStemmer
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
