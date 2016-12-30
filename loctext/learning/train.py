@@ -107,8 +107,6 @@ def train(training_set, args):
 
         annotator.pipeline.execute(training_set, train=True)
 
-        print_corpus_pipeline_dependent_stats(training_set)
-
         minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
         instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=minority_class, majority_class_undersampling=majority_class_undersampling)
         annotator.svmlight.learn(instancesfile, c=svm_hyperparameter_c)
@@ -132,8 +130,12 @@ def evaluate_with_argv(argv=[]):
     corpus = read_corpus(args.corpus, args.corpus_percentage)
 
     print_run_args(args, corpus)
+    print()
     result = evaluate(corpus, args)
+    print()
     print_run_args(args, corpus)
+    print_corpus_pipeline_dependent_stats(corpus)
+    print()
 
     return result
 
@@ -181,17 +183,15 @@ def print_run_args(args, corpus):
 
     print_corpus_hard_core_stats(corpus)
 
-    print()
-
 
 def print_corpus_hard_core_stats(corpus):
 
-    print("Corpus stats; #docs={} -- #rels={}".format(len(corpus), len(list(corpus.relations()))))
+    print("\nCorpus stats; #docs={} -- #rels={}".format(len(corpus), len(list(corpus.relations()))))
 
 
 def print_corpus_pipeline_dependent_stats(corpus):
 
-    # Assumes the edges have been generated
+    # Assumes the sentences and edges have been generated (through relations_pipeline)
 
     P = 0
     N = 0
@@ -208,6 +208,7 @@ def print_corpus_pipeline_dependent_stats(corpus):
     # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
     # abstract + fulltext -- #docs: 104, P=614 vs N=1480
 
+    print("\t#sentences={}".format(len(list(corpus.sentences()))))
     print("\tedges: #P={} vs. #N={}".format(P, N))
 
     return (P, N)
