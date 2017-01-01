@@ -12,6 +12,7 @@ from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
 from nalaf.features.relations.path import PathFeatureGenerator
 from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.new.sentence import SentenceFeatureGenerator
+from nalaf.features.relations.new.dependency import DependencyFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenFeatureGenerator, EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator, EntityHeadTokenChainFeatureGenerator
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator
 from nalaf import print_verbose, print_debug
@@ -78,6 +79,13 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_tokens_count=None
 
             ),
+
+            DependencyFeatureGenerator(
+                f_XX_YY_gram_lemma=10,
+                f_XX_YY_gram_tokens_count=11,
+                f_XX_YY_gram_tokens_count_without_punct=12,
+                f_XX_YY_gram_pos=13,
+            )
         ]
 
     # @staticmethod
