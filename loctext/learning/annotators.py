@@ -82,9 +82,9 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
             DependencyFeatureGenerator(
                 f_XX_YY_gram_lemma=10,
-                f_XX_YY_gram_tokens_count=11,
-                f_XX_YY_gram_tokens_count_without_punct=12,
-                f_XX_YY_gram_pos=13,
+                f_XX_YY_gram_pos=11,
+                f_XX_YY_gram_tokens_count=12,
+                f_XX_YY_gram_tokens_count_without_punct=13,
             )
         ]
 
