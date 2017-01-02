@@ -81,10 +81,25 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             ),
 
             DependencyFeatureGenerator(
-                f_XX_YY_gram_lemma=10,
-                f_XX_YY_gram_pos=11,
-                f_XX_YY_gram_tokens_count=12,
-                f_XX_YY_gram_tokens_count_without_punct=13,
+                f_OW_N_gram_lemma=10,
+                f_OW_N_gram_pos=11,
+                f_OW_N_gram_tokens_count=12,
+                f_OW_N_gram_tokens_count_without_punct=13,
+                #
+                f_IW_N_gram_lemma=14,
+                f_IW_N_gram_pos=15,
+                f_IW_N_gram_tokens_count=16,
+                f_IW_N_gram_tokens_count_without_punct=17,
+                #
+                f_LD_N_gram_lemma=18,
+                f_LD_N_gram_pos=19,
+                f_LD_N_gram_tokens_count=20,
+                f_LD_N_gram_tokens_count_without_punct=21,
+                #
+                f_PD_N_gram_lemma=22,
+                f_PD_N_gram_pos=23,
+                f_PD_N_gram_tokens_count=24,
+                f_PD_N_gram_tokens_count_without_punct=25,
             )
         ]
 
