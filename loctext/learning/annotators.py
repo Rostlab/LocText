@@ -92,24 +92,24 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 # Feature keys/names
                 f_OW_lemma_N_gram=10,
                 f_OW_pos_N_gram=11,
-                f_OW_tokens_count_N_gram=12,
-                f_OW_tokens_count_without_punct_N_gram=13,
+                f_OW_tokens_count=12,
+                f_OW_tokens_count_without_punct=13,
                 #
                 f_IW_lemma_N_gram=14,
                 f_IW_pos_N_gram=15,
-                f_IW_tokens_count_N_gram=16,
-                f_IW_tokens_count_without_punct_N_gram=17,
+                f_IW_tokens_count=16,
+                f_IW_tokens_count_without_punct=17,
                 #
                 f_LD_lemma_N_gram=18,
                 f_LD_pos_N_gram=19,
-                f_LD_tokens_count_N_gram=20,
-                f_LD_tokens_count_without_punct_N_gram=21,
+                f_LD_tokens_count=20,
+                f_LD_tokens_count_without_punct=21,
                 #
                 #
                 f_PD_lemma_N_gram=22,
                 f_PD_pos_N_gram=23,
-                f_PD_tokens_count_N_gram=24,
-                f_PD_tokens_count_without_punct_N_gram=25,
+                f_PD_tokens_count=24,
+                f_PD_tokens_count_without_punct=25,
                 #
                 f_PD_undirected_edges_N_gram=26,
                 f_PD_directed_edges_N_gram=27,
