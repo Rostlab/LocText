@@ -48,8 +48,17 @@ def parse_arguments(argv=[]):
 
     args.evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
-    assert args.svm_hyperparameter_c_ss_model is None or args.svm_hyperparameter_c_ss_model == 'None' or float(args.svm_hyperparameter_c_ss_model), "svm_hyperparameter_c_ss_model must be None or float"
-    assert args.svm_hyperparameter_c_ds_model is None or args.svm_hyperparameter_c_ds_model == 'None' or float(args.svm_hyperparameter_c_ds_model), "svm_hyperparameter_c_ds_model must be None or float"
+    def set_None_or_typed_argument(argument, expected_type):
+        if not argument or argument == 'None':
+            return None
+        else:
+            try:
+                return expected_type(argument)
+            except Exception as e:
+                raise Exception("The argument {} must be of type {}".format(argument, str(expected_type)))
+
+    args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
+    args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
 
     return args
 
