@@ -24,35 +24,47 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.svm import SVC
 
+from nalaf.learning.lib.sklsvm import SklSVM
+from loctext.learning.train import read_corpus
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
+from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+
 print(__doc__)
 
-# Loading the Digits dataset
-digits = datasets.load_digits()
-
-# To apply an classifier on this data, we need to flatten the image, to
-# turn the data in a (samples, feature) matrix:
-n_samples = len(digits.images)
-X = digits.images.reshape((n_samples, -1))
-y = digits.target
-
-# Split the dataset in two equal parts
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.5, random_state=0)
+corpus = read_corpus("LocText")
+locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
+locTextModel.pipeline.execute(corpus, train=True)
+X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feature_set)
 
 # Set the parameters by cross-validation
-tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
-                     'C': [1, 10, 100, 1000]},
-                    {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
+tuned_parameters = [
+    {
+        'kernel': ['rbf'],
+        'gamma': [1e-4],
+        'C': [1]
+    },
+    # {
+    #     'kernel': ['rbf'],
+    #     'gamma': [1e-3, 1e-4],
+    #     'C': [1, 10, 100, 1000]
+    # },
+    # {
+    #     'kernel': ['linear'],
+    #     'C': [1, 10, 100, 1000]
+    # }
+]
 
-scores = ['precision', 'recall']
+scores = ['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']
 
 for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=5,
-                       scoring='%s_macro' % score)
-    clf.fit(X_train, y_train)
+    cv = 5
+
+    clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=cv, scoring=score)
+
+    clf.fit(X, y)
 
     print("Best parameters set found on development set:")
     print()
@@ -67,14 +79,11 @@ for score in scores:
               % (mean, std * 2, params))
     print()
 
-    print("Detailed classification report:")
-    print()
-    print("The model is trained on the full development set.")
-    print("The scores are computed on the full evaluation set.")
-    print()
-    y_true, y_pred = y_test, clf.predict(X_test)
-    print(classification_report(y_true, y_pred))
-    print()
-
-# Note the problem is too easy: the hyperparameter plateau is too flat and the
-# output model is the same for precision and recall with ties in quality.
+    # print("Detailed classification report:")
+    # print()
+    # print("The model is trained on the full development set.")
+    # print("The scores are computed on the full evaluation set.")
+    # print()
+    # y_true, y_pred = y_test, clf.predict(X_test)
+    # print(classification_report(y_true, y_pred))
+    # print()
