@@ -82,8 +82,8 @@ def _select_annotator_model(args):
 
     ann_switcher = {
         # TODO evaluate them lazily
-        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk),
-        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
+        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, model=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk),
+        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, model=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
     }
 
     if args.model == "Combined":
@@ -118,12 +118,8 @@ def train(training_set, args):
         annotator.pipeline.execute(training_set, train=True)
 
         minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
-        instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=minority_class, majority_class_undersampling=majority_class_undersampling)
-        annotator.svmlight.learn(instancesfile, c=svm_hyperparameter_c)
 
-        model = SklSVM()
-        model.train(training_set, annotator.pipeline.feature_set)
-        model.annotate(training_set)
+        annotator.model.train(training_set, annotator.pipeline.feature_set)
 
     return annotator_model.annotate
 

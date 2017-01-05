@@ -1,6 +1,6 @@
 from nalaf.learning.taggers import RelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
-from nalaf.learning.svmlight import SVMLightTreeKernels
+from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.preprocessing.tokenizers import TmVarTokenizer, NLTK_TOKENIZER
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
 from loctext.features.specific import LocationWordFeatureGenerator
@@ -28,8 +28,8 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
-            svmlight=None,
-            **svmlight_params):
+            model=None,
+            **model_params):
 
         super().__init__(entity1_class, entity2_class, rel_type)
 
@@ -48,18 +48,14 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
         self.execute_pipeline = execute_pipeline
 
         # TODO this would require setting the default model_path
-        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(**svmlight_params)
+        self.model = model if model else SklSVM(**model_params)
 
 
     def annotate(self, target_corpus):
         if self.execute_pipeline:
             self.pipeline.execute(target_corpus, train=False)
 
-        # self.model.annotate(target_corpus)
-
-        instancesfile = self.svmlight.create_input_file(target_corpus, 'predict', self.pipeline.feature_set)
-        predictionsfile = self.svmlight.classify(instancesfile)
-        self.svmlight.read_predictions(target_corpus, predictionsfile)
+        self.model.annotate(target_corpus)
 
         return target_corpus
 
@@ -256,8 +252,8 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
             feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
-            svmlight=None,
-            **svmlight_params):
+            model=None,
+            **model_params):
 
         super().__init__(entity1_class, entity2_class, rel_type)
 
@@ -276,16 +272,14 @@ class LocTextDSmodelRelationExtractor(RelationExtractor):
         self.execute_pipeline = execute_pipeline
 
         # TODO this would require setting the default model_path
-        self.svmlight = svmlight if svmlight else SVMLightTreeKernels(**svmlight_params)
+        self.model = model if model else SklSVM(**model_params)
 
 
     def annotate(self, target_corpus):
         if self.execute_pipeline:
             self.pipeline.execute(target_corpus, train=False)
 
-        instancesfile = self.svmlight.create_input_file(target_corpus, 'predict', self.pipeline.feature_set)
-        predictionsfile = self.svmlight.classify(instancesfile)
-        self.svmlight.read_predictions(target_corpus, predictionsfile)
+        self.model.annotate(target_corpus)
 
         return target_corpus
 
