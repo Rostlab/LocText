@@ -55,6 +55,8 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
         if self.execute_pipeline:
             self.pipeline.execute(target_corpus, train=False)
 
+        # self.model.annotate(target_corpus)
+
         instancesfile = self.svmlight.create_input_file(target_corpus, 'predict', self.pipeline.feature_set)
         predictionsfile = self.svmlight.classify(instancesfile)
         self.svmlight.read_predictions(target_corpus, predictionsfile)

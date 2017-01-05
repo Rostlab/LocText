@@ -3,6 +3,7 @@ from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocText
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
 from loctext.learning.evaluations import relation_accept_uniprot_go
+from nalaf.learning.lib.sklsvm import SklSVM
 
 def parse_arguments(argv=[]):
     import argparse
@@ -119,6 +120,10 @@ def train(training_set, args):
         minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
         instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=minority_class, majority_class_undersampling=majority_class_undersampling)
         annotator.svmlight.learn(instancesfile, c=svm_hyperparameter_c)
+
+        model = SklSVM()
+        model.train(training_set, annotator.pipeline.feature_set)
+        model.annotate(training_set)
 
     return annotator_model.annotate
 
