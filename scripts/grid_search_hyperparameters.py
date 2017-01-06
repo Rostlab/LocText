@@ -101,11 +101,13 @@ for score in scores:
     print()
 
     means = clf.cv_results_['mean_test_score']
-    desc_sorted_means_indices = sorted(range(len(means)), key=lambda k: means[k], reverse=True)
+    stds = clf.cv_results_['std_test_score']
 
-    for index in desc_sorted_means_indices:
-        mean = clf.cv_results_['mean_test_score'][index]
-        std = clf.cv_results_['std_test_score'][index]
+    desc_sorted_best_indices = sorted(range(len(means)), key=lambda k: (means[k] - stds[k]), reverse=True)
+
+    for index in desc_sorted_best_indices:
+        mean = means[index]
+        std = stds[index]
         params = clf.cv_results_['params'][index]
 
         print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
