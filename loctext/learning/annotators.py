@@ -82,11 +82,11 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             DependencyFeatureGenerator(
                 # Hyper parameters
                 h_ow_size=4,  # outer window size
-                h_ow_grams=[1, 2, 3, 4],
+                h_ow_grams=[1, 2],
                 h_iw_size=4,  # inner window size
-                h_iw_grams=[1, 2, 3, 4],
-                h_ld_grams=[1, 2, 3, 4],
-                h_pd_grams=[1, 2, 3, 4],
+                h_iw_grams=[1, 2],
+                h_ld_grams=[1, 2],
+                h_pd_grams=[1, 2],
                 # Feature keys/names
                 f_OW_lemma_N_gram=10,
                 f_OW_pos_N_gram=11,
