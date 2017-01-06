@@ -44,18 +44,24 @@ X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feat
 
 # Set the parameters by cross-validation
 tuned_parameters = [
-    {
-        'kernel': ['rbf'],
-        'gamma': [1e-3, 1e-4],
-        'C': [0.01]
-    },
     # {
-    #     'kernel': ['linear'],
-    #     'C': [0.01, 0.1, 0.1, 10, 100, 1000]
-    # }
+    #     'kernel': ['rbf'],
+    #     'gamma': [1e-3, 1e-4],
+    #     'C': [0.01]
+    # },
+    {
+        'kernel': ['linear'],
+        'C': [2**logc for logc in list(range(-8, 16, 1))],   # [0.00390625, 0.0078125, 0.015625, 0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
+        'class_weight': [None, 'balanced'],  # + [{1: 1, -1: neg_weight} for neg_weight in range(0.5, 2, 0.1)]
+    }
 ]
 
-scores = ['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']
+scores = [
+    # 'accuracy',
+    'f1_macro',
+    'precision_macro',
+    # 'recall_macro'
+]
 
 # See Dataset.cv_kfold_splits
 def cv_generator():
