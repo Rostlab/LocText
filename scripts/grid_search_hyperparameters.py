@@ -18,6 +18,10 @@ sections on :ref:`cross_validation` and :ref:`grid_search`.
 
 from __future__ import print_function
 
+import random
+
+from scipy import sparse
+
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
@@ -25,6 +29,8 @@ from sklearn.metrics import classification_report
 from sklearn.svm import SVC
 
 from nalaf.learning.lib.sklsvm import SklSVM
+from nalaf.structures.data import Dataset
+
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
@@ -40,29 +46,44 @@ X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feat
 tuned_parameters = [
     {
         'kernel': ['rbf'],
-        'gamma': [1e-4],
-        'C': [1]
+        'gamma': [1e-3, 1e-4],
+        'C': [0.01]
     },
     # {
-    #     'kernel': ['rbf'],
-    #     'gamma': [1e-3, 1e-4],
-    #     'C': [1, 10, 100, 1000]
-    # },
-    # {
     #     'kernel': ['linear'],
-    #     'C': [1, 10, 100, 1000]
+    #     'C': [0.01, 0.1, 0.1, 10, 100, 1000]
     # }
 ]
 
 scores = ['accuracy', 'f1_macro', 'precision_macro', 'recall_macro']
 
+# See Dataset.cv_kfold_splits
+def cv_generator():
+    k = 5
+    num_samples = len(y)
+
+    index_keys = list(range(0, num_samples))
+    index_keys = Dataset._cv_kfold_splits_randomize_keys(index_keys)
+
+    for fold in range(k):
+        training, evaluation = Dataset._cv_kfold_split(index_keys, k, fold, validation_set=True)
+        yield training, evaluation
+
 for score in scores:
+    print()
+    print()
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    cv = 5
-
-    clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=cv, scoring=score)
+    clf = GridSearchCV(
+        SVC(C=1, verbose=False),
+        tuned_parameters,
+        verbose=False,
+        cv=cv_generator(),
+        scoring=score,
+        refit=False,
+        iid=False,
+    )
 
     clf.fit(X, y)
 
@@ -72,11 +93,17 @@ for score in scores:
     print()
     print("Grid scores on development set:")
     print()
+
     means = clf.cv_results_['mean_test_score']
-    stds = clf.cv_results_['std_test_score']
-    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-        print("%0.3f (+/-%0.03f) for %r"
-              % (mean, std * 2, params))
+    desc_sorted_means_indices = sorted(range(len(means)), key=lambda k: means[k], reverse=True)
+
+    for index in desc_sorted_means_indices:
+        mean = clf.cv_results_['mean_test_score'][index]
+        std = clf.cv_results_['std_test_score'][index]
+        params = clf.cv_results_['params'][index]
+
+        print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+
     print()
 
     # print("Detailed classification report:")
