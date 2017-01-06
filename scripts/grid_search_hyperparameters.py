@@ -44,15 +44,16 @@ X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feat
 
 # Set the parameters by cross-validation
 tuned_parameters = [
-    # {
-    #     'kernel': ['rbf'],
-    #     'gamma': [1e-3, 1e-4],
-    #     'C': [0.01]
-    # },
+    {
+        'kernel': ['rbf'],
+        'class_weight': [None, 'balanced'],
+        'C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'gamma': [2**log2 for log2 in list(range(3, -15, -2))],
+    },
     {
         'kernel': ['linear'],
-        'C': [2**logc for logc in list(range(-8, 16, 1))],   # [0.00390625, 0.0078125, 0.015625, 0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
-        'class_weight': [None, 'balanced'],  # + [{1: 1, -1: neg_weight} for neg_weight in range(0.5, 2, 0.1)]
+        'class_weight': [None, 'balanced'],
+        'C': [2**log2 for log2 in list(range(-7, 15, 1))],
     }
 ]
 
@@ -60,7 +61,7 @@ scores = [
     # 'accuracy',
     'f1_macro',
     'precision_macro',
-    # 'recall_macro'
+    'recall_macro'
 ]
 
 # See Dataset.cv_kfold_splits
@@ -78,7 +79,7 @@ def cv_generator():
 for score in scores:
     print()
     print()
-    print("# Tuning hyper-parameters for %s" % score)
+    print("# Tuning hyper-parameters for *** {} ***".format(score))
     print()
 
     clf = GridSearchCV(
@@ -113,12 +114,3 @@ for score in scores:
         print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
 
     print()
-
-    # print("Detailed classification report:")
-    # print()
-    # print("The model is trained on the full development set.")
-    # print("The scores are computed on the full evaluation set.")
-    # print()
-    # y_true, y_pred = y_test, clf.predict(X_test)
-    # print(classification_report(y_true, y_pred))
-    # print()
