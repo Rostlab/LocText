@@ -85,7 +85,7 @@ for score in scores:
     clf = GridSearchCV(
         SVC(C=1, verbose=False),
         tuned_parameters,
-        verbose=False,
+        verbose=True,
         cv=cv_generator(),
         scoring=score,
         refit=False,
