@@ -71,12 +71,12 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             SentenceFeatureGenerator(
                 f_counts=None,  # 1
                 f_counts_in_between=2,  # 2
-                f_order=None,  # 3
-                f_bow=5,  # 5
-                f_pos=None,  # 6
-                f_tokens_count=None,  # 7
-                f_tokens_count_before=None,  # 8
-                f_tokens_count_after=None,  # 9
+                f_order=3,  # 3
+                f_bow=None,  # 4
+                f_pos=None,  # 5
+                f_tokens_count=None,  # 6
+                f_tokens_count_before=None,  # 7
+                f_tokens_count_after=None,  # 8
             ),
 
             DependencyFeatureGenerator(
@@ -89,7 +89,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 h_pd_grams=[1, 2, 3, 4],
                 # Feature keys/names
                 f_OW_lemma_N_gram=None,  # 10
-                f_OW_pos_N_gram=None,
+                f_OW_pos_N_gram=None,  # 11
                 f_OW_tokens_count=None,  # 12
                 f_OW_tokens_count_without_punct=13,  # 13
                 #
