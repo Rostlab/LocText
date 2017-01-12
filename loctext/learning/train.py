@@ -80,18 +80,27 @@ def _select_annotator_model(args):
 
     }.get(args.feature_generators)
 
+    # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
+
     ann_switcher = {
         # TODO evaluate them lazily
-        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, model=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk, kernel='linear', C=0.015625, class_weight={-1: 0.5}),
+        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, model=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk, class_weight=None, kernel='linear', C=1),
         "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, model=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
     }
 
     if args.model == "Combined":
         ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["SS"], ds_model=ann_switcher["DS"])
 
-    ret = ann_switcher[args.model]
+    model = ann_switcher[args.model]
+    submodels = _select_annotator_submodels(model)
 
-    return ret
+    return (model, submodels)
+
+
+def _select_annotator_submodels(model):
+    # Simple switch for either single or combined models
+    submodels = model.submodels if hasattr(model, 'submodels') else [model]
+    return submodels
 
 
 def _select_submodel_params(annotator, args):
@@ -105,27 +114,26 @@ def _select_submodel_params(annotator, args):
     raise AssertionError()
 
 
-def train(training_set, args):
+def train(training_set, args, annotator_model, submodels, execute_pipeline):
 
-    annotator_model = _select_annotator_model(args)
+    for index, submodel in enumerate(submodels):
+        print("About to train model {}={}".format(index, submodel.__class__.__name__))
 
-    # Simple switch for either single or combined models
-    submodels = annotator_model.submodels if hasattr(annotator_model, 'submodels') else [annotator_model]
+        if execute_pipeline:
+            submodel.pipeline.execute(training_set, train=True)
 
-    for index, annotator in enumerate(submodels):
-        print("About to train model {}={}".format(index, annotator.__class__.__name__))
-
-        annotator.pipeline.execute(training_set, train=True)
-
-        minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
-
-        annotator.model.train(training_set, annotator.pipeline.feature_set)
+        submodel.model.train(training_set, submodel.pipeline.feature_set)
 
     return annotator_model.annotate
 
 
 def evaluate(corpus, args):
-    annotator_gen_fun = (lambda training_set: train(training_set, args))
+    annotator_model, submodels = _select_annotator_model(args)
+    is_only_one_model = len(submodels) == 1
+    if is_only_one_model:
+        annotator_model.pipeline.execute(corpus, train=True)
+
+    annotator_gen_fun = (lambda training_set: train(training_set, args, annotator_model, submodels, execute_pipeline=not is_only_one_model))
     evaluator = args.evaluator
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
