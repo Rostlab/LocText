@@ -84,8 +84,8 @@ def _select_annotator_model(args):
 
     ann_switcher = {
         # TODO evaluate them lazily
-        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, model=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk, class_weight=None, kernel='linear', C=1),
-        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, model=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
+        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, execute_pipeline=False, model=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk, class_weight=None, kernel='linear', C=1),
+        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, execute_pipeline=False, model=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
     }
 
     if args.model == "Combined":
