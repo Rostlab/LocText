@@ -69,14 +69,14 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
         return [
             SentenceFeatureGenerator(
-                f_counts=1,
-                f_counts_in_between=2,
-                f_order=3,  # 3
+                f_counts=None,  # 1
+                f_counts_in_between=2,  # 2
+                f_order=None,  # 3
                 f_bow=5,  # 5
-                f_pos=6,  # 6
-                f_tokens_count=7,
-                f_tokens_count_before=8,
-                f_tokens_count_after=9,
+                f_pos=None,  # 6
+                f_tokens_count=None,  # 7
+                f_tokens_count_before=None,  # 8
+                f_tokens_count_after=None,  # 9
             ),
 
             DependencyFeatureGenerator(
@@ -88,30 +88,30 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 h_ld_grams=[1, 2, 3, 4],
                 h_pd_grams=[1, 2, 3, 4],
                 # Feature keys/names
-                f_OW_lemma_N_gram=10,
-                f_OW_pos_N_gram=11,
-                f_OW_tokens_count=12,
-                f_OW_tokens_count_without_punct=13,
+                f_OW_lemma_N_gram=None,  # 10
+                f_OW_pos_N_gram=None,
+                f_OW_tokens_count=None,  # 12
+                f_OW_tokens_count_without_punct=13,  # 13
                 #
-                f_IW_lemma_N_gram=14,
-                f_IW_pos_N_gram=15,
-                f_IW_tokens_count=16,
-                f_IW_tokens_count_without_punct=17,
+                f_IW_lemma_N_gram=None,  # 14
+                f_IW_pos_N_gram=None,
+                f_IW_tokens_count=None,
+                f_IW_tokens_count_without_punct=17,  # 17
                 #
-                f_LD_lemma_N_gram=18,
-                f_LD_pos_N_gram=19,
-                f_LD_tokens_count=20,
-                f_LD_tokens_count_without_punct=21,
+                f_LD_lemma_N_gram=None,  # 18
+                f_LD_pos_N_gram=None,
+                f_LD_tokens_count=None,
+                f_LD_tokens_count_without_punct=21,  # 21
                 #
                 #
-                f_PD_lemma_N_gram=22,
-                f_PD_pos_N_gram=23,
-                f_PD_tokens_count=24,
-                f_PD_tokens_count_without_punct=25,
+                f_PD_lemma_N_gram=None,  # 22
+                f_PD_pos_N_gram=None,
+                f_PD_tokens_count=None,
+                f_PD_tokens_count_without_punct=25,  # 25
                 #
-                f_PD_undirected_edges_N_gram=26,
-                f_PD_directed_edges_N_gram=27,
-                f_PD_full_N_gram=28,
+                f_PD_undirected_edges_N_gram=None,  # 26
+                f_PD_directed_edges_N_gram=None,
+                f_PD_full_N_gram=None,
                 #
                 #
             )
