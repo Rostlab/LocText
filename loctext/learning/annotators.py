@@ -69,10 +69,10 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
         return [
             SentenceFeatureGenerator(
-                f_counts=None,  # 1
+                f_counts=1,  # 1
                 f_counts_in_between=2,  # 2
                 f_order=3,  # 3
-                f_bow=None,  # 4
+                f_bow=4,  # 4
                 f_pos=None,  # 5
                 f_tokens_count=None,  # 6
                 f_tokens_count_before=None,  # 7
@@ -90,12 +90,12 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 # Feature keys/names
                 f_OW_lemma_N_gram=None,  # 10
                 f_OW_pos_N_gram=None,  # 11
-                f_OW_tokens_count=None,  # 12
+                f_OW_tokens_count=12,  # 12
                 f_OW_tokens_count_without_punct=13,  # 13
                 #
                 f_IW_lemma_N_gram=None,  # 14
                 f_IW_pos_N_gram=None,
-                f_IW_tokens_count=None,
+                f_IW_tokens_count=None,  # 16
                 f_IW_tokens_count_without_punct=17,  # 17
                 #
                 f_LD_lemma_N_gram=None,  # 18

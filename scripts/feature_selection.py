@@ -18,6 +18,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.svm import SVC
+from sklearn.feature_selection import VarianceThreshold
 
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
@@ -34,6 +35,14 @@ is_debug_mode = is_verbose_mode = True
 corpus = read_corpus("LocText")
 locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 locTextModel.pipeline.execute(corpus, train=True)
-X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feature_set, preprocess=False)
 
-print(X.shape)
+X, y = SklSVM._convert_edges_to_SVC_instances(corpus, preprocess=False)
+
+print("Step 1, # features: ", X.shape[1])
+
+# # See: http://scikit-learn.org/stable/modules/feature_selection.html#removing-features-with-low-variance
+p = 0.99
+selector = VarianceThreshold(threshold=(p * (1 - p)))
+X = selector.fit_transform(X)
+
+print("Step 2, # features", X.shape[1], " -- variances ", selector.variances_)

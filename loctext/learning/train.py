@@ -84,7 +84,7 @@ def _select_annotator_model(args):
 
     ann_switcher = {
         # TODO evaluate them lazily
-        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, execute_pipeline=False, model=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk, class_weight=None, kernel='linear', C=1),
+        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, execute_pipeline=False, model=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk, preprocess=True, class_weight=None, kernel='linear', C=1),
         "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, execute_pipeline=False, model=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
     }
 
@@ -130,8 +130,10 @@ def train(training_set, args, annotator_model, submodels, execute_pipeline):
 def evaluate(corpus, args):
     annotator_model, submodels = _select_annotator_model(args)
     is_only_one_model = len(submodels) == 1
+
     if is_only_one_model:
         annotator_model.pipeline.execute(corpus, train=True)
+        annotator_model.model.write_vector_instances(corpus, annotator_model.pipeline.feature_set)
 
     annotator_gen_fun = (lambda training_set: train(training_set, args, annotator_model, submodels, execute_pipeline=not is_only_one_model))
     evaluator = args.evaluator
@@ -211,10 +213,12 @@ def print_corpus_pipeline_dependent_stats(corpus):
 
     # Assumes the sentences and edges have been generated (through relations_pipeline)
 
+    T = 0
     P = 0
     N = 0
 
     for e in corpus.edges():
+        T += 1
         if e.is_relation():
             P += 1
         else:
@@ -225,7 +229,8 @@ def print_corpus_pipeline_dependent_stats(corpus):
     # abstract + fulltext -- #docs: 104, P=614 vs N=1480
 
     print("\t#sentences={}".format(len(list(corpus.sentences()))))
-    print("\tedges: #P={} vs. #N={}".format(P, N))
+    print("\t#instances: {} : #P={} vs. #N={}".format(T, P, N))
+    print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
 
     return (P, N)
 
