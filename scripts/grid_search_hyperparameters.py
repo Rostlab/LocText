@@ -34,13 +34,14 @@ from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+from util import my_cv_generator
 
 print(__doc__)
 
 corpus = read_corpus("LocText")
-locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
+locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True)
 locTextModel.pipeline.execute(corpus, train=True)
-X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feature_set)
+X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
 
 # Set the parameters by cross-validation
 tuned_parameters = [
@@ -64,17 +65,7 @@ scores = [
     'recall_macro'
 ]
 
-# See Dataset.cv_kfold_splits
-def cv_generator():
-    k = 5
-    num_samples = len(y)
 
-    index_keys = list(range(0, num_samples))
-    index_keys = Dataset._cv_kfold_splits_randomize_keys(index_keys)
-
-    for fold in range(k):
-        training, evaluation = Dataset._cv_kfold_split(index_keys, k, fold, validation_set=True)
-        yield training, evaluation
 
 for score in scores:
     print()
@@ -86,7 +77,7 @@ for score in scores:
         SVC(C=1, verbose=False),
         tuned_parameters,
         verbose=True,
-        cv=cv_generator(),
+        cv=my_cv_generator(len(y)),
         scoring=score,
         refit=False,
         iid=False,

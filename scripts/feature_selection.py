@@ -35,8 +35,7 @@ is_debug_mode = is_verbose_mode = True
 corpus = read_corpus("LocText")
 locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 locTextModel.pipeline.execute(corpus, train=True)
-
-X, y = SklSVM._convert_edges_to_SVC_instances(corpus, preprocess=False)
+X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
 
 print("Step 1, # features: ", X.shape[1])
 
