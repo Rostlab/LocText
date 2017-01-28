@@ -3,7 +3,7 @@ from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.preprocessing.tokenizers import TmVarTokenizer, NLTK_TOKENIZER
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
-from loctext.features.specific import IsProteinMarkerFeatureGenerator, LocationWordFeatureGenerator, ProteinWordFeatureGenerator
+from loctext.features.specific import IsProteinMarkerFeatureGenerator, LocalizationRelationsRatio, LocationWordFeatureGenerator, ProteinWordFeatureGenerator
 from nalaf.features.relations import TokenFeatureGenerator
 from nalaf.features.relations.context import LinearDistanceFeatureGenerator
 from nalaf.features.relations.context import EntityOrderFeatureGenerator
@@ -119,8 +119,13 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             ),
 
             IsProteinMarkerFeatureGenerator(
-                f_is_protein_marker=40
-            )
+                f_is_protein_marker=40,
+            ),
+
+            LocalizationRelationsRatio(
+                f_localization_relation_ratio=42,
+            ),
+
         ]
 
     # @staticmethod

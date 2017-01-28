@@ -3,8 +3,6 @@
 KBest feature Selection
 ===================================================
 """
-print(__doc__)
-
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
@@ -21,6 +19,8 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from util import my_cv_generator
 import time
+
+print(__doc__)
 
 corpus = read_corpus("LocText")
 locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True, kernel='linear', C=1)

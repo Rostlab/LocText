@@ -2,7 +2,7 @@ from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
-
+from nalaf.features.stemming import ENGLISH_STEMMER
 
 
 class IsProteinMarkerFeatureGenerator(EdgeFeatureGenerator):
@@ -35,6 +35,137 @@ class IsProteinMarkerFeatureGenerator(EdgeFeatureGenerator):
 
             if is_protein_marker:
                 self.add(f_set, is_train, edge, 'f_is_protein_marker')
+
+
+class LocalizationRelationsRatio(EdgeFeatureGenerator):
+
+    def __init__(
+        self,
+        c_localization_class=LOC_ID,
+        c_localization_relations_ratios=None,
+        #
+        f_localization_relation_ratio=None,
+    ):
+
+        self.c_localization_class = c_localization_class
+
+        if c_localization_relations_ratios is not None:
+            self.c_localization_relations_ratios = self.c_localization_relations_ratios
+        else:
+            self.c_localization_relations_ratios = {
+                "chromoplast": 0.0,
+                "integral outer membran": 0.0,
+                "envelop": 0.0,
+                "integral membran": 0.0,
+                "project": 0.0,
+                "mvb": 0.0,
+                "cilia": 0.0,
+                "chloroplast envelop": 0.0,
+                "microtubule-organizing centr": 0.0,
+                "nuclear por": 0.0,
+                "secretori": 0.0,
+                "extracellular": 0.0,
+                "nucleolus": 0.0,
+                "telomer": 0.0,
+                "centrosom": 0.0,
+                "nuclear envelop": 0.0,
+                "lumen": 0.0,
+                "nucleosom": 0.0,
+                "thylakoid membran": 0.0,
+                "cytoskeleton": 0.0,
+                "bud": 0.3333333333333333,
+                "microtubul": 0.3333333333333333,
+                "er": 0.35714285714285715,
+                "cell wal": 0.3888888888888889,
+                "nucleoli": 0.5,
+                "spindl": 0.5,
+                "plastid": 0.5,
+                "outer membran": 0.5,
+                "golgi membran": 0.5,
+                "chloroplast stroma": 0.5,
+                "transmembran": 0.5,
+                "kinetochor": 0.5,
+                "chromosom": 0.5675675675675675,
+                "endoplasmic reticulum": 0.5714285714285714,
+                "melanosom": 0.625,
+                "chloroplast": 0.6666666666666666,
+                "surfac": 0.6666666666666666,
+                "cytoplasm": 0.7777777777777778,
+                "peroxisom": 0.8,
+                "tonoplast": 0.8461538461538461,
+                "membran": 0.9090909090909091,
+                "mitochondrial matrix": 1.0,
+                "vacuolar surfac": 1.0,
+                "endoplasmic reticulum membran": 1.0,
+                "mitochondria": 1.0,
+                "lipid raft": 1.0,
+                "cis-golgi stack": 1.0,
+                "nuclei": 1.0,
+                "apical plasma membran": 1.0,
+                "mitochondrial inner membran": 1.0,
+                "prekinetochor": 1.0,
+                "chromocent": 1.0,
+                "mitochondrial outer membran": 1.0,
+                "thylakoid": 1.0,
+                "spindle pole bodi": 1.0,
+                "thylakoid membrane in chloroplast": 1.0,
+                "cell membran": 1.0,
+                "mitochondrial membran": 1.0,
+                "vacuol": 1.0,
+                "nuclear": 1.0344827586206897,
+                "mitochondri": 1.1818181818181819,
+                "secret": 1.2,
+                "vacuolar": 1.2,
+                "etioplast": 1.25,
+                "heterochromat": 1.25,
+                "lysosom": 1.25,
+                "nuclear matrix": 1.25,
+                "cytosol": 1.3333333333333333,
+                "cell surfac": 1.3333333333333333,
+                "nucleolar": 1.3333333333333333,
+                "plasma membran": 1.4285714285714286,
+                "nucleus": 1.4444444444444444,
+                "cvt": 1.5,
+                "cell boundari": 1.5,
+                "centromer": 1.5294117647058822,
+                "lipid particl": 1.5833333333333333,
+                "tgn": 2.0,
+                "basolater": 2.0,
+                "ccvs": 2.0,
+                "cell peripheri": 2.0,
+                "clathrin-coated vesicl": 2.0,
+                "intranuclear": 2.0,
+                "synaps": 2.0,
+                "outer mitochondrial membran": 2.0,
+                "golgi": 2.0,
+                "cellular protrus": 2.0,
+                "cajal bodi": 2.0,
+                "trans-golgi network": 2.0,
+                "vacuolar membran": 2.4285714285714284,
+                "endosom": 2.5833333333333335,
+                "heterochromatin": 3.0,
+                "peroxisomal membran": 3.0,
+                "golgi apparatus": 4.0,
+                "cell-surfac": 4.0,
+                "subnuclear": 5.0,
+                "extracellular matrix": 5.0,
+                "intermembran": 7.0,
+                "golgi stack": 7.0,
+            }
+
+        self.f_localization_relation_ratio = f_localization_relation_ratio
+
+    def generate(self, corpus, f_set, is_train):
+        for edge in corpus.edges():
+            sentence = edge.get_combined_sentence()
+
+            localization = edge.entity1 if edge.entity1.class_id == self.c_localization_class else edge.entity2
+            norm_text = ENGLISH_STEMMER.stem(localization.text)
+
+            ratio = self.c_localization_relations_ratios.get(norm_text, 0)
+            ratio += 0.1  # Just to remove 0 weights, make minimally viable
+
+            self.add_with_value(f_set, is_train, edge, 'f_localization_relation_ratio', ratio)
 
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
