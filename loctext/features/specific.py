@@ -1,6 +1,40 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
+
+
+
+class IsProteinMarkerFeatureGenerator(EdgeFeatureGenerator):
+
+    def __init__(
+        self,
+        c_protein_class=PRO_ID,
+        c_set_protein_markers=None,
+        #
+        f_is_protein_marker=None,
+    ):
+
+        self.c_protein_class = c_protein_class
+
+        if c_set_protein_markers is not None:
+            self.c_set_protein_markers = self.c_set_protein_markers
+        else:
+            self.c_set_protein_markers = \
+                {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2", "Snf7"}
+
+        self.f_is_protein_marker = f_is_protein_marker
+
+    def generate(self, corpus, f_set, is_train):
+        for edge in corpus.edges():
+            sentence = edge.get_combined_sentence()
+
+            protein = edge.entity1 if edge.entity1.class_id == self.c_protein_class else edge.entity2
+
+            is_protein_marker = protein.text in self.c_set_protein_markers
+
+            if is_protein_marker:
+                self.add(f_set, is_train, edge, 'f_is_protein_marker')
 
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
