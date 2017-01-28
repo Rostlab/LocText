@@ -21,7 +21,7 @@ class IsProteinMarkerFeatureGenerator(EdgeFeatureGenerator):
             self.c_set_protein_markers = self.c_set_protein_markers
         else:
             self.c_set_protein_markers = \
-                {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2", "Snf7"}
+                {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2"}
 
         self.f_is_protein_marker = f_is_protein_marker
 
