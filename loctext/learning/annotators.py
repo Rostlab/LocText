@@ -74,8 +74,8 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_counts_in_between_total=None,
 
                 f_order=3,  # 3
-                f_bow=4,  # 4
-                f_pos=5,  # 5
+                f_bow=None,  # 4
+                f_pos=None,  # 5
                 f_tokens_count=None,  # 6
                 f_tokens_count_before=None,  # 7
                 f_tokens_count_after=None,  # 8
@@ -84,29 +84,29 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             DependencyFeatureGenerator(
                 # Hyper parameters
                 h_ow_size=4,  # outer window size
-                h_ow_grams=[1, 2, 3, 4],
+                h_ow_grams=[1, 2, 3],
                 h_iw_size=4,  # inner window size
-                h_iw_grams=[1, 2, 3, 4],
-                h_ld_grams=[1, 2, 3, 4],
-                h_pd_grams=[1, 2, 3, 4],
+                h_iw_grams=[1, 2, 3],
+                h_ld_grams=[1, 2, 3],
+                h_pd_grams=[1, 2, 3],
                 # Feature keys/names
-                f_OW_lemma_N_gram=None,  # 10
+                f_OW_bow_N_gram=None,  # 10
                 f_OW_pos_N_gram=None,  # 11
-                f_OW_tokens_count=12,  # 12
+                f_OW_tokens_count=None,  # 12
                 f_OW_tokens_count_without_punct=13,  # 13
                 #
-                f_IW_lemma_N_gram=None,  # 14
+                f_IW_bow_N_gram=None,  # 14
                 f_IW_pos_N_gram=None,
                 f_IW_tokens_count=None,  # 16
                 f_IW_tokens_count_without_punct=17,  # 17
                 #
-                f_LD_lemma_N_gram=None,  # 18
+                f_LD_bow_N_gram=18,  # 18
                 f_LD_pos_N_gram=None,
                 f_LD_tokens_count=None,
                 f_LD_tokens_count_without_punct=21,  # 21
                 #
                 #
-                f_PD_lemma_N_gram=None,  # 22
+                f_PD_bow_N_gram=None,  # 22
                 f_PD_pos_N_gram=None,
                 f_PD_tokens_count=None,
                 f_PD_tokens_count_without_punct=25,  # 25
