@@ -27,7 +27,7 @@ locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, p
 locTextModel.pipeline.execute(corpus, train=True)
 X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
 
-scoring='f1_macro'
+scoring = 'f1_macro'
 
 rfecv = RFECV(
     verbose=1,

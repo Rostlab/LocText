@@ -27,7 +27,7 @@ locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, p
 locTextModel.pipeline.execute(corpus, train=True)
 X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
 
-kbest = SelectKBest(mutual_info_classif, k=600)
+kbest = SelectKBest(mutual_info_classif, k='all')
 
 start = time.time()
 X_new = kbest.fit_transform(X, y)
@@ -40,12 +40,7 @@ print("Optimal number of features: ", X_new.shape[1])
 selected = []
 nonselected = []
 
-for index, value in enumerate(kbest.get_support()):
-    if value:
-        selected.append(index)
-    else:
-        nonselected.append(index)
+for fkey, _ in sorted(enumerate(kbest.scores_), key=lambda tuple: tuple[1], reverse=True):
+    selected.append(fkey)
 
-# print("NON Selected features", nonselected)
-print()
-print("Selected features", selected)
+print(selected)
