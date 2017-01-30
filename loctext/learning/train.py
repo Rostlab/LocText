@@ -249,7 +249,7 @@ def print_corpus_pipeline_dependent_stats(corpus):
 
     print("\t#sentences: {}".format(len(list(corpus.sentences()))))
     print("\t#instances (edges): {} -- #P={} vs. #N={}".format(T, P, N))
-    print("\t#plausible relations from edges: {}".format(len(set(corpus.plausible_relations_from_generated_edges()))))
+    print("\t#plausible relations from edges: {}".format(len(list(corpus.plausible_relations_from_generated_edges()))))
     print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
 
     return (P, N)
