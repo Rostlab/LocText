@@ -1,8 +1,6 @@
 from nalaf.learning.taggers import RelationExtractor
-from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.svmlight import SVMLightTreeKernels
 from nalaf.structures.relation_pipelines import RelationExtractionPipeline
-from pyatspi import document
 
 from loctext.features.specific import LocationWordFeatureGenerator
 from loctext.features.specific import ProteinWordFeatureGenerator
@@ -16,13 +14,10 @@ from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, 
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, \
     EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
 from nalaf.preprocessing.edges import SimpleEdgeGenerator, SentenceDistanceEdgeGenerator
-from nalaf.utils.readers import StringReader
-from nalaf import print_verbose, print_debug
 from nalaf.learning.taggers import Tagger
 from loctext.util import UNIPROT_NORM_ID, STRING_NORM_ID
 from nalaf.structures.data import Entity
 import requests
-import os
 import urllib.request
 
 
@@ -287,7 +282,6 @@ class StringTagger(Tagger):
             json_response.status_code = 200
             response_data = json_response.json()
         except requests.exceptions.ConnectionError as err:
-            # maybe set up for a retry, or continue in a retry loop
             print(
                 "Sever is not running. For this application you need to install Docker https://docs.docker.com/engine/installation/ \n"
                 "You only need to build the docker image once, like this: '$docker build -t tagger .' \n"
