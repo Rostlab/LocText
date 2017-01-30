@@ -4,6 +4,7 @@ from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluation
 from nalaf import print_verbose, print_debug
 from loctext.learning.evaluations import relation_accept_uniprot_go
 from nalaf.learning.lib.sklsvm import SklSVM
+from nalaf.structures.data import Entity
 
 def parse_arguments(argv=[]):
     import argparse
