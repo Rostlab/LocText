@@ -17,7 +17,7 @@ from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
-from util import my_cv_generator
+from loctext.util import *
 import time
 
 print(__doc__)
@@ -37,10 +37,11 @@ print("TIME for feature selection: ", (end - start))
 
 print("Optimal number of features: ", X_new.shape[1])
 
-selected = []
-nonselected = []
+selected_feat_keys = []
 
 for fkey, _ in sorted(enumerate(kbest.scores_), key=lambda tuple: tuple[1], reverse=True):
-    selected.append(fkey)
+    selected_feat_keys.append(fkey)
 
-print(selected)
+####
+
+print(print_selected_features(selected_feat_keys, locTextModel.pipeline.feature_set, file_prefix="kbest"))

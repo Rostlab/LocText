@@ -5,6 +5,7 @@ from nalaf import print_verbose, print_debug
 from loctext.learning.evaluations import relation_accept_uniprot_go
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
+from loctext.util import *
 
 def parse_arguments(argv=[]):
     import argparse
@@ -136,6 +137,7 @@ def train(training_set, args, annotator_model, submodels, execute_pipeline):
 
         if execute_pipeline:
             submodel.pipeline.execute(training_set, train=True)
+            SS.model.set_allowed_feature_names(submodel.pipeline.feature_set, unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/kbest-1485787061.599808-NAMES.log"))
 
         submodel.model.train(training_set)
 
