@@ -306,7 +306,7 @@ class StringTagger(Tagger):
         for entity in entities:
             start = entity["start"]
             end = entity["end"]
-            text = part.text[start:end]
+            text = part.text[start-1:end]
             normalizations = entity["normalizations"]
             uniprot_id = ""
             string_id = ""
@@ -333,7 +333,7 @@ class StringTagger(Tagger):
 
             norm_dictionary = {UNIPROT_NORM_ID: uniprot_id, STRING_NORM_ID: string_id}
 
-            entity_dictionary = Entity(class_id=UNIPROT_NORM_ID, offset=start, text=text, norm=norm_dictionary)
+            entity_dictionary = Entity(class_id=UNIPROT_NORM_ID, offset=start-1, text=text, norm=norm_dictionary)
 
             part.predicted_annotations.append(entity_dictionary)
 
