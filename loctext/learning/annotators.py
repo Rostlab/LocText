@@ -75,7 +75,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
                 f_order=3,  # 3
                 f_bow=None,  # 4
-                f_pos=None,  # 5
+                f_pos=5,  # 5
                 f_tokens_count=None,  # 6
                 f_tokens_count_before=None,  # 7
                 f_tokens_count_after=None,  # 8

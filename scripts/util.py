@@ -82,10 +82,12 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
             self.kbest_unfitted = False
 
         X_new = self.kbest.transform(X)
+        X_new = SklSVM._preprocess(X_new)
         return self.svc.fit(X_new, y)
 
     def predict(self, X):
         X_new = self.kbest.transform(X)
+        X_new = SklSVM._preprocess(X_new)
         return self.svc.predict(X_new)
 
 
@@ -116,7 +118,7 @@ def select_features_transformer_function(X, **kwargs):
 
     X_new = X_new.tocsr()
 
-    X_new = maxabs_scale(X_new, copy=False)
+    X_new = SklSVM._preprocess(X_new)
 
     return X_new
 
