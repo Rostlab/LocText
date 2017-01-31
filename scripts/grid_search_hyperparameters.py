@@ -51,7 +51,6 @@ scores = [
     'recall_macro'
 ]
 
-
 for score in scores:
     print()
     print()

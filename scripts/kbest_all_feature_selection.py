@@ -1,8 +1,3 @@
-"""
-===================================================
-KBest feature Selection
-===================================================
-"""
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
@@ -22,22 +17,23 @@ import time
 
 print(__doc__)
 
+SCORING_FUNCS = [mutual_info_classif]
+SCORING_NAMES = ["stub"]
+
 annotator, X, y = get_model_and_data()
 
-kbest = SelectKBest(mutual_info_classif, k='all')
+for scoring_func in SCORING_FUNCS:
+    for scoring_name in SCORING_NAMES:
 
-start = time.time()
-X_new = kbest.fit_transform(X, y)
-end = time.time()
+        kbest = SelectKBest(scoring_func, k='all')
 
-print("TIME for feature selection: ", (end - start))
+        start = time.time()
+        X_new = kbest.fit_transform(X, y)
+        end = time.time()
 
-selected_feat_keys = []
+        print("TIME for feature selection: ", (end - start))
 
-for fkey, _ in sorted(enumerate(kbest.scores_), key=lambda tuple: tuple[1], reverse=True):
-    selected_feat_keys.append(fkey)
+        selected_feat_keys = get_kbest_feature_keys(kbest)
 
-####
-
-print()
-print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="kbest"))
+        print()
+        print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="kbest"))

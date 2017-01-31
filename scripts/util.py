@@ -41,6 +41,15 @@ def get_model_and_data():
 def plot_recursive_features(scoring_name, scores):
     plot.figure()
     plot.xlabel("Number of features selected")
-    plot.ylabel("{} score (Cross Validation)".format(scoring_name))
+    plot.ylabel("{}".format(scoring_name.upper()))
     plot.plot(range(1, len(scores) + 1), scores)
     plot.show()
+
+
+def get_kbest_feature_keys(kbest_fitted_model):
+    selected_feat_keys = []
+
+    for fkey, _ in sorted(enumerate(kbest_fitted_model.scores_), key=lambda tuple: tuple[1], reverse=True):
+        selected_feat_keys.append(fkey)
+
+    return selected_feat_keys
