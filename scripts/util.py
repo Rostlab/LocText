@@ -20,6 +20,7 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics import euclidean_distances
 import time
+from sklearn.preprocessing import FunctionTransformer
 
 
 def my_cv_generator(num_instances):
@@ -85,3 +86,32 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
     def predict(self, X):
         X_new = self.kbest.transform(X)
         return self.svc.predict(X_new)
+
+
+def select_features_transformer_function(final_allowed_feature_mapping_fun):
+
+    def ret(X):
+        num_instances, num_features = X.shape
+
+        X_new = scipy.sparse.lil_matrix((num_instances, num_features), dtype=np.float64)
+
+        for instance_index in num_instances:
+            for f_key in range(num_features):
+                f_index = final_allowed_feature_mapping_fun(f_key)
+
+                if f_index is not None:
+                    value = X[instance_index, f_key]
+                    X_new[instance_index, f_index] = value
+
+        return X_new.tocsr()
+
+    return ret
+
+
+class SelectFeaturesTransformer():  # TODO inheriting on these ones makes any change?
+
+    def __init__(self, allowed_feat_keys):
+        self.allowed_feat_keys = allowed_feat_keys
+        self.transformer = FunctionTransformer
+
+    def fit_transform(self):
