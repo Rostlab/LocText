@@ -116,7 +116,7 @@ def select_features_transformer_function(X, **kwargs):
 
     X_new = X_new.tocsr()
 
-    # X_new = maxabs_scale(X_new, copy=False)
+    X_new = maxabs_scale(X_new, copy=False)
 
     return X_new
 
