@@ -6,6 +6,8 @@ from sklearn.datasets import make_classification
 from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import mutual_info_classif
+import scipy
+import time
 
 from nalaf.structures.data import Dataset
 from nalaf.learning.lib.sklsvm import SklSVM
@@ -19,7 +21,6 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics import euclidean_distances
-import time
 from sklearn.preprocessing import FunctionTransformer
 
 
@@ -104,7 +105,7 @@ def select_features_transformer_function(final_allowed_feature_mapping):
 
         X_new = scipy.sparse.lil_matrix((num_instances, num_features), dtype=np.float64)
 
-        for instance_index in num_instances:
+        for instance_index in range(num_instances):
             for f_key in range(num_features):
                 f_index = final_allowed_feature_mapping.get(f_key, None)
 
@@ -117,6 +118,6 @@ def select_features_transformer_function(final_allowed_feature_mapping):
     return ret
 
 
-def select_features_transformer_transformer(final_allowed_feature_mapping):
+def select_features_transformer_transformer(final_allowed_feature_mapping, accept_sparse=True):
     transformer_fun = select_features_transformer_function(final_allowed_feature_mapping)
-    return FunctionTransformer(transformer_fun)
+    return FunctionTransformer(transformer_fun, accept_sparse=accept_sparse)
