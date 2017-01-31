@@ -15,10 +15,12 @@ from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from util import *
 from loctext.util import *
 import time
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import make_pipeline
 
 print(__doc__)
 
-SCORING_FUNCS = [mutual_info_classif]
+SCORING_FUNCS = ["stub"]
 SCORING_NAMES = ['f1_macro']
 
 annotator, X, y = get_model_and_data()
@@ -44,10 +46,12 @@ for scoring_name in SCORING_NAMES:
 
             allowed_feat_keys = selected_feat_keys[:num_seletected_kbest_features]
 
-            svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
+            estimator = make_pipeline(MY_TRANSFORMATION, SVC(kernel='linear', C=1, verbose=False))  # TODO C=1 linear / rbf ??
 
-            # do cv through allowing only allowed_feat_keys
-            # scores.append(cv.score)
+            cv_scores = cross_val_score(estimator, X, y, scoring=scoring_name, cv=my_cv_generator(num_instances))
+            scores.append(cv_scores.append(cv_scores.mean()))
+
+        assert(len(scores) == num_features)
 
         print()
         # print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="rfe"))
