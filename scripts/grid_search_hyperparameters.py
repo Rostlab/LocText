@@ -28,10 +28,7 @@ from util import my_cv_generator
 
 print(__doc__)
 
-corpus = read_corpus("LocText")
-locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=False)
-locTextModel.pipeline.execute(corpus, train=True)
-X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
+annotator, X, y = get_model_and_data()
 
 search_space = [
     {

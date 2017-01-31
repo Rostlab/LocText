@@ -15,17 +15,14 @@ from sklearn.feature_selection import mutual_info_classif
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+from util import *
 from loctext.util import *
 import time
 
 print(__doc__)
 
-corpus = read_corpus("LocText")
-locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True, kernel='linear', C=1)
-locTextModel.pipeline.execute(corpus, train=True)
-X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
+annotator, X, y = get_model_and_data()
 
 kbest = SelectKBest(mutual_info_classif, k='all')
 
@@ -35,8 +32,6 @@ end = time.time()
 
 print("TIME for feature selection: ", (end - start))
 
-print("Optimal number of features: ", X_new.shape[1])
-
 selected_feat_keys = []
 
 for fkey, _ in sorted(enumerate(kbest.scores_), key=lambda tuple: tuple[1], reverse=True):
@@ -45,4 +40,4 @@ for fkey, _ in sorted(enumerate(kbest.scores_), key=lambda tuple: tuple[1], reve
 ####
 
 print()
-print(print_selected_features(selected_feat_keys, locTextModel.pipeline.feature_set, file_prefix="kbest"))
+print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="kbest"))
