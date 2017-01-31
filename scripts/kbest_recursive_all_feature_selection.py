@@ -45,8 +45,10 @@ for scoring_name in SCORING_NAMES:
         for num_seletected_kbest_features in range(1, num_features + 1):
 
             allowed_feat_keys = selected_feat_keys[:num_seletected_kbest_features]
+            final_allowed_feature_mapping = gen_final_allowed_feature_mapping(allowed_feat_keys)
+            my_transformer = select_features_transformer_transformer(final_allowed_feature_mapping)
 
-            estimator = make_pipeline(MY_TRANSFORMATION, SVC(kernel='linear', C=1, verbose=False))  # TODO C=1 linear / rbf ??
+            estimator = make_pipeline(my_transformer, SVC(kernel='linear', C=1, verbose=False))  # TODO C=1 linear / rbf ??
 
             cv_scores = cross_val_score(estimator, X, y, scoring=scoring_name, cv=my_cv_generator(num_instances))
             scores.append(cv_scores.append(cv_scores.mean()))

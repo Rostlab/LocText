@@ -88,7 +88,16 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
         return self.svc.predict(X_new)
 
 
-def select_features_transformer_function(final_allowed_feature_mapping_fun):
+def gen_final_allowed_feature_mapping(allowed_feat_keys):
+    final_allowed_feature_mapping = {}
+
+    for allowed_feat_key in allowed_feat_keys:
+        final_allowed_feature_mapping[allowed_feat_key] = len(final_allowed_feature_mapping)
+
+    return final_allowed_feature_mapping
+
+
+def select_features_transformer_function(final_allowed_feature_mapping):
 
     def ret(X):
         num_instances, num_features = X.shape
@@ -97,7 +106,7 @@ def select_features_transformer_function(final_allowed_feature_mapping_fun):
 
         for instance_index in num_instances:
             for f_key in range(num_features):
-                f_index = final_allowed_feature_mapping_fun(f_key)
+                f_index = final_allowed_feature_mapping.get(f_key, None)
 
                 if f_index is not None:
                     value = X[instance_index, f_key]
@@ -108,10 +117,6 @@ def select_features_transformer_function(final_allowed_feature_mapping_fun):
     return ret
 
 
-class SelectFeaturesTransformer():  # TODO inheriting on these ones makes any change?
-
-    def __init__(self, allowed_feat_keys):
-        self.allowed_feat_keys = allowed_feat_keys
-        self.transformer = FunctionTransformer
-
-    def fit_transform(self):
+def select_features_transformer_transformer(final_allowed_feature_mapping):
+    transformer_fun = select_features_transformer_function(final_allowed_feature_mapping)
+    return FunctionTransformer(transformer_fun)
