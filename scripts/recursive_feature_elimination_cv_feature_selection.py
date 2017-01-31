@@ -8,7 +8,7 @@ number of features selected with cross-validation.
 """
 print(__doc__)
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plot
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
 from sklearn.feature_selection import RFECV
@@ -56,9 +56,4 @@ print()
 print("Max performance for {}: {}".format(scoring, rfecv.grid_scores_[rfecv.n_features_ - 1]))
 print()
 
-# Plot number of features VS. cross-validation scores
-plt.figure()
-plt.xlabel("Number of features selected")
-plt.ylabel("Cross validation score (nb of correct classifications)")
-plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
-plt.show()
+plot_recursive_features(scoring, rfecv.grid_scores_)

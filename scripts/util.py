@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plot
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
 from sklearn.feature_selection import RFECV
@@ -36,3 +36,11 @@ def get_model_and_data():
     X, y = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
 
     return (annotator, X, y)
+
+
+def plot_recursive_features(scoring_name, scores):
+    plot.figure()
+    plot.xlabel("Number of features selected")
+    plot.ylabel("{} score (Cross Validation)".format(scoring_name))
+    plot.plot(range(1, len(scores) + 1), scores)
+    plot.show()
