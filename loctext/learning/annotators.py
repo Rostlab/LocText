@@ -100,7 +100,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_IW_tokens_count=None,  # 16
                 f_IW_tokens_count_without_punct=None,  # 17
                 #
-                f_LD_bow_N_gram=18,  # 18
+                f_LD_bow_N_gram=None,  # 18
                 f_LD_pos_N_gram=None,  # 19
                 f_LD_tokens_count=None,  # 20
                 f_LD_tokens_count_without_punct=21,  # 21

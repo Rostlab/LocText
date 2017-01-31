@@ -60,7 +60,7 @@ def get_kbest_feature_keys(kbest_fitted_model):
     return selected_feat_keys
 
 
-class KBestSVC(BaseEstimator, ClassifierMixin):
+class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones makes any change?
 
     def __init__(self, X_whole, y_whole, score_func, k=None):
         self.X_whole = X_whole
@@ -71,7 +71,7 @@ class KBestSVC(BaseEstimator, ClassifierMixin):
         self.kbest = None
         self.kbest_unfitted = True
 
-        self.svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
+        self.svc = SVC(kernel='linear', C=1, verbose=True)  # TODO C=1 linear / rbf ??
 
     def fit(self, X, y):
         if self.kbest_unfitted:
