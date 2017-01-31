@@ -21,7 +21,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics import euclidean_distances
-from sklearn.preprocessing import FunctionTransformer
+from sklearn.preprocessing import FunctionTransformer, maxabs_scale
 
 
 def my_cv_generator(num_instances):
@@ -73,7 +73,7 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
         self.kbest = None
         self.kbest_unfitted = True
 
-        self.svc = SVC(kernel='linear', C=1, verbose=True)  # TODO C=1 linear / rbf ??
+        self.svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
 
     def fit(self, X, y):
         if self.kbest_unfitted:
@@ -98,26 +98,29 @@ def gen_final_allowed_feature_mapping(allowed_feat_keys):
     return final_allowed_feature_mapping
 
 
-def select_features_transformer_function(final_allowed_feature_mapping):
+def select_features_transformer_function(X, **kwargs):
 
-    def ret(X):
-        num_instances, num_features = X.shape
+    final_allowed_feature_mapping = kwargs["final_allowed_feature_mapping"]
 
-        X_new = scipy.sparse.lil_matrix((num_instances, num_features), dtype=np.float64)
+    num_instances, num_features = X.shape
 
-        for instance_index in range(num_instances):
-            for f_key in range(num_features):
-                f_index = final_allowed_feature_mapping.get(f_key, None)
+    X_new = scipy.sparse.lil_matrix((num_instances, num_features), dtype=np.float64)
 
-                if f_index is not None:
-                    value = X[instance_index, f_key]
-                    X_new[instance_index, f_index] = value
+    for instance_index in range(num_instances):
+        for f_key in range(num_features):
+            f_index = final_allowed_feature_mapping.get(f_key, None)
 
-        return X_new.tocsr()
+            if f_index is not None:
+                value = X[instance_index, f_key]
+                X_new[instance_index, f_index] = value
 
-    return ret
+    X_new = X_new.tocsr()
+
+    # X_new = maxabs_scale(X_new, copy=False)
+
+    return X_new
 
 
-def select_features_transformer_transformer(final_allowed_feature_mapping, accept_sparse=True):
-    transformer_fun = select_features_transformer_function(final_allowed_feature_mapping)
-    return FunctionTransformer(transformer_fun, accept_sparse=accept_sparse)
+# def select_features_transformer_transformer(final_allowed_feature_mapping, accept_sparse=True):
+#     transformer_fun = select_features_transformer_function(final_allowed_feature_mapping)
+#     return FunctionTransformer(transformer_fun, accept_sparse=accept_sparse)

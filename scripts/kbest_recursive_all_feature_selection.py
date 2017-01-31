@@ -17,6 +17,7 @@ from loctext.util import *
 import time
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import FunctionTransformer
 
 print(__doc__)
 
@@ -37,17 +38,20 @@ for scoring_name in SCORING_NAMES:
 
         scores = []
 
+        start = time.time()
         for num_seletected_kbest_features in range(1, num_features + 1):
 
             allowed_feat_keys = selected_feat_keys[:num_seletected_kbest_features]
             final_allowed_feature_mapping = gen_final_allowed_feature_mapping(allowed_feat_keys)
-            my_transformer = select_features_transformer_transformer(final_allowed_feature_mapping, accept_sparse=True)
+            my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"final_allowed_feature_mapping": final_allowed_feature_mapping})
 
-            svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
-            estimator = make_pipeline(my_transformer, svc)
+            estimator = make_pipeline(my_transformer, SVC(kernel='linear', C=1, verbose=False))  # TODO C=1 linear / rbf ??
 
-            cv_scores = cross_val_score(estimator, X_dense, y, scoring=scoring_name, cv=my_cv_generator(num_instances))
+            cv_scores = cross_val_score(estimator, X_dense, y, scoring=scoring_name, cv=my_cv_generator(num_instances), verbose=True, n_jobs=-1)
             scores.append(cv_scores.mean())
+
+        end = time.time()
+        print("\n\n{} : {} -- TIME for feature selection : {}".format(scoring_name, scoring_func, (end - start)))
 
         assert(len(scores) == num_features)
 
