@@ -14,6 +14,11 @@ from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from loctext.util import *
+import numpy as np
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import unique_labels
+from sklearn.metrics import euclidean_distances
 import time
 
 
@@ -53,3 +58,30 @@ def get_kbest_feature_keys(kbest_fitted_model):
         selected_feat_keys.append(fkey)
 
     return selected_feat_keys
+
+
+class KBestSVC(BaseEstimator, ClassifierMixin):
+
+    def __init__(self, X_whole, y_whole, score_func, k=None):
+        self.X_whole = X_whole
+        self.y_whole = y_whole
+
+        self.score_func = score_func
+        self.k = k
+        self.kbest = None
+        self.kbest_unfitted = True
+
+        self.svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
+
+    def fit(self, X, y):
+        if self.kbest_unfitted:
+            self.kbest = SelectKBest(score_func=self.score_func, k=self.k)
+            self.kbest.fit(self.X_whole, self.y_whole)
+            self.kbest_unfitted = False
+
+        X_new = self.kbest.transform(X)
+        return self.svc.fit(X_new, y)
+
+    def predict(self, X):
+        X_new = self.kbest.transform(X)
+        return self.svc.predict(X_new)

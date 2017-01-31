@@ -30,6 +30,8 @@ print(__doc__)
 
 annotator, X, y = get_model_and_data()
 
+num_instances = len(y)
+
 search_space = [
     {
         'kernel': ['rbf'],
@@ -44,25 +46,27 @@ search_space = [
     }
 ]
 
-scores = [
+SCORING_NAMES = [
     # 'accuracy',
     'f1_macro',
     'precision_macro',
     'recall_macro'
 ]
 
-for score in scores:
+for scoring_name in SCORING_NAMES:
     print()
     print()
-    print("# Tuning hyper-parameters for *** {} ***".format(score))
+    print("# Tuning hyper-parameters for *** {} ***".format(scoring_name))
     print()
 
+    estimator = SVC(C=1, verbose=False),  # TODO C=1 linear / rbf ??
+
     grid = GridSearchCV(
-        estimator=SVC(C=1, verbose=False),  # TODO C=1 ??
+        estimator=estimator,
         param_grid=search_space,
         verbose=True,
-        cv=my_cv_generator(len(y)),
-        scoring=score,
+        cv=my_cv_generator(num_instances),
+        scoring=scoring_name,
         refit=False,
         iid=False,
     )
