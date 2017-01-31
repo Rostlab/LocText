@@ -25,15 +25,10 @@ annotator, X, y = get_model_and_data()
 for scoring_func in SCORING_FUNCS:
     for scoring_name in SCORING_NAMES:
 
-        kbest = SelectKBest(scoring_func, k=10)
+        kbest = SelectKBest(scoring_func, k="all")
 
         start = time.time()
-        X_new = kbest.fit(X, y)
-        X_new = kbest.transform(X)
-        X_pio = kbest.transform(X)
-        print(X_new.shape, X.shape, X_pio.shape)
-
-        raise Exception
+        kbest.fit(X, y)
         end = time.time()
 
         print("TIME for feature selection: ", (end - start))

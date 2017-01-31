@@ -34,33 +34,20 @@ search_space = [
 for scoring_name in SCORING_NAMES:
     for scoring_func in SCORING_FUNCS:
 
-        estimator = KBestSVC(X, y, score_func=scoring_func)
+        kbest = SelectKBest(scoring_func, k="all")
+        kbest.fit(X, y)
+        selected_feat_keys = get_kbest_feature_keys()
 
-        grid = GridSearchCV(
-            estimator=estimator,
-            param_grid=search_space,
-            verbose=True,
-            cv=my_cv_generator(num_instances),
-            scoring=scoring_name,
-            refit=False,
-            iid=False,
-        )
+        scores = []
 
-        start = time.time()
-        X_new = grid.fit(X, y)
-        end = time.time()
+        for num_seletected_kbest_features in range(1, num_features + 1):
 
-        print("TIME for feature selection: ", (end - start))
+            allowed_feat_keys = selected_feat_keys[:num_seletected_kbest_features]
 
-        print("Best parameters set found on development set:")
-        print()
-        print(grid.best_params_)
-        print()
-        print("Grid scores on development set:")
-        print()
+            svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
 
-        scores = grid.cv_results_['mean_test_score']
-        assert(len(scores) == len(grid.cv_results_["params"]) == num_features)
+            # do cv through allowing only allowed_feat_keys
+            # scores.append(cv.score)
 
         print()
         # print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="rfe"))
