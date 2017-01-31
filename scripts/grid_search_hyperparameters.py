@@ -33,8 +33,7 @@ locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, p
 locTextModel.pipeline.execute(corpus, train=True)
 X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
 
-# Set the parameters by cross-validation
-tuned_parameters = [
+search_space = [
     {
         'kernel': ['rbf'],
         'class_weight': [None, 'balanced'],
@@ -62,9 +61,9 @@ for score in scores:
     print("# Tuning hyper-parameters for *** {} ***".format(score))
     print()
 
-    clf = GridSearchCV(
-        SVC(C=1, verbose=False),
-        tuned_parameters,
+    grid = GridSearchCV(
+        estimator=SVC(C=1, verbose=False),  # TODO C=1 ??
+        param_grid=search_space,
         verbose=True,
         cv=my_cv_generator(len(y)),
         scoring=score,
@@ -72,24 +71,24 @@ for score in scores:
         iid=False,
     )
 
-    clf.fit(X, y)
+    grid.fit(X, y)
 
     print("Best parameters set found on development set:")
     print()
-    print(clf.best_params_)
+    print(grid.best_params_)
     print()
     print("Grid scores on development set:")
     print()
 
-    means = clf.cv_results_['mean_test_score']
-    stds = clf.cv_results_['std_test_score']
+    means = grid.cv_results_['mean_test_score']
+    stds = grid.cv_results_['std_test_score']
 
     desc_sorted_best_indices = sorted(range(len(means)), key=lambda k: (means[k] - stds[k]), reverse=True)
 
     for index in desc_sorted_best_indices:
         mean = means[index]
         std = stds[index]
-        params = clf.cv_results_['params'][index]
+        params = grid.cv_results_['params'][index]
 
         print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
 

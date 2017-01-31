@@ -20,6 +20,7 @@ from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from util import my_cv_generator
+from loctext.util import *
 import time
 
 corpus = read_corpus("LocText")
@@ -46,19 +47,17 @@ print("TIME for feature selection: ", (end - start))
 
 print("Optimal number of features : %d" % rfecv.n_features_)
 
-selected = []
-nonselected = []
+selected_feat_keys = []
 
 for index, value in enumerate(rfecv.support_):
     if value:
-        selected.append(index)
-    else:
-        nonselected.append(index)
+        selected_feat_keys.append(index)
 
-# print("NON Selected features", nonselected)
 print()
-print("Selected features", selected)
-print("Max performance for {}: {}".format(scoring, rfecv.grid_scores_[rfecv.n_features_ -1]))
+print(print_selected_features(selected_feat_keys, locTextModel.pipeline.feature_set, file_prefix="rfe"))
+print()
+print("Max performance for {}: {}".format(scoring, rfecv.grid_scores_[rfecv.n_features_ - 1]))
+print()
 
 # Plot number of features VS. cross-validation scores
 plt.figure()
