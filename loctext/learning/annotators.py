@@ -270,15 +270,22 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
 
 
 class StringTagger(Tagger):
-    def __init__(self, send_whole_once):
+    def __init__(self, send_whole_once, protein_id, localization_id, organism_id,
+                 uniprot_norm_id, go_norm_id, taxonomy_norm_id):
         self.send_whole_once = send_whole_once
+        self.protein_id = protein_id
+        self.localization_id = localization_id
+        self.organism_id = organism_id
+        self.uniprot_norm_id = uniprot_norm_id
+        self.go_norm_id = go_norm_id
+        self.taxonomy_norm_id = taxonomy_norm_id
         super().__init__([UNIPROT_NORM_ID, STRING_NORM_ID])
 
     # gets String Tagger JSON response, by making a REST call.
     def get_string_tagger_json_response(self, payload):
         base_url = "http://127.0.0.1:5000/annotate/post"
         try:
-            json_response = requests.post(base_url, json=dict(text=payload))
+            json_response = requests.post(base_url, json=dict(text=payload, ids="-22,-3,9606"))
             json_response.status_code = 200
             response_data = json_response.json()
         except requests.exceptions.ConnectionError as err:
@@ -297,86 +304,119 @@ class StringTagger(Tagger):
 
         entities = json_response["entities"]
 
-        for entity in entities:
-            start = entity["start"]
-            end = entity["end"]
-            text = part.text[start-1:end]
-            normalizations = entity["normalizations"]
+        for index in range(len(entities)):
+            start = entities[index]["start"]
+            end = entities[index]["end"]
+            normalizations = entities[index]["normalizations"]
             uniprot_id = ""
-            string_id = ""
-            counter = 0
+            entity_uniprot_ids = ""
+            type_id = ""
+            entity_type_ids = ""
+
             for norm in normalizations:
 
                 if str(norm["type"]).isdigit():
-                    if counter > 1:
-                        string_id += ","
-                    string_id += str(norm["id"])
+                    type_id = str(norm["id"])
                 else:
-                    if counter > 1:
-                        uniprot_id += ","
                     if len(str(norm["id"]).split('|')):
-                        uniprot_id += str(norm["id"]).split('|')[0]
+                        uniprot_id = str(norm["id"]).split('|')[0]
                     else:
-                        uniprot_id += str(norm["id"])
+                        uniprot_id = str(norm["id"])
 
-                counter += 1
+            if(len(entities) != (index+1) and start == entities[index+1]["start"] and end == entities[index+1]["end"]):
+                if uniprot_id != "":
+                    entity_uniprot_ids += uniprot_id + ","
+                entity_type_ids += type_id + ","
 
-            if counter > 1:
-                uniprot_id = uniprot_id[:len(uniprot_id)]
-                string_id = string_id[:len(string_id)]
+            else:
+                if uniprot_id != "":
+                    entity_uniprot_ids += uniprot_id
+                elif entity_uniprot_ids.endswith(","):
+                    entity_uniprot_ids = entity_uniprot_ids[:len(entity_uniprot_ids)]
 
-            norm_dictionary = {UNIPROT_NORM_ID: uniprot_id, STRING_NORM_ID: string_id}
+                entity_type_ids += type_id
 
-            entity_dictionary = Entity(class_id=UNIPROT_NORM_ID, offset=start-1, text=text, norm=norm_dictionary)
+                if str(norm["type"]) == "-3":
+                    norm_dictionary = {self.taxonomy_norm_id: entity_type_ids}
+                    entity_dictionary = Entity(class_id=self.organism_id, offset=start-1, text=part.text[start-1:end],
+                                               norm=norm_dictionary)
+                elif str(norm["type"]) == "-22":
+                    norm_dictionary = {self.go_norm_id: entity_type_ids}
+                    entity_dictionary = Entity(class_id=self.localization_id, offset=start-1, text=part.text[start-1:end],
+                                               norm=norm_dictionary)
+                else:
+                    norm_dictionary = {self.uniprot_norm_id: entity_uniprot_ids, STRING_NORM_ID: entity_type_ids}
+                    entity_dictionary = Entity(class_id=self.protein_id, offset=start-1, text=part.text[start-1:end],
+                                               norm=norm_dictionary)
 
-            part.predicted_annotations.append(entity_dictionary)
+                part.predicted_annotations.append(entity_dictionary)
+
+                entity_uniprot_ids = ""
+                entity_type_ids = ""
 
     # sets the predicted annotations of the whole text based on JSON response entity values
     def set_entities_of_whole_doc(self, json_response, document):
 
         entities = json_response["entities"]
 
-        for entity in entities:
-            start = entity["start"]
-            end = entity["end"]
-            normalizations = entity["normalizations"]
+        for index in range(len(entities)):
+            start = entities[index]["start"]
+            end = entities[index]["end"]
+            normalizations = entities[index]["normalizations"]
             uniprot_id = ""
-            string_id = ""
-            counter = 0
+            entity_uniprot_ids = ""
+            type_id = ""
+            entity_type_ids = ""
             length = 1
-            for partId, part in document.parts.items():
-                text = part.text[start - length:end - length + 1]
 
-                if text != "":
-                    for norm in normalizations:
+            for norm in normalizations:
 
-                        if str(norm["type"]).isdigit():
-                            if counter > 1:
-                                string_id += ","
-                            string_id += str(norm["id"])
+                if str(norm["type"]).isdigit():
+                    type_id = str(norm["id"])
+                else:
+                    if len(str(norm["id"]).split('|')):
+                        uniprot_id = str(norm["id"]).split('|')[0]
+                    else:
+                        uniprot_id = str(norm["id"])
+
+            if(len(entities) != (index+1) and start == entities[index+1]["start"] and end == entities[index+1]["end"]):
+                if uniprot_id != "":
+                    entity_uniprot_ids += uniprot_id + ","
+                entity_type_ids += type_id + ","
+
+            else:
+                if uniprot_id != "":
+                    entity_uniprot_ids += uniprot_id
+                elif entity_uniprot_ids.endswith(","):
+                    entity_uniprot_ids = entity_uniprot_ids[:len(entity_uniprot_ids)]
+
+                entity_type_ids += type_id
+
+                for partId, part in document.parts.items():
+                    text = part.text[start - length:end - length + 1]
+
+                    if text != "":
+                        if str(norm["type"]) == "-3":
+                            norm_dictionary = {self.taxonomy_norm_id: entity_type_ids}
+                            entity_dictionary = Entity(class_id=self.organism_id, offset=start-length, text=text,
+                                                       norm=norm_dictionary)
+                        elif str(norm["type"]) == "-22":
+                            norm_dictionary = {self.go_norm_id: entity_type_ids}
+                            entity_dictionary = Entity(class_id=self.localization_id, offset=start-length, text=text,
+                                                       norm=norm_dictionary)
                         else:
-                            if counter > 1:
-                                uniprot_id += ","
-                            if len(str(norm["id"]).split('|')):
-                                uniprot_id += str(norm["id"]).split('|')[0]
-                            else:
-                                uniprot_id += str(norm["id"])
+                            norm_dictionary = {self.uniprot_norm_id: entity_uniprot_ids, STRING_NORM_ID: entity_type_ids}
+                            entity_dictionary = Entity(class_id=self.protein_id, offset=start-length, text=text,
+                                                       norm=norm_dictionary)
 
-                        counter += 1
+                        part.predicted_annotations.append(entity_dictionary)
 
-                    if counter > 1:
-                        uniprot_id = uniprot_id[:len(uniprot_id)]
-                        string_id = string_id[:len(string_id)]
+                        break
+                    length += len(part.text) + 1
 
-                    norm_dictionary = {UNIPROT_NORM_ID: uniprot_id, STRING_NORM_ID: string_id}
+                entity_uniprot_ids = ""
+                entity_type_ids = ""
 
-                    entity_dictionary = Entity(class_id=UNIPROT_NORM_ID, offset=start - length, text=text,
-                                               norm=norm_dictionary)
-
-                    part.predicted_annotations.append(entity_dictionary)
-
-                    break
-                length += len(part.text) + 1
 
     # primary method which will be called to set predicated annotations based on JSON response from STRING tagger.
     def annotate(self, dataset):
