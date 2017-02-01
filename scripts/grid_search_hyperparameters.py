@@ -28,13 +28,11 @@ from util import my_cv_generator
 
 print(__doc__)
 
-corpus = read_corpus("LocText")
-locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=False)
-locTextModel.pipeline.execute(corpus, train=True)
-X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
+annotator, X, y = get_model_and_data()
 
-# Set the parameters by cross-validation
-tuned_parameters = [
+num_instances = len(y)
+
+search_space = [
     {
         'kernel': ['rbf'],
         'class_weight': [None, 'balanced'],
@@ -48,48 +46,49 @@ tuned_parameters = [
     }
 ]
 
-scores = [
+SCORING_NAMES = [
     # 'accuracy',
     'f1_macro',
     'precision_macro',
     'recall_macro'
 ]
 
+for scoring_name in SCORING_NAMES:
+    print()
+    print()
+    print("# Tuning hyper-parameters for *** {} ***".format(scoring_name))
+    print()
 
-for score in scores:
-    print()
-    print()
-    print("# Tuning hyper-parameters for *** {} ***".format(score))
-    print()
+    estimator = SVC(C=1, verbose=False),  # TODO C=1 linear / rbf ??
 
-    clf = GridSearchCV(
-        SVC(C=1, verbose=False),
-        tuned_parameters,
+    grid = GridSearchCV(
+        estimator=estimator,
+        param_grid=search_space,
         verbose=True,
-        cv=my_cv_generator(len(y)),
-        scoring=score,
+        cv=my_cv_generator(num_instances),
+        scoring=scoring_name,
         refit=False,
         iid=False,
     )
 
-    clf.fit(X, y)
+    grid.fit(X, y)
 
     print("Best parameters set found on development set:")
     print()
-    print(clf.best_params_)
+    print(grid.best_params_)
     print()
     print("Grid scores on development set:")
     print()
 
-    means = clf.cv_results_['mean_test_score']
-    stds = clf.cv_results_['std_test_score']
+    means = grid.cv_results_['mean_test_score']
+    stds = grid.cv_results_['std_test_score']
 
     desc_sorted_best_indices = sorted(range(len(means)), key=lambda k: (means[k] - stds[k]), reverse=True)
 
     for index in desc_sorted_best_indices:
         mean = means[index]
         std = stds[index]
-        params = clf.cv_results_['params'][index]
+        params = grid.cv_results_['params'][index]
 
         print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
 

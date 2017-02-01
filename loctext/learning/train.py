@@ -5,6 +5,7 @@ from nalaf import print_verbose, print_debug
 from loctext.learning.evaluations import relation_accept_uniprot_go
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
+from loctext.util import *
 
 def parse_arguments(argv=[]):
     import argparse
@@ -136,6 +137,7 @@ def train(training_set, args, annotator_model, submodels, execute_pipeline):
 
         if execute_pipeline:
             submodel.pipeline.execute(training_set, train=True)
+            SS.model.set_allowed_feature_names(submodel.pipeline.feature_set, unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/kbest-1485787061.599808-NAMES.log"))
 
         submodel.model.train(training_set)
 
@@ -220,8 +222,10 @@ def print_run_args(args, corpus):
 
 
 def print_corpus_hard_core_stats(corpus):
-
-    print("\nCorpus stats; #docs={} -- #rels={}".format(len(corpus), len(list(corpus.relations()))))
+    print()
+    print("Corpus stats:")
+    print("\t#documents: {}".format(len(corpus)))
+    print("\t#relations: {}".format(len(list(corpus.relations()))))
 
 
 def print_corpus_pipeline_dependent_stats(corpus):
@@ -243,8 +247,9 @@ def print_corpus_pipeline_dependent_stats(corpus):
     # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
     # abstract + fulltext -- #docs: 104, P=614 vs N=1480
 
-    print("\t#sentences={}".format(len(list(corpus.sentences()))))
-    print("\t#instances: {} : #P={} vs. #N={}".format(T, P, N))
+    print("\t#sentences: {}".format(len(list(corpus.sentences()))))
+    print("\t#instances (edges): {} -- #P={} vs. #N={}".format(T, P, N))
+    print("\t#plausible relations from edges: {}".format(len(list(corpus.plausible_relations_from_generated_edges()))))
     print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
 
     return (P, N)

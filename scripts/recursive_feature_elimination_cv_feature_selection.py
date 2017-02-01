@@ -8,7 +8,7 @@ number of features selected with cross-validation.
 """
 print(__doc__)
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plot
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
 from sklearn.feature_selection import RFECV
@@ -19,50 +19,47 @@ from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
-from util import my_cv_generator
+from util import *
+from loctext.util import *
 import time
 
-corpus = read_corpus("LocText")
-locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True, kernel='linear', C=1)
-locTextModel.pipeline.execute(corpus, train=True)
-X, y = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
+annotator, X, y = get_model_and_data()
 
-scoring = 'f1_macro'
+num_instances = len(y)
 
-rfecv = RFECV(
-    verbose=1,
-    n_jobs=-1,
-    estimator=locTextModel.model.model,
-    step=1,
-    cv=my_cv_generator(len(y)),
-    scoring=scoring
-)
+SCORING_NAMES = [
+    'f1_macro'
+]
 
-start = time.time()
-rfecv.fit(X, y)
-end = time.time()
+for scoring_name in SCORING_NAMES:
 
-print("TIME for feature selection: ", (end - start))
+    rfecv = RFECV(
+        verbose=1,
+        n_jobs=-1,
+        estimator=annotator.model.model,
+        step=1,
+        cv=my_cv_generator(num_instances),
+        scoring=scoring_name
+    )
 
-print("Optimal number of features : %d" % rfecv.n_features_)
+    start = time.time()
+    rfecv.fit(X, y)
+    end = time.time()
 
-selected = []
-nonselected = []
+    print("TIME for feature selection: ", (end - start))
 
-for index, value in enumerate(rfecv.support_):
-    if value:
-        selected.append(index)
-    else:
-        nonselected.append(index)
+    print("Optimal number of features : %d" % rfecv.n_features_)
 
-# print("NON Selected features", nonselected)
-print()
-print("Selected features", selected)
-print("Max performance for {}: {}".format(scoring, rfecv.grid_scores_[rfecv.n_features_ -1]))
+    selected_feat_keys = []
 
-# Plot number of features VS. cross-validation scores
-plt.figure()
-plt.xlabel("Number of features selected")
-plt.ylabel("Cross validation score (nb of correct classifications)")
-plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
-plt.show()
+    for index, value in enumerate(rfecv.support_):
+        if value:
+            selected_feat_keys.append(index)
+
+    print()
+    print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="rfe"))
+    print()
+    print("Max performance for {}: {}".format(scoring_name, rfecv.grid_scores_[rfecv.n_features_ - 1]))
+    print()
+
+    plot_recursive_features(scoring_name, rfecv.grid_scores_)
