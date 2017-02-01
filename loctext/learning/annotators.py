@@ -90,7 +90,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 h_ld_grams=[1, 2, 3],
                 h_pd_grams=[1, 2, 3],
                 # Feature keys/names
-                f_OW_bow_N_gram=None,  # 10
+                f_OW_bow_N_gram=10,  # 10
                 f_OW_pos_N_gram=None,  # 11
                 f_OW_tokens_count=None,  # 12
                 f_OW_tokens_count_without_punct=None,  # 13
@@ -100,18 +100,18 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_IW_tokens_count=None,  # 16
                 f_IW_tokens_count_without_punct=None,  # 17
                 #
-                f_LD_bow_N_gram=None,  # 18
+                f_LD_bow_N_gram=18,  # 18
                 f_LD_pos_N_gram=None,  # 19
                 f_LD_tokens_count=None,  # 20
                 f_LD_tokens_count_without_punct=21,  # 21
                 #
                 #
-                f_PD_bow_N_gram=None,  # 22
-                f_PD_pos_N_gram=None,  # 23
+                f_PD_bow_N_gram=22,  # 22
+                f_PD_pos_N_gram=23,  # 23
                 f_PD_tokens_count=None,  # 24
                 f_PD_tokens_count_without_punct=25,  # 25
                 #
-                f_PD_undirected_edges_N_gram=None,  # 26
+                f_PD_undirected_edges_N_gram=26,  # 26
                 f_PD_directed_edges_N_gram=None,  # 27
                 f_PD_full_N_gram=None,  # 28
                 #

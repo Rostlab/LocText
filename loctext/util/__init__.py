@@ -54,12 +54,12 @@ def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_d
 
             _print("# Selected Feature *{}*".format(name))
             _print()
-            _print("{")
+            _print("[")
 
             for index, feat in enumerate(feats):
                 _print_feat(feat, index)
 
-            _print("}")
+            _print("]")
             _print()
 
         return file_name
@@ -70,7 +70,11 @@ def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_d
     return (keys_file, names_file)
 
 
-def unpickle_beautified_file(file_path):
+def unpickle_beautified_file(file_path, k_best=None):
     import ast
     from pathlib import Path
-    return ast.literal_eval(Path(file_path).read_text())
+    ret = ast.literal_eval(Path(file_path).read_text())
+    if k_best is not None:
+        return ret[:k_best]
+    else:
+        return ret
