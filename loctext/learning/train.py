@@ -17,6 +17,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
+    parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
 
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
@@ -49,7 +50,12 @@ def parse_arguments(argv=[]):
         ENTITY_MAP_FUN = 'normalized_first'
         RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
-    args.evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
+    args.evaluator = DocumentLevelRelationEvaluator(
+        rel_type=REL_PRO_LOC_ID,
+        entity_map_fun=ENTITY_MAP_FUN,
+        relation_accept_fun=RELATION_ACCEPT_FUN,
+        evaluate_only_on_edges_plausible_relations=args.evaluate_only_on_edges_plausible_relations,
+    )
 
     def set_None_or_typed_argument(argument, expected_type):
         if not argument or argument == 'None':
