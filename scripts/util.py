@@ -103,25 +103,7 @@ def gen_final_allowed_feature_mapping(allowed_feat_keys):
 def select_features_transformer_function(X, **kwargs):
     allowed_feature_keys = kwargs["allowed_feature_keys"]
 
-    # num_instances, _ = X.shape
-    # num_features = len(final_allowed_feature_mapping)
-    #
-    # X_new = scipy.sparse.lil_matrix((num_instances, num_features), dtype=np.float64)
-
-    # for instance_index in range(num_instances):
-    #     for f_key, f_index in final_allowed_feature_mapping.items():
-    #         X_new[instance_index, f_index] = X[instance_index, f_key]
-
-    # for f_key, f_index in final_allowed_feature_mapping.items():
-    #     X_new[:, f_index] = X[:, f_key]
-
-    # X_new = X_new.tocsr()
     X_new = X[:, allowed_feature_keys]
     X_new = SklSVM._preprocess(X_new)
 
     return X_new
-
-
-# def select_features_transformer_transformer(final_allowed_feature_mapping, accept_sparse=True):
-#     transformer_fun = select_features_transformer_function(final_allowed_feature_mapping)
-#     return FunctionTransformer(transformer_fun, accept_sparse=accept_sparse)
