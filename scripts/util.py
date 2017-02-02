@@ -6,6 +6,7 @@ from sklearn.datasets import make_classification
 from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import mutual_info_classif
+import numpy as np
 import scipy
 import time
 
@@ -16,7 +17,6 @@ from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from loctext.util import *
-import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
@@ -110,19 +110,19 @@ def select_features_transformer_function(X, **kwargs):
 
     X_new = scipy.sparse.lil_matrix((num_instances, num_features), dtype=np.float64)
 
-    for instance_index in range(num_instances):
-        for f_key, f_index in final_allowend_feature_mapping.items():
-            X_new[instance_index, f_index] = X[instance_index, f_key]
+    # for instance_index in range(num_instances):
+    #     for f_key, f_index in final_allowed_feature_mapping.items():
+    #         X_new[instance_index, f_index] = X[instance_index, f_key]
 
-    # for f_key, f_index in final_allowend_feature_mapping.items():
-    #     X_new[:, f_index] = X[:, f_key]
+    for f_key, f_index in final_allowed_feature_mapping.items():
+        X_new[:, f_index] = X[:, f_key]
 
     X_new = X_new.tocsr()
     X_new = SklSVM._preprocess(X_new)
 
     end = time.time()
 
-    print("****", X, (end - start))
+    # print("****", (end - start))
 
     return X_new
 

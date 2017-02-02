@@ -25,7 +25,7 @@ SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ['f1_macro']
 
 annotator, X, y = get_model_and_data()
-X_dense = X.toarray()
+X_transformed = X
 
 num_instances, num_features = X.shape
 
@@ -49,7 +49,7 @@ for scoring_name in SCORING_NAMES:
             # estimator = svc
             estimator = make_pipeline(my_transformer, svc)
 
-            cv_scores = cross_val_score(estimator, X_dense, y, scoring=scoring_name, cv=my_cv_generator(num_instances), verbose=True, n_jobs=-1)
+            cv_scores = cross_val_score(estimator, X_transformed, y, scoring=scoring_name, cv=my_cv_generator(num_instances), verbose=True, n_jobs=-1)
             scores.append(cv_scores.mean())
 
         end = time.time()
