@@ -31,7 +31,7 @@ X_transformed = X
 
 num_instances, num_features = X.shape
 
-MAX_NUM_FEATURES = 6000
+MAX_NUM_FEATURES = 2000
 
 for scoring_name in SCORING_NAMES:
     for scoring_func in SCORING_FUNCS:
@@ -59,10 +59,11 @@ for scoring_name in SCORING_NAMES:
 
         assert(len(scores) == min(MAX_NUM_FEATURES, num_features))
 
+        max_index, max_scoring = max(enumerate(scores), key=lambda x: x[1])
+
         print()
-        # print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="rfe"))
         print()
-        print("Max performance for {}: {}".format(scoring_name, max(scores)))
+        print("Max performance for {}, #features={}: {}".format(scoring_name, max_index, max_scoring))
         print()
 
         plot_recursive_features(scoring_name, scores)
