@@ -45,7 +45,9 @@ for scoring_name in SCORING_NAMES:
             final_allowed_feature_mapping = gen_final_allowed_feature_mapping(allowed_feat_keys)
             my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"final_allowed_feature_mapping": final_allowed_feature_mapping})
 
-            estimator = make_pipeline(my_transformer, SVC(kernel='linear', C=1, verbose=False))  # TODO C=1 linear / rbf ??
+            svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
+            # estimator = svc
+            estimator = make_pipeline(my_transformer, svc)
 
             cv_scores = cross_val_score(estimator, X_dense, y, scoring=scoring_name, cv=my_cv_generator(num_instances), verbose=True, n_jobs=-1)
             scores.append(cv_scores.mean())
