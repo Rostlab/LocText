@@ -25,9 +25,13 @@ SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ['f1_macro']
 
 annotator, X, y = get_model_and_data()
-X_transformed = X  # Keep for historical reasons; we experimented what's fastest csr or csc -- http://stackoverflow.com/questions/41998147/what-is-row-slicing-vs-what-is-column-slicing
+
+# See also: http://stackoverflow.com/questions/41998147/what-is-row-slicing-vs-what-is-column-slicing
+X_transformed = X
 
 num_instances, num_features = X.shape
+
+MAX_NUM_FEATURES = 6000
 
 for scoring_name in SCORING_NAMES:
     for scoring_func in SCORING_FUNCS:
@@ -39,7 +43,7 @@ for scoring_name in SCORING_NAMES:
         scores = []
 
         start = time.time()
-        for num_seletected_kbest_features in range(1, num_features + 1):
+        for num_seletected_kbest_features in range(1, min(MAX_NUM_FEATURES, num_features) + 1):
 
             selected_feature_keys = sorted_kbest_feature_keys[:num_seletected_kbest_features]
             my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"selected_feature_keys": selected_feature_keys})
@@ -53,7 +57,7 @@ for scoring_name in SCORING_NAMES:
         end = time.time()
         print("\n\n{} : {} -- TIME for feature selection : {}".format(scoring_name, scoring_func, (end - start)))
 
-        assert(len(scores) == num_features)
+        assert(len(scores) == min(MAX_NUM_FEATURES, num_features))
 
         print()
         # print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="rfe"))
