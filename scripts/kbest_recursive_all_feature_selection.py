@@ -25,7 +25,7 @@ SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ['f1_macro']
 
 annotator, X, y = get_model_and_data()
-X_transformed = X
+X_transformed = X.tocsr()
 
 num_instances, num_features = X.shape
 
@@ -34,16 +34,15 @@ for scoring_name in SCORING_NAMES:
 
         kbest = SelectKBest(scoring_func, k="all")
         kbest.fit(X, y)
-        selected_feat_keys = get_kbest_feature_keys(kbest)
+        selected_feature_keys = get_kbest_feature_keys(kbest)
 
         scores = []
 
         start = time.time()
         for num_seletected_kbest_features in range(1, num_features + 1):
 
-            allowed_feat_keys = selected_feat_keys[:num_seletected_kbest_features]
-            final_allowed_feature_mapping = gen_final_allowed_feature_mapping(allowed_feat_keys)
-            my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"final_allowed_feature_mapping": final_allowed_feature_mapping})
+            allowed_feature_keys = selected_feature_keys[:num_seletected_kbest_features]
+            my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"allowed_feature_keys": allowed_feature_keys})
 
             svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
             # estimator = svc
