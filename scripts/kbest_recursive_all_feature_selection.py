@@ -25,7 +25,7 @@ SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ['f1_macro']
 
 annotator, X, y = get_model_and_data()
-X_transformed = X.tocsr()
+X_transformed = X  # Keep for historical reasons; we experimented what's fastest csr or csc -- http://stackoverflow.com/questions/41998147/what-is-row-slicing-vs-what-is-column-slicing
 
 num_instances, num_features = X.shape
 
@@ -34,18 +34,17 @@ for scoring_name in SCORING_NAMES:
 
         kbest = SelectKBest(scoring_func, k="all")
         kbest.fit(X, y)
-        selected_feature_keys = get_kbest_feature_keys(kbest)
+        sorted_kbest_feature_keys = get_sorted_kbest_feature_keys(kbest)
 
         scores = []
 
         start = time.time()
         for num_seletected_kbest_features in range(1, num_features + 1):
 
-            allowed_feature_keys = selected_feature_keys[:num_seletected_kbest_features]
-            my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"allowed_feature_keys": allowed_feature_keys})
+            selected_feature_keys = sorted_kbest_feature_keys[:num_seletected_kbest_features]
+            my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"selected_feature_keys": selected_feature_keys})
 
             svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
-            # estimator = svc
             estimator = make_pipeline(my_transformer, svc)
 
             cv_scores = cross_val_score(estimator, X_transformed, y, scoring=scoring_name, cv=my_cv_generator(num_instances), verbose=True, n_jobs=-1)

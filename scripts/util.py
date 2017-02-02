@@ -53,13 +53,8 @@ def plot_recursive_features(scoring_name, scores):
     plot.show()
 
 
-def get_kbest_feature_keys(kbest_fitted_model):
-    selected_feat_keys = []
-
-    for fkey, _ in sorted(enumerate(kbest_fitted_model.scores_), key=lambda tuple: tuple[1], reverse=True):
-        selected_feat_keys.append(fkey)
-
-    return selected_feat_keys
+def get_sorted_kbest_feature_keys(kbest_fitted_model):
+    return [fkey for fkey, _ in sorted(enumerate(kbest_fitted_model.scores_), key=lambda tuple: tuple[1], reverse=True)]
 
 
 class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones makes any change?
@@ -91,19 +86,10 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
         return self.svc.predict(X_new)
 
 
-def gen_final_allowed_feature_mapping(allowed_feat_keys):
-    final_allowed_feature_mapping = {}
-
-    for allowed_feat_key in allowed_feat_keys:
-        final_allowed_feature_mapping[allowed_feat_key] = len(final_allowed_feature_mapping)
-
-    return final_allowed_feature_mapping
-
-
 def select_features_transformer_function(X, **kwargs):
-    allowed_feature_keys = kwargs["allowed_feature_keys"]
+    selected_feature_keys = kwargs["selected_feature_keys"]
 
-    X_new = X[:, allowed_feature_keys]
+    X_new = X[:, selected_feature_keys]
     X_new = SklSVM._preprocess(X_new)
 
     return X_new
