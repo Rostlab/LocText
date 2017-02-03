@@ -107,11 +107,9 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         if c_corpus_unormalized_total_absolute_loc_rels_ratios is not None:
             self.c_corpus_unormalized_total_absolute_loc_rels_ratios = c_corpus_unormalized_total_absolute_loc_rels_ratios
         else:
-            path = repo_path(["resources", "features", "corpus_unnormalized_total_absolute_loc_rels_ratios.pickle.pickle"])
+            path = repo_path(["resources", "features", "corpus_unnormalized_total_absolute_loc_rels_ratios.pickle"])
             with open(path, "rb") as f:
                 self.c_corpus_unormalized_total_absolute_loc_rels_ratios = pickle.load(f)
-
-            self.c_corpus_unormalized_total_absolute_loc_rels_ratios = __class__.DEFAULT_CORPUS_UNORMALIZED_TOTAL_ABSOLUTE_LOC_RELS_RATIOS
 
         path = repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"])
         with open(path, "rb") as f:

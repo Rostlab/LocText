@@ -22,18 +22,27 @@ ratio_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
 def entity2text(entity):
     return ENGLISH_STEMMER.stem(entity.text)
 
+def entity2norm(entity):
+    return
+
+def entity2key(entity):
+    if mode == "unnormalized":
+        return entity2text(entity)
+    elif mode == "normalized":
+        return entity2norm(entity)
+
 #
 
 for entity in corpus.entities():
-    mention_mode_total_counter[entity.class_id].update({entity2text(entity)})
+    mention_mode_total_counter[entity.class_id].update({entity2norm(entity)})
 
 
 for rel in corpus.relations():
     if rel.class_id != REL_PRO_LOC_ID:
         continue
 
-    relation_mode_total_counter[rel.entity1.class_id].update({entity2text(rel.entity1)})
-    relation_mode_total_counter[rel.entity2.class_id].update({entity2text(rel.entity2)})
+    relation_mode_total_counter[rel.entity1.class_id].update({entity2norm(rel.entity1)})
+    relation_mode_total_counter[rel.entity2.class_id].update({entity2norm(rel.entity2)})
 
 
 for type_key, mention_counter in mention_mode_total_counter.items():
