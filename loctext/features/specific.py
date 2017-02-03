@@ -151,8 +151,8 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
             ratio = self.c_corpus_unnormalized_total_absolute_loc_rels_ratios.get(keyed_text, 0)
             add_f_ratio("f_corpus_unnormalized_total_absolute_loc_rels_ratios", ratio)
 
-            keyed_text = ENGLISH_STEMMER.stem(localization.text)
-            ratio = self.c_corpus_normalized_total_absolute_loc_rels_ratios.get(keyed_text, 0)
+            keyed_norm = list(localization.normalisation_dict.items())[0][1]
+            ratio = self.c_corpus_normalized_total_absolute_loc_rels_ratios.get(keyed_norm, 0)
             add_f_ratio("f_corpus_normalized_total_absolute_loc_rels_ratios", ratio)
 
             loc_norm_id = localization.normalisation_dict.get(self.c_localization_norm_class, None)
