@@ -11,7 +11,7 @@ import pickle
 
 corpus = read_corpus("LocText")
 
-mode = "normalized"
+mode = "unnormalized"
 
 mention_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
 relation_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
@@ -69,7 +69,7 @@ for type_key, ratio_counter in ratio_mode_total_counter.items():
 
 print()
 
-out_path = repo_path(["resources", "features", "corpus_" + mode + "_total_absolute_loc_rels_ratios.pickle"])
+out_path = repo_path(["resources", "features", "corpus_" + mode + "_total_background_loc_rels_ratios.pickle"])
 with open(out_path, "wb") as f:
     pickle.dump(ratio_mode_total_counter[LOC_ID], f)
 
