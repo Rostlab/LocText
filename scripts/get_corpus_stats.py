@@ -55,14 +55,6 @@ loc_ratio_sorted = sorted(loc_ratio.items(), key=lambda pair: pair[1])
 
 #######################################################################################################################
 
-# print()
-# print(pro_all_counter)
-# print()
-# print(loc_all_counter)
-# print()
-# print(pro_is_related_counter)
-# print()
-# print(loc_is_related_counter)
 print()
 for key, val in pro_ratio_sorted:
     print('"{}": {},'.format(key, val))
