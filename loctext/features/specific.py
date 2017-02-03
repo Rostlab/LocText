@@ -90,8 +90,8 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         #
         # ...constants...
         #
-        f_corpus_unnormalized_total_absolute_loc_rels_ratios=None,
-        f_corpus_normalized_total_absolute_loc_rels_ratios=None,
+        f_corpus_unnormalized_total_background_loc_rels_ratios=None,
+        f_corpus_normalized_total_background_loc_rels_ratios=None,
         #
         f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,
         #
@@ -106,13 +106,13 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
         #
 
-        path = repo_path(["resources", "features", "corpus_unnormalized_total_absolute_loc_rels_ratios.pickle"])
+        path = repo_path(["resources", "features", "corpus_unnormalized_total_background_loc_rels_ratios.pickle"])
         with open(path, "rb") as f:
-            self.c_corpus_unnormalized_total_absolute_loc_rels_ratios = pickle.load(f)
+            self.c_corpus_unnormalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "corpus_normalized_total_absolute_loc_rels_ratios.pickle"])
+        path = repo_path(["resources", "features", "corpus_normalized_total_background_loc_rels_ratios.pickle"])
         with open(path, "rb") as f:
-            self.c_corpus_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
+            self.c_corpus_normalized_total_background_loc_rels_ratios = pickle.load(f)
 
         path = repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"])
         with open(path, "rb") as f:
@@ -124,8 +124,8 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
         #
 
-        self.f_corpus_unnormalized_total_absolute_loc_rels_ratios = f_corpus_unnormalized_total_absolute_loc_rels_ratios
-        self.f_corpus_normalized_total_absolute_loc_rels_ratios = f_corpus_normalized_total_absolute_loc_rels_ratios
+        self.f_corpus_unnormalized_total_background_loc_rels_ratios = f_corpus_unnormalized_total_background_loc_rels_ratios
+        self.f_corpus_normalized_total_background_loc_rels_ratios = f_corpus_normalized_total_background_loc_rels_ratios
         #
         self.f_SwissProt_normalized_total_absolute_loc_rels_ratios = f_SwissProt_normalized_total_absolute_loc_rels_ratios
 
@@ -148,12 +148,12 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
                 self.add_with_value(f_set, is_train, edge, f_key, ratio)
 
             keyed_text = ENGLISH_STEMMER.stem(localization.text)
-            ratio = self.c_corpus_unnormalized_total_absolute_loc_rels_ratios.get(keyed_text, 0)
-            add_f_ratio("f_corpus_unnormalized_total_absolute_loc_rels_ratios", ratio)
+            ratio = self.c_corpus_unnormalized_total_background_loc_rels_ratios.get(keyed_text, 0)
+            add_f_ratio("f_corpus_unnormalized_total_background_loc_rels_ratios", ratio)
 
             keyed_norm = list(localization.normalisation_dict.items())[0][1]
-            ratio = self.c_corpus_normalized_total_absolute_loc_rels_ratios.get(keyed_norm, 0)
-            add_f_ratio("f_corpus_normalized_total_absolute_loc_rels_ratios", ratio)
+            ratio = self.c_corpus_normalized_total_background_loc_rels_ratios.get(keyed_norm, 0)
+            add_f_ratio("f_corpus_normalized_total_background_loc_rels_ratios", ratio)
 
             loc_norm_id = localization.normalisation_dict.get(self.c_localization_norm_class, None)
             ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(loc_norm_id, 0)
