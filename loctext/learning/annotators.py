@@ -82,7 +82,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_tokens_count_before=None,  # 7
                 f_tokens_count_after=None,  # 8
 
-                f_sentence_is_negated=105,  # 105
+                f_sentence_is_negated=None,  # 105
                 f_main_verbs=None,  # 106
             ),
 
@@ -111,14 +111,14 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_LD_pos_N_gram=None,  # 19
                 f_LD_tokens_count=None,  # 20
                 f_LD_tokens_count_without_punct=21,  # 21
-                f_LD_is_negated=103,  # 103
+                f_LD_is_negated=None,  # 103
                 #
                 #
                 f_PD_bow_N_gram=None,  # 22
                 f_PD_pos_N_gram=None,  # 23
                 f_PD_tokens_count=None,  # 24
                 f_PD_tokens_count_without_punct=25,  # 25
-                f_PD_is_negated=104,  # 104
+                f_PD_is_negated=None,  # 104
                 #
                 f_PD_undirected_edges_N_gram=None,  # 26
                 f_PD_directed_edges_N_gram=None,  # 27
@@ -130,12 +130,13 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             IsSpecificProteinType(
                 f_is_marker=40,
                 f_is_enzyme=41,
-                f_is_receptor=43,
-                f_is_transporter=44,
+                f_is_receptor=None,
+                f_is_transporter=None,
             ),
 
             LocalizationRelationsRatios(
-                f_corpus_unormalized_total_loc_rels_ratios=50,
+                f_corpus_unormalized_total_absolute_loc_rels_ratios=50,  # 50
+                f_SwissProt_normalized_total_absolute_loc_rels_ratio=None,  # 52
             ),
 
         ]

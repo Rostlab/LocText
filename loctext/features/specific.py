@@ -1,8 +1,9 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, GO_NORM_ID, repo_path
 from nalaf.features.stemming import ENGLISH_STEMMER
+import pickle
 
 
 class IsSpecificProteinType(EdgeFeatureGenerator):
@@ -52,8 +53,9 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
 
                     if prev_entity is not None and prev_entity.class_id == self.c_protein_class:
                         merged_binary_features = {key: (b1 or b2) for ((key, b1), (_, b2)) in zip(prev_entity.features.items(), entity.features.items())}
-                        prev_entity.features = merged_binary_features
-                        entity.features = merged_binary_features
+                        # TODO investigate
+                        # prev_entity.features = merged_binary_features
+                        # entity.features = merged_binary_features
 
                         prev_entity.features['synonym'] = entity
                         entity.features['synonym'] = prev_entity
@@ -81,131 +83,154 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
     def __init__(
         self,
-        c_localization_class=LOC_ID,
-        c_corpus_unormalized_total_loc_rels_ratios=None,
+        c_localization_enty_class=LOC_ID,
+        c_localization_norm_class=GO_NORM_ID,
         #
-        f_corpus_unormalized_total_loc_rels_ratios=None,
+        c_corpus_unormalized_total_absolute_loc_rels_ratios=None,
+        #
+        f_corpus_unormalized_total_absolute_loc_rels_ratios=None,
+        f_SwissProt_normalized_total_absolute_loc_rels_ratio=None,
     ):
 
-        self.c_localization_class = c_localization_class
+        self.c_localization_enty_class = c_localization_enty_class
+        self.c_localization_norm_class = c_localization_norm_class
 
-        if c_corpus_unormalized_total_loc_rels_ratios is not None:
-            self.c_corpus_unormalized_total_loc_rels_ratios = self.c_corpus_unormalized_total_loc_rels_ratios
+        #
+
+        if c_corpus_unormalized_total_absolute_loc_rels_ratios is not None:
+            self.c_corpus_unormalized_total_absolute_loc_rels_ratios = c_corpus_unormalized_total_absolute_loc_rels_ratios
         else:
-            self.c_corpus_unormalized_total_loc_rels_ratios = {
-                "chromoplast": 0.0,
-                "integral outer membran": 0.0,
-                "envelop": 0.0,
-                "integral membran": 0.0,
-                "project": 0.0,
-                "mvb": 0.0,
-                "cilia": 0.0,
-                "chloroplast envelop": 0.0,
-                "microtubule-organizing centr": 0.0,
-                "nuclear por": 0.0,
-                "secretori": 0.0,
-                "extracellular": 0.0,
-                "nucleolus": 0.0,
-                "telomer": 0.0,
-                "centrosom": 0.0,
-                "nuclear envelop": 0.0,
-                "lumen": 0.0,
-                "nucleosom": 0.0,
-                "thylakoid membran": 0.0,
-                "cytoskeleton": 0.0,
-                "bud": 0.3333333333333333,
-                "microtubul": 0.3333333333333333,
-                "er": 0.35714285714285715,
-                "cell wal": 0.3888888888888889,
-                "nucleoli": 0.5,
-                "spindl": 0.5,
-                "plastid": 0.5,
-                "outer membran": 0.5,
-                "golgi membran": 0.5,
-                "chloroplast stroma": 0.5,
-                "transmembran": 0.5,
-                "kinetochor": 0.5,
-                "chromosom": 0.5675675675675675,
-                "endoplasmic reticulum": 0.5714285714285714,
-                "melanosom": 0.625,
-                "chloroplast": 0.6666666666666666,
-                "surfac": 0.6666666666666666,
-                "cytoplasm": 0.7777777777777778,
-                "peroxisom": 0.8,
-                "tonoplast": 0.8461538461538461,
-                "membran": 0.9090909090909091,
-                "mitochondrial matrix": 1.0,
-                "vacuolar surfac": 1.0,
-                "endoplasmic reticulum membran": 1.0,
-                "mitochondria": 1.0,
-                "lipid raft": 1.0,
-                "cis-golgi stack": 1.0,
-                "nuclei": 1.0,
-                "apical plasma membran": 1.0,
-                "mitochondrial inner membran": 1.0,
-                "prekinetochor": 1.0,
-                "chromocent": 1.0,
-                "mitochondrial outer membran": 1.0,
-                "thylakoid": 1.0,
-                "spindle pole bodi": 1.0,
-                "thylakoid membrane in chloroplast": 1.0,
-                "cell membran": 1.0,
-                "mitochondrial membran": 1.0,
-                "vacuol": 1.0,
-                "nuclear": 1.0344827586206897,
-                "mitochondri": 1.1818181818181819,
-                "secret": 1.2,
-                "vacuolar": 1.2,
-                "etioplast": 1.25,
-                "heterochromat": 1.25,
-                "lysosom": 1.25,
-                "nuclear matrix": 1.25,
-                "cytosol": 1.3333333333333333,
-                "cell surfac": 1.3333333333333333,
-                "nucleolar": 1.3333333333333333,
-                "plasma membran": 1.4285714285714286,
-                "nucleus": 1.4444444444444444,
-                "cvt": 1.5,
-                "cell boundari": 1.5,
-                "centromer": 1.5294117647058822,
-                "lipid particl": 1.5833333333333333,
-                "tgn": 2.0,
-                "basolater": 2.0,
-                "ccvs": 2.0,
-                "cell peripheri": 2.0,
-                "clathrin-coated vesicl": 2.0,
-                "intranuclear": 2.0,
-                "synaps": 2.0,
-                "outer mitochondrial membran": 2.0,
-                "golgi": 2.0,
-                "cellular protrus": 2.0,
-                "cajal bodi": 2.0,
-                "trans-golgi network": 2.0,
-                "vacuolar membran": 2.4285714285714284,
-                "endosom": 2.5833333333333335,
-                "heterochromatin": 3.0,
-                "peroxisomal membran": 3.0,
-                "golgi apparatus": 4.0,
-                "cell-surfac": 4.0,
-                "subnuclear": 5.0,
-                "extracellular matrix": 5.0,
-                "intermembran": 7.0,
-                "golgi stack": 7.0,
-            }
+            self.c_corpus_unormalized_total_absolute_loc_rels_ratios = __class__.DEFAULT_CORPUS_UNORMALIZED_TOTAL_ABSOLUTE_LOC_RELS_RATIOS
 
-        self.f_corpus_unormalized_total_loc_rels_ratios = f_corpus_unormalized_total_loc_rels_ratios
+        with open(repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"]), "rb") as f:
+            self.c_SwissProt_normalized_total_absolute_loc_rels_ratio = pickle.load(f)
+
+        #
+
+        self.f_corpus_unormalized_total_absolute_loc_rels_ratios = f_corpus_unormalized_total_absolute_loc_rels_ratios
+        self.f_SwissProt_normalized_total_absolute_loc_rels_ratio = f_SwissProt_normalized_total_absolute_loc_rels_ratio
+
 
     def generate(self, corpus, f_set, is_train):
         for edge in corpus.edges():
             sentence = edge.get_combined_sentence()
 
-            localization = edge.entity1 if edge.entity1.class_id == self.c_localization_class else edge.entity2
-            norm_text = ENGLISH_STEMMER.stem(localization.text)
+            localization = edge.entity1 if edge.entity1.class_id == self.c_localization_enty_class else edge.entity2
 
-            ratio = self.c_corpus_unormalized_total_loc_rels_ratios.get(norm_text, 0)
-            ratio += 0.1  # Just to remove 0 weights, make minimally viable
+            def add_f_ratio(f_key, ratio):
+                ratio += 0.1  # Avoid absolute 0 weights
+                self.add_with_value(f_set, is_train, edge, f_key, ratio)
 
-            self.add_with_value(f_set, is_train, edge, 'f_corpus_unormalized_total_loc_rels_ratios', ratio)
+            keyed_text = ENGLISH_STEMMER.stem(localization.text)
+            ratio = self.c_corpus_unormalized_total_absolute_loc_rels_ratios.get(keyed_text, 0)
+            add_f_ratio("f_corpus_unormalized_total_absolute_loc_rels_ratios", ratio)
+
+            norm_id = localization.normalisation_dict.get(self.c_localization_norm_class, None)
+            print("SUPP", norm_id, localization.text, keyed_text)
+            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratio.get(norm_id, 0)
+            add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratio", ratio)
+
+
+    DEFAULT_CORPUS_UNORMALIZED_TOTAL_ABSOLUTE_LOC_RELS_RATIOS = {
+        "chromoplast": 0.0,
+        "integral outer membran": 0.0,
+        "envelop": 0.0,
+        "integral membran": 0.0,
+        "project": 0.0,
+        "mvb": 0.0,
+        "cilia": 0.0,
+        "chloroplast envelop": 0.0,
+        "microtubule-organizing centr": 0.0,
+        "nuclear por": 0.0,
+        "secretori": 0.0,
+        "extracellular": 0.0,
+        "nucleolus": 0.0,
+        "telomer": 0.0,
+        "centrosom": 0.0,
+        "nuclear envelop": 0.0,
+        "lumen": 0.0,
+        "nucleosom": 0.0,
+        "thylakoid membran": 0.0,
+        "cytoskeleton": 0.0,
+        "bud": 0.3333333333333333,
+        "microtubul": 0.3333333333333333,
+        "er": 0.35714285714285715,
+        "cell wal": 0.3888888888888889,
+        "nucleoli": 0.5,
+        "spindl": 0.5,
+        "plastid": 0.5,
+        "outer membran": 0.5,
+        "golgi membran": 0.5,
+        "chloroplast stroma": 0.5,
+        "transmembran": 0.5,
+        "kinetochor": 0.5,
+        "chromosom": 0.5675675675675675,
+        "endoplasmic reticulum": 0.5714285714285714,
+        "melanosom": 0.625,
+        "chloroplast": 0.6666666666666666,
+        "surfac": 0.6666666666666666,
+        "cytoplasm": 0.7777777777777778,
+        "peroxisom": 0.8,
+        "tonoplast": 0.8461538461538461,
+        "membran": 0.9090909090909091,
+        "mitochondrial matrix": 1.0,
+        "vacuolar surfac": 1.0,
+        "endoplasmic reticulum membran": 1.0,
+        "mitochondria": 1.0,
+        "lipid raft": 1.0,
+        "cis-golgi stack": 1.0,
+        "nuclei": 1.0,
+        "apical plasma membran": 1.0,
+        "mitochondrial inner membran": 1.0,
+        "prekinetochor": 1.0,
+        "chromocent": 1.0,
+        "mitochondrial outer membran": 1.0,
+        "thylakoid": 1.0,
+        "spindle pole bodi": 1.0,
+        "thylakoid membrane in chloroplast": 1.0,
+        "cell membran": 1.0,
+        "mitochondrial membran": 1.0,
+        "vacuol": 1.0,
+        "nuclear": 1.0344827586206897,
+        "mitochondri": 1.1818181818181819,
+        "secret": 1.2,
+        "vacuolar": 1.2,
+        "etioplast": 1.25,
+        "heterochromat": 1.25,
+        "lysosom": 1.25,
+        "nuclear matrix": 1.25,
+        "cytosol": 1.3333333333333333,
+        "cell surfac": 1.3333333333333333,
+        "nucleolar": 1.3333333333333333,
+        "plasma membran": 1.4285714285714286,
+        "nucleus": 1.4444444444444444,
+        "cvt": 1.5,
+        "cell boundari": 1.5,
+        "centromer": 1.5294117647058822,
+        "lipid particl": 1.5833333333333333,
+        "tgn": 2.0,
+        "basolater": 2.0,
+        "ccvs": 2.0,
+        "cell peripheri": 2.0,
+        "clathrin-coated vesicl": 2.0,
+        "intranuclear": 2.0,
+        "synaps": 2.0,
+        "outer mitochondrial membran": 2.0,
+        "golgi": 2.0,
+        "cellular protrus": 2.0,
+        "cajal bodi": 2.0,
+        "trans-golgi network": 2.0,
+        "vacuolar membran": 2.4285714285714284,
+        "endosom": 2.5833333333333335,
+        "heterochromatin": 3.0,
+        "peroxisomal membran": 3.0,
+        "golgi apparatus": 4.0,
+        "cell-surfac": 4.0,
+        "subnuclear": 5.0,
+        "extracellular matrix": 5.0,
+        "intermembran": 7.0,
+        "golgi stack": 7.0,
+    }
 
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
