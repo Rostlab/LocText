@@ -77,22 +77,22 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
 
 
 
-class LocalizationRelationsRatio(EdgeFeatureGenerator):
+class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
     def __init__(
         self,
         c_localization_class=LOC_ID,
-        c_localization_relations_ratios=None,
+        c_corpus_unormalized_total_loc_rels_ratios=None,
         #
-        f_localization_relation_ratio=None,
+        f_corpus_unormalized_total_loc_rels_ratios=None,
     ):
 
         self.c_localization_class = c_localization_class
 
-        if c_localization_relations_ratios is not None:
-            self.c_localization_relations_ratios = self.c_localization_relations_ratios
+        if c_corpus_unormalized_total_loc_rels_ratios is not None:
+            self.c_corpus_unormalized_total_loc_rels_ratios = self.c_corpus_unormalized_total_loc_rels_ratios
         else:
-            self.c_localization_relations_ratios = {
+            self.c_corpus_unormalized_total_loc_rels_ratios = {
                 "chromoplast": 0.0,
                 "integral outer membran": 0.0,
                 "envelop": 0.0,
@@ -193,7 +193,7 @@ class LocalizationRelationsRatio(EdgeFeatureGenerator):
                 "golgi stack": 7.0,
             }
 
-        self.f_localization_relation_ratio = f_localization_relation_ratio
+        self.f_corpus_unormalized_total_loc_rels_ratios = f_corpus_unormalized_total_loc_rels_ratios
 
     def generate(self, corpus, f_set, is_train):
         for edge in corpus.edges():
@@ -202,10 +202,10 @@ class LocalizationRelationsRatio(EdgeFeatureGenerator):
             localization = edge.entity1 if edge.entity1.class_id == self.c_localization_class else edge.entity2
             norm_text = ENGLISH_STEMMER.stem(localization.text)
 
-            ratio = self.c_localization_relations_ratios.get(norm_text, 0)
+            ratio = self.c_corpus_unormalized_total_loc_rels_ratios.get(norm_text, 0)
             ratio += 0.1  # Just to remove 0 weights, make minimally viable
 
-            self.add_with_value(f_set, is_train, edge, 'f_localization_relation_ratio', ratio)
+            self.add_with_value(f_set, is_train, edge, 'f_corpus_unormalized_total_loc_rels_ratios', ratio)
 
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
