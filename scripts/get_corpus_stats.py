@@ -7,6 +7,7 @@ from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from util import my_cv_generator
 import time
 from collections import Counter
+import pickle
 
 corpus = read_corpus("LocText")
 
@@ -42,17 +43,21 @@ for type_key, mention_counter in mention_unnormalized_total_counter.items():
 
 #######################################################################################################################
 
-for ratio_counter in ratio_unnormalized_total_counter.values():
-    ratio_sorted = sorted(ratio_counter.items(), key=lambda pair: pair[1])
+# for ratio_counter in ratio_unnormalized_total_counter.values():
+#     ratio_sorted = sorted(ratio_counter.items(), key=lambda pair: pair[1])
+#
+#     print()
+#     for key, val in ratio_sorted:
+#         print('"{}": {},'.format(key, val))
+#
+#     print()
+#     print()
+#
+# print()
 
-    print()
-    for key, val in ratio_sorted:
-        print('"{}": {},'.format(key, val))
-
-    print()
-    print()
-
-print()
+out_path = repo_path(["resources", "features", "corpus_unormalized_total_absolute_loc_rels_ratios.pickle"])
+with open(out_path, "wb") as f:
+    pickle.dump(ratio_unnormalized_total_counter[LOC_ID], f)
 
 for marker in {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2", "Snf7"}:
     print(marker, ratio_unnormalized_total_counter[PRO_ID].get(ENGLISH_STEMMER.stem(marker)))

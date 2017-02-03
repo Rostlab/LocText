@@ -1,4 +1,3 @@
-
 import pickle
 from collections import Counter
 import math
@@ -24,6 +23,5 @@ with open(in_path) as f:
         print(upid, gos)
 
     out_path = repo_path(["resources", "features", "SwissProt_normalized_unique_absolute_loc_rels_ratios.pickle"])
-
     with open(out_path, "wb") as f:
         pickle.dump(relations, f)
