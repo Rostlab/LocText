@@ -88,7 +88,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         c_protein_enty_class=PRO_ID,
         c_protein_norm_class=UNIPROT_NORM_ID,
         #
-        c_corpus_unormalized_total_absolute_loc_rels_ratios=None,
+        # ...constants...
         #
         f_corpus_unormalized_total_absolute_loc_rels_ratios=None,
         f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,
@@ -104,12 +104,13 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
         #
 
-        if c_corpus_unormalized_total_absolute_loc_rels_ratios is not None:
-            self.c_corpus_unormalized_total_absolute_loc_rels_ratios = c_corpus_unormalized_total_absolute_loc_rels_ratios
-        else:
-            path = repo_path(["resources", "features", "corpus_unnormalized_total_absolute_loc_rels_ratios.pickle"])
-            with open(path, "rb") as f:
-                self.c_corpus_unormalized_total_absolute_loc_rels_ratios = pickle.load(f)
+        path = repo_path(["resources", "features", "corpus_unnormalized_total_absolute_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_corpus_unormalized_total_absolute_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "corpus_normalized_total_absolute_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_corpus_unormalized_total_absolute_loc_rels_ratios = pickle.load(f)
 
         path = repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"])
         with open(path, "rb") as f:
