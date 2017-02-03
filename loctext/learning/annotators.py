@@ -138,6 +138,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_corpus_unnormalized_total_background_loc_rels_ratios=50,  # 50
                 f_corpus_normalized_total_background_loc_rels_ratios=None,  # 51
                 f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,  # 52
+                f_SwissProt_normalized_total_background_loc_rels_ratios=None,
                 #
                 f_SwissProt_normalized_exists_relation=58,
             ),
