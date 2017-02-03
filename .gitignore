@@ -34,3 +34,6 @@ var/
 
 # Application-specific configuration
 config.ini
+
+#
+resources/features/human_localization_all_PMIDs_only_StringTagger_results__2016-11-20/
