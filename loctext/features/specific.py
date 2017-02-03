@@ -94,7 +94,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,
         #
         #
-        f_SwissProt_normalized_unique_absolute_loc_rels=None,
+        f_SwissProt_normalized_exists_relation=None,
     ):
 
         self.c_localization_enty_class = c_localization_enty_class
@@ -114,7 +114,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
             self.c_SwissProt_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
 
         path = repo_path(["resources", "features", "SwissProt_normalized_unique_absolute_loc_rels_ratios.pickle"])
-        with open (path, "rb") as f:
+        with open(path, "rb") as f:
             self.c_SwissProt_normalized_unique_absolute_loc_rels = pickle.load(f)
 
         #
@@ -124,7 +124,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
         #
 
-        self.f_SwissProt_normalized_unique_absolute_loc_rels = f_SwissProt_normalized_unique_absolute_loc_rels
+        self.f_SwissProt_normalized_exists_relation = f_SwissProt_normalized_exists_relation
 
 
     def generate(self, corpus, f_set, is_train):
@@ -143,9 +143,22 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
             ratio = self.c_corpus_unormalized_total_absolute_loc_rels_ratios.get(keyed_text, 0)
             add_f_ratio("f_corpus_unormalized_total_absolute_loc_rels_ratios", ratio)
 
-            norm_id = localization.normalisation_dict.get(self.c_localization_norm_class, None)
-            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(norm_id, 0)
+            loc_norm_id = localization.normalisation_dict.get(self.c_localization_norm_class, None)
+            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(loc_norm_id, 0)
             add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratios", ratio)
+
+            pro_norm_ids_str = protein.normalisation_dict.get(self.c_protein_norm_class, None)
+            if not pro_norm_ids_str:  # catches None or empty strings
+                pro_norm_ids = []
+            else:
+                pro_norm_ids = pro_norm_ids_str.split(",")
+
+                for pro_norm_id in pro_norm_ids:
+                    go_id_rels = self.c_SwissProt_normalized_unique_absolute_loc_rels.get(pro_norm_id, set())
+
+                    if loc_norm_id in go_id_rels:
+                        print("SUPPP", pro_norm_id, loc_norm_id)
+                        self.add(f_set, is_train, edge, "f_SwissProt_normalized_exists_relation")
 
 
     DEFAULT_CORPUS_UNORMALIZED_TOTAL_ABSOLUTE_LOC_RELS_RATIOS = {
