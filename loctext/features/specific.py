@@ -1,7 +1,7 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, GO_NORM_ID, repo_path
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, GO_NORM_ID, UNIPROT_NORM_ID, repo_path
 from nalaf.features.stemming import ENGLISH_STEMMER
 import pickle
 
@@ -85,15 +85,22 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         self,
         c_localization_enty_class=LOC_ID,
         c_localization_norm_class=GO_NORM_ID,
+        c_protein_enty_class=PRO_ID,
+        c_protein_norm_class=UNIPROT_NORM_ID,
         #
         c_corpus_unormalized_total_absolute_loc_rels_ratios=None,
         #
         f_corpus_unormalized_total_absolute_loc_rels_ratios=None,
-        f_SwissProt_normalized_total_absolute_loc_rels_ratio=None,
+        f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,
+        #
+        #
+        f_SwissProt_normalized_unique_absolute_loc_rels=None,
     ):
 
         self.c_localization_enty_class = c_localization_enty_class
         self.c_localization_norm_class = c_localization_norm_class
+        self.c_protein_enty_class = c_protein_enty_class
+        self.c_protein_norm_class = c_protein_norm_class
 
         #
 
@@ -102,20 +109,31 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         else:
             self.c_corpus_unormalized_total_absolute_loc_rels_ratios = __class__.DEFAULT_CORPUS_UNORMALIZED_TOTAL_ABSOLUTE_LOC_RELS_RATIOS
 
-        with open(repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"]), "rb") as f:
-            self.c_SwissProt_normalized_total_absolute_loc_rels_ratio = pickle.load(f)
+        path = repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_SwissProt_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "SwissProt_normalized_unique_absolute_loc_rels_ratios.pickle"])
+        with open (path, "rb") as f:
+            self.c_SwissProt_normalized_unique_absolute_loc_rels = pickle.load(f)
 
         #
 
         self.f_corpus_unormalized_total_absolute_loc_rels_ratios = f_corpus_unormalized_total_absolute_loc_rels_ratios
-        self.f_SwissProt_normalized_total_absolute_loc_rels_ratio = f_SwissProt_normalized_total_absolute_loc_rels_ratio
+        self.f_SwissProt_normalized_total_absolute_loc_rels_ratios = f_SwissProt_normalized_total_absolute_loc_rels_ratios
+
+        #
+
+        self.f_SwissProt_normalized_unique_absolute_loc_rels = f_SwissProt_normalized_unique_absolute_loc_rels
 
 
     def generate(self, corpus, f_set, is_train):
         for edge in corpus.edges():
             sentence = edge.get_combined_sentence()
 
-            localization = edge.entity1 if edge.entity1.class_id == self.c_localization_enty_class else edge.entity2
+            protein, localization = edge.entity1, edge.entity2
+            if protein.class_id == self.c_localization_enty_class:
+                protein, localization = localization, protein
 
             def add_f_ratio(f_key, ratio):
                 ratio += 0.1  # Avoid absolute 0 weights
@@ -126,9 +144,8 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
             add_f_ratio("f_corpus_unormalized_total_absolute_loc_rels_ratios", ratio)
 
             norm_id = localization.normalisation_dict.get(self.c_localization_norm_class, None)
-            print("SUPP", norm_id, localization.text, keyed_text)
-            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratio.get(norm_id, 0)
-            add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratio", ratio)
+            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(norm_id, 0)
+            add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratios", ratio)
 
 
     DEFAULT_CORPUS_UNORMALIZED_TOTAL_ABSOLUTE_LOC_RELS_RATIOS = {

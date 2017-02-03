@@ -136,7 +136,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
             LocalizationRelationsRatios(
                 f_corpus_unormalized_total_absolute_loc_rels_ratios=50,  # 50
-                f_SwissProt_normalized_total_absolute_loc_rels_ratio=None,  # 52
+                f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,  # 52
             ),
 
         ]
