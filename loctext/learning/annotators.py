@@ -84,6 +84,10 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
                 f_sentence_is_negated=None,  # 105
                 f_main_verbs=None,  # 106
+
+                f_entity1_count=None,  # 110
+                f_entity2_count=None,  # 111
+                f_diff_sents_together_count=None,  # 112
             ),
 
             DependencyFeatureGenerator(
