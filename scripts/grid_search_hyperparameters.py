@@ -47,10 +47,9 @@ search_space = [
 ]
 
 SCORING_NAMES = [
-    # 'accuracy',
-    'f1_macro',
-    'precision_macro',
-    'recall_macro'
+    'f1',
+    'precision',
+    'recall'
 ]
 
 for scoring_name in SCORING_NAMES:

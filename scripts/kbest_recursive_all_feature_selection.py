@@ -22,7 +22,7 @@ from sklearn.preprocessing import FunctionTransformer
 print(__doc__)
 
 SCORING_FUNCS = [mutual_info_classif]
-SCORING_NAMES = ['f1_macro']
+SCORING_NAMES = ['f1']
 
 annotator, X, y, groups = get_model_and_data()
 
@@ -69,10 +69,11 @@ for scoring_name in SCORING_NAMES:
         assert(len(scores) == min(MAX_NUM_FEATURES, num_features))
 
         max_index, max_scoring = max(enumerate(scores), key=lambda x: x[1])
+        max_num_selected_features = max_index + 1  # the first index starts in 0, this means 1 feature
 
         print()
         print()
-        print("Max performance for {}, #features={}: {}".format(scoring_name, max_index, max_scoring))
+        print("Max performance for {}, #features={}: {}".format(scoring_name, max_num_selected_features, max_scoring))
         print()
 
         plot_recursive_features(scoring_name, scores)

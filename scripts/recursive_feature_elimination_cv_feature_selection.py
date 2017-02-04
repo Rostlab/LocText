@@ -28,7 +28,7 @@ annotator, X, y, groups = get_model_and_data()
 num_instances = len(y)
 
 SCORING_NAMES = [
-    'f1_macro'
+    'f1'
 ]
 
 for scoring_name in SCORING_NAMES:

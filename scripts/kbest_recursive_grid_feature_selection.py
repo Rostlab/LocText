@@ -23,7 +23,7 @@ import time
 print(__doc__)
 
 SCORING_FUNCS = [mutual_info_classif]
-SCORING_NAMES = ['f1_macro']
+SCORING_NAMES = ['f1']
 
 annotator, X, y, groups = get_model_and_data()
 
