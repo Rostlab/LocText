@@ -105,9 +105,9 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         with open(path, "rb") as f:
             self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "SwissProt_normalized_unique_absolute_loc_rels_ratios.pickle"])  # TODO should not be called ratios, misleading
+        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])  # TODO should not be called ratios, misleading
         with open(path, "rb") as f:
-            self.c_SwissProt_normalized_unique_absolute_loc_rels = pickle.load(f)
+            self.c_SwissProt_relations = pickle.load(f)
 
         #
 
@@ -135,31 +135,29 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
                 ratio += 0.1  # Avoid absolute 0 weights
                 self.add_with_value(f_set, is_train, edge, f_key, ratio)
 
-            keyed_text = ENGLISH_STEMMER.stem(localization.text)
-            keyed_norm = localization.normalisation_dict.get(self.c_localization_norm_class, None)
+            loc_keyed_text = ENGLISH_STEMMER.stem(localization.text)
+            loc_norm = localization.normalisation_dict.get(self.c_localization_norm_class, None)
 
-            ratio = self.c_corpus_unnormalized_total_background_loc_rels_ratios.get(keyed_text, 0)
+            ratio = self.c_corpus_unnormalized_total_background_loc_rels_ratios.get(loc_keyed_text, 0)
             add_f_ratio("f_corpus_unnormalized_total_background_loc_rels_ratios", ratio)
 
-            ratio = self.c_corpus_normalized_total_background_loc_rels_ratios.get(keyed_norm, 0)
+            ratio = self.c_corpus_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
             add_f_ratio("f_corpus_normalized_total_background_loc_rels_ratios", ratio)
 
-            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(keyed_norm, 0)
+            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(loc_norm, 0)
             add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratios", ratio)
 
-            ratio = self.c_SwissProt_normalized_total_background_loc_rels_ratios.get(keyed_norm, 0)
+            ratio = self.c_SwissProt_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
             add_f_ratio("f_SwissProt_normalized_total_background_loc_rels_ratios", ratio)
 
             pro_norm_ids_str = protein.normalisation_dict.get(self.c_protein_norm_class, None)
             if not pro_norm_ids_str:  # catches None or empty strings
                 pro_norm_ids = []
             else:
-                pro_norm_ids = pro_norm_ids_str.split(",")
+                for pro_norm_id in pro_norm_ids_str.split(","):
+                    go_id_rels = self.c_SwissProt_relations.get(pro_norm_id, set())
 
-                for pro_norm_id in pro_norm_ids:
-                    go_id_rels = self.c_SwissProt_normalized_unique_absolute_loc_rels.get(pro_norm_id, set())
-
-                    if keyed_norm in go_id_rels:
+                    if loc_norm in go_id_rels:
                         self.add(f_set, is_train, edge, "f_SwissProt_normalized_exists_relation")
 
 

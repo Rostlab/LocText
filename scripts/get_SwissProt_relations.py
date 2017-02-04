@@ -22,6 +22,6 @@ with open(in_path) as f:
     for upid, gos in relations.items():
         print(upid, gos)
 
-    out_path = repo_path(["resources", "features", "SwissProt_normalized_unique_absolute_loc_rels_ratios.pickle"])
+    out_path = repo_path(["resources", "features", "SwissProt_relations.pickle"])
     with open(out_path, "wb") as f:
         pickle.dump(relations, f)
