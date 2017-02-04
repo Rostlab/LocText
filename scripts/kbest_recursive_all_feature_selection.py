@@ -31,7 +31,7 @@ X_transformed = X
 
 num_instances, num_features = X.shape
 
-MAX_NUM_FEATURES = 300
+MAX_NUM_FEATURES = 38
 EXTRA_FEATURES_PADDING = 0
 
 for scoring_name in SCORING_NAMES:
