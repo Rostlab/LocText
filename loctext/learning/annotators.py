@@ -115,14 +115,14 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_LD_pos_N_gram=19,  # 19
                 f_LD_tokens_count=None,  # 20
                 f_LD_tokens_count_without_punct=21,  # 21
-                f_LD_is_negated=103,  # 103
+                f_LD_is_negated=None,  # 103
                 #
                 #
                 f_PD_bow_N_gram=22,  # 22
                 f_PD_pos_N_gram=23,  # 23
                 f_PD_tokens_count=None,  # 24
                 f_PD_tokens_count_without_punct=25,  # 25
-                f_PD_is_negated=104,  # 104
+                f_PD_is_negated=None,  # 104
                 #
                 f_PD_undirected_edges_N_gram=26,  # 26
                 f_PD_directed_edges_N_gram=None,  # 27
