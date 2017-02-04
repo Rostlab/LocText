@@ -87,4 +87,4 @@ for scoring_name in SCORING_NAMES:
         print("\n".join([keys, names, fig_file]))
         print()
 
-        plot_recursive_features(scoring_name, scores, save_to=fig_file, show=True)
+        plot_recursive_features(scoring_name, scores, save_to=fig_file, show=False)
