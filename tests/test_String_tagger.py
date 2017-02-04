@@ -7,7 +7,7 @@ def test_annotate_string_tagger_whole_text_false():
     dataset = read_corpus("LocText", corpus_percentage=0.04)  # 10116 Rattus norvegicus (rat)
     StringTagger(False, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').annotate(dataset)
 
-
+ 
 # test when the whole content of document is sent at once
 def test_annotate_string_tagger_whole_text_true():
     dataset = read_corpus("LocText", corpus_percentage=0.04)
@@ -36,8 +36,13 @@ def test_json_response():
     assert StringTagger(False, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').get_string_tagger_json_response("p53") != {"entities": []}
     assert StringTagger(True, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').get_string_tagger_json_response("p53") == {"entities": [{"end": 3, "normalizations": [
         {"id": "ENSP00000269305", "type": 9606}, {"id": "P04637|P53_HUMAN", "type": "uniprot:9606"}], "start": 1}]}
+    assert StringTagger(False, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').get_string_tagger_json_response\
+               ("p53 nucleus human") == {"entities":[{"end":3,"normalizations":[{"id":"ENSP00000269305","type":9606},
+                                                {"id":"P04637|P53_HUMAN","type":"uniprot:9606"}],"start":1},
+                                                {"end":11,"normalizations":[{"id":"GO:0005634","type":-22}],"start":5},
+                                                {"end":17,"normalizations":[{"id":"9606","type":-3}],"start":13}]}
 
 
 # passes if server is running
 def test_check_if_server_is_running():
-    assert StringTagger(False, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').server_is_running("http://localhost:5000/") == True
+    assert StringTagger(False, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').server_is_running("http://localhost:5000/") is True

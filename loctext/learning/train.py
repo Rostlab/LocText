@@ -1,8 +1,11 @@
-from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path
-from nalaf.structures.relation_pipelines import RelationExtractionPipeline
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextDSmodelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
+from loctext.learning.evaluations import relation_accept_uniprot_go
+from nalaf.learning.lib.sklsvm import SklSVM
+from nalaf.structures.data import Entity
+from loctext.util import *
 
 def parse_arguments(argv=[]):
     import argparse
@@ -13,6 +16,8 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+    parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
+    parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
 
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
@@ -32,8 +37,37 @@ def parse_arguments(argv=[]):
 
     args = parser.parse_args(argv)
 
-    assert args.svm_hyperparameter_c_ss_model is None or args.svm_hyperparameter_c_ss_model == 'None' or float(args.svm_hyperparameter_c_ss_model), "svm_hyperparameter_c_ss_model must be None or float"
-    assert args.svm_hyperparameter_c_ds_model is None or args.svm_hyperparameter_c_ds_model == 'None' or float(args.svm_hyperparameter_c_ds_model), "svm_hyperparameter_c_ds_model must be None or float"
+    if args.evaluation_level == 1:
+        ENTITY_MAP_FUN = Entity.__repr__
+        RELATION_ACCEPT_FUN = str.__eq__
+    elif args.evaluation_level == 2:
+        ENTITY_MAP_FUN = 'lowercased'
+        RELATION_ACCEPT_FUN = str.__eq__
+    elif args.evaluation_level == 3:
+        ENTITY_MAP_FUN = 'normalized_first'
+        RELATION_ACCEPT_FUN = str.__eq__
+    elif args.evaluation_level == 4:
+        ENTITY_MAP_FUN = 'normalized_first'
+        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+
+    args.evaluator = DocumentLevelRelationEvaluator(
+        rel_type=REL_PRO_LOC_ID,
+        entity_map_fun=ENTITY_MAP_FUN,
+        relation_accept_fun=RELATION_ACCEPT_FUN,
+        evaluate_only_on_edges_plausible_relations=args.evaluate_only_on_edges_plausible_relations,
+    )
+
+    def set_None_or_typed_argument(argument, expected_type):
+        if not argument or argument == 'None':
+            return None
+        else:
+            try:
+                return expected_type(argument)
+            except Exception as e:
+                raise Exception("The argument {} must be of type {}".format(argument, str(expected_type)))
+
+    args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
+    args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
 
     return args
 
@@ -54,18 +88,41 @@ def _select_annotator_model(args):
 
     }.get(args.feature_generators)
 
-    ann_switcher = {
-        # TODO evaluate them lazily
-        "SS": LocTextSSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ss_model, use_tree_kernel=args.use_tk),
-        "DS": LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, svmlight=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
-    }
+    # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
+
+    ann_switcher = {}
+
+    SS = LocTextSSmodelRelationExtractor(
+        pro_id, loc_id, rel_id,
+        feature_generators=indirect_feature_generators,
+        execute_pipeline=False,
+        model=None,
+        classification_threshold=args.svm_threshold_ss_model,
+        use_tree_kernel=args.use_tk,
+        preprocess=True,
+        #
+        class_weight=None,
+        kernel='linear',
+        C=1,
+    )
+
+    ann_switcher["SS"] = SS
+
+    # DS = LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, execute_pipeline=False, model=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
 
     if args.model == "Combined":
         ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["SS"], ds_model=ann_switcher["DS"])
 
-    ret = ann_switcher[args.model]
+    model = ann_switcher[args.model]
+    submodels = _select_annotator_submodels(model)
 
-    return ret
+    return (model, submodels)
+
+
+def _select_annotator_submodels(model):
+    # Simple switch for either single or combined models
+    submodels = model.submodels if hasattr(model, 'submodels') else [model]
+    return submodels
 
 
 def _select_submodel_params(annotator, args):
@@ -79,30 +136,31 @@ def _select_submodel_params(annotator, args):
     raise AssertionError()
 
 
-def train(training_set, args):
+def train(training_set, args, annotator_model, submodels, execute_pipeline):
 
-    annotator_model = _select_annotator_model(args)
+    for index, submodel in enumerate(submodels):
+        print("About to train model {}={}".format(index, submodel.__class__.__name__))
 
-    # Simple switch for either single or combined models
-    submodels = annotator_model.submodels if hasattr(annotator_model, 'submodels') else [annotator_model]
+        if execute_pipeline:
+            submodel.pipeline.execute(training_set, train=True)
 
-    for index, annotator in enumerate(submodels):
-        print("About to train model {}={}".format(index, annotator.__class__.__name__))
-
-        annotator.pipeline.execute(training_set, train=True)
-
-        print_corpus_pipeline_dependent_stats(training_set)
-
-        minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
-        instancesfile = annotator.svmlight.create_input_file(training_set, 'train', annotator.pipeline.feature_set, minority_class=minority_class, majority_class_undersampling=majority_class_undersampling)
-        annotator.svmlight.learn(instancesfile, c=svm_hyperparameter_c)
+        submodel.model.train(training_set)
 
     return annotator_model.annotate
 
 
 def evaluate(corpus, args):
-    annotator_gen_fun = (lambda training_set: train(training_set, args))
-    evaluator = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID)
+    annotator_model, submodels = _select_annotator_model(args)
+    is_only_one_model = len(submodels) == 1
+
+    if is_only_one_model:
+        annotator_model.pipeline.execute(corpus, train=True)
+        # selected_features = unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/kbest-1485964680.707221-NAMES.log", k_best=700)
+        # annotator_model.model.set_allowed_feature_names(annotator_model.pipeline.feature_set, selected_features)
+        annotator_model.model.write_vector_instances(corpus, annotator_model.pipeline.feature_set)
+
+    annotator_gen_fun = (lambda training_set: train(training_set, args, annotator_model, submodels, execute_pipeline=not is_only_one_model))
+    evaluator = args.evaluator
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
@@ -116,8 +174,12 @@ def evaluate_with_argv(argv=[]):
     corpus = read_corpus(args.corpus, args.corpus_percentage)
 
     print_run_args(args, corpus)
+    print()
     result = evaluate(corpus, args)
+    print()
     print_run_args(args, corpus)
+    print_corpus_pipeline_dependent_stats(corpus)
+    print()
 
     return result
 
@@ -148,12 +210,12 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
 
     AnnJsonAnnotationReader(
         dir_annjson,
-        read_only_class_id=None,
+        read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
         read_relations=True,
         delete_incomplete_docs=False).annotate(corpus)
 
     if (corpus_percentage < 1.0):
-        corpus, _ = read_corpus(corpus_name).percentage_split(corpus_percentage)
+        corpus, _ = corpus.percentage_split(corpus_percentage)
 
     return corpus
 
@@ -165,34 +227,37 @@ def print_run_args(args, corpus):
 
     print_corpus_hard_core_stats(corpus)
 
-    print()
-
 
 def print_corpus_hard_core_stats(corpus):
-
-    print("Corpus stats; #docs={} -- #rels={}".format(len(corpus), len(list(corpus.relations()))))
+    print()
+    print("Corpus stats:")
+    print("\t#documents: {}".format(len(corpus)))
+    print("\t#relations: {}".format(len(list(corpus.relations()))))
 
 
 def print_corpus_pipeline_dependent_stats(corpus):
 
-    # Assumes the edges have been generated
+    # Assumes the sentences and edges have been generated (through relations_pipeline)
 
+    T = 0
     P = 0
     N = 0
 
     for e in corpus.edges():
-        assert e.target != 0 and e.target in [-1, +1], str(e)
-
-        if e.target == 1:
+        T += 1
+        if e.is_relation():
             P += 1
         else:
             N += 1
 
-    # Totals for whole corpus (test data too) and with SimpleEdgeGenerator (only same sentences)
+    # Totals for whole corpus (test data too) and with SentenceDistanceEdgeGenerator (only same sentences)
     # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
     # abstract + fulltext -- #docs: 104, P=614 vs N=1480
 
-    print("\tedges: #P={} vs. #N={}".format(P, N))
+    print("\t#sentences: {}".format(len(list(corpus.sentences()))))
+    print("\t#instances (edges): {} -- #P={} vs. #N={}".format(T, P, N))
+    print("\t#plausible relations from edges: {}".format(len(list(corpus.plausible_relations_from_generated_edges()))))
+    print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
 
     return (P, N)
 

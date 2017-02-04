@@ -9,7 +9,7 @@ GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go
 Dictionary with go term child --> to [list of go term parents] relationships
 """
 
-def relation_equals_uniprot_go(gold, pred):
+def relation_accept_uniprot_go(gold, pred):
 
     if gold == pred and gold != "":
         return True
@@ -24,13 +24,25 @@ def relation_equals_uniprot_go(gold, pred):
     assert p_pro_key == UNIPROT_NORM_ID
     assert p_loc_key == GO_NORM_ID
 
-    return _uniprot_ids_equiv(g_n_7, p_n_7) and _go_ids_equiv(g_n_8, p_n_8)
+    uniprot_accept = _uniprot_ids_accept(g_n_7, p_n_7)
+    go_accept = _go_ids_accept(g_n_8, p_n_8)
+    combined = {uniprot_accept, go_accept}
+
+    if combined == {True}:
+        return True
+    elif False in combined:
+        return False
+    else:
+        return None
 
 
-def _uniprot_ids_equiv(gold, pred):
+def _uniprot_ids_accept(gold, pred):
 
     if gold == pred:
         return True
+
+    if gold.startswith("UNKNOWN:"):  # see (nalaf) evaluators::_normalized_first
+        return None
 
     return any(g == p for (g, p) in product(gold.split(','), pred.split(',')))
 
@@ -41,23 +53,48 @@ def _verify_in_ontology(term):
         raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
 
 
-def _go_ids_equiv(gold, pred):
+def _go_ids_accept(gold, pred):
     """
-    the gold go term must be the parent to accept the go prediction, not the other way around
+    3 outcomes:
+
+    * gold is parent (direct or indirect) of pred --> accept (True)
+    * pred is parent (direct or indirect) of gold --> ignore (None)
+    * else: no relationship whatsoever --> reject (False)
     """
 
-    if gold == pred:
+    if gold == pred:  # Arbitrarily, we do not test whether they belong to the ontology
         return True
 
     _verify_in_ontology(gold)
     _verify_in_ontology(pred)
 
-    gold_is_root = len(GO_TREE.get(gold)) == 0
+    gold_parents = GO_TREE.get(gold).parents
+    pred_parents = GO_TREE.get(pred).parents
 
-    if gold_is_root:
+    if len(gold_parents) == 0:  # gold is root from the start
+        return True
+    if len(pred_parents) == 0:  # pred is root from the start
+        return None
+
+    gold_is_parent_of_pred = _go_ids_accept_recursive(gold, pred, pred_parents)
+    if gold_is_parent_of_pred:
+        return True
+    pred_is_parent_of_gold = _go_ids_accept_recursive(pred, gold, gold_parents)
+    if pred_is_parent_of_gold:
+        return None
+    else:
+        return False
+
+
+def _go_ids_accept_recursive(a, b, b_parents):
+    """
+    2 outcomes:
+
+    * a is parent (direct or indirect) of b --> True
+    * else --> False
+    """
+
+    if a == b:
         return True
 
-    pred_parents = GO_TREE.get(pred)
-
-    # direct parent or indirect (recursive) parent
-    return gold in pred_parents or any(_go_ids_equiv(gold, pp) for pp in pred_parents if pp in GO_TREE)
+    return any(_go_ids_accept_recursive(a, pp, GO_TREE.get(pp).parents) for pp in b_parents if pp in GO_TREE)

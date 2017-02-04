@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+from collections import namedtuple
 
 assert sys.version_info.major == 3, "the script requires Python 3"
 
@@ -8,8 +9,10 @@ __author__ = "Juan Miguel Cejuela (@juanmirocks)"
 
 __help__ = """  Simple parse a GO ontology .obo file.
 
-                This python file can be used 1) as a script to filter and extract only a desired GO hierarchy, and
-                2) as a library to parse the parent-children relasionships of the ontology (`is_a` and `part_of`).
+                This python file can be used as a:
+                1) script to filter and extract only a desired GO hierarchy, and
+                2) library to parse the parent-children relasionships of the ontology (`is_a` and `part_of`).
+                   As result, a dictionary keyed by the GO ids and values: name (str), parents (list), children (list)
 
                 Note: as a script, the GO Terms are printed to standard output. Redirect to a file if needed.
 
@@ -20,7 +23,12 @@ __help__ = """  Simple parse a GO ontology .obo file.
                 Also note, there are some terms that may even have multiple replacements/considerations, e.g GO:0019804.
                 Even some obsoleted terms have multiple replacements/considerations, where one is in the hierarchy
                 and another one is not.
+                Finally, some obsolete terms are not replaced/considered by any other, at least yeat (e.g. GO:0031614)
            """
+
+
+GOTerm = namedtuple('GOTerm', ['name', 'parents', 'children'])
+
 
 def parse_arguments(argv=[]):
     import argparse
@@ -50,6 +58,7 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
     go_id = None
     go_term_is_obsolete = False
     regex_go_id = re.compile('GO:[0-9]+')
+    may_not_be_in_hierarchy = set()
 
     with open(args.go_file) as f:
         for line in f:
@@ -58,29 +67,49 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                 go_id_line = next(f)
                 go_id = regex_go_id.search(go_id_line).group()
                 name_line = next(f)
+                name = name_line[len('name: '):]
                 namespace_line = next(f)
 
                 if namespace_line.startswith(args.namespace):
-                    state = 'print'
+                    state = 'accept_term'
                     print_out(term_token)
                     print_out(go_id_line)
                     print_out(name_line)
                     print_out(namespace_line)
+
+                    # Some parents relationships may appear before than the parents descriptions themselves (see below)
+                    if go_id in may_not_be_in_hierarchy:
+                        may_not_be_in_hierarchy.remove(go_id)
+
+                    term = dictionary.get(go_id, GOTerm(name=None, parents=[], children=[]))
+                    term = term._replace(name=name.strip())
+                    dictionary[go_id] = term
                 else:
-                    state = 'no_print'
+                    state = 'ignore_term'
 
             elif line == f.newlines:
-                if state == 'print':
-                    if create_dictionary and go_id not in dictionary and not go_term_is_obsolete:
-                        # Must be root of respective go hierarchy; no parents
-                        dictionary[go_id] = []
+                if state == 'accept_term':
+                    if create_dictionary:
+                        if go_id not in dictionary:
+                            # Had we not put the children relationships in the dictionary too,
+                            # ...this would be the root of the respective go hierarchy
+                            assert False, "Cannot happen"
+
+                        obsolete_term = dictionary[go_id]
+
+                        if go_term_is_obsolete:
+
+                            if 0 == len(obsolete_term.parents):  # no replacement / other considerations, yet
+                                # Put dummy UNKNOWN parent to keep the logic: if not parents --> is root
+                                obsolete_term = obsolete_term._replace(parents=["UNKNOWN"])
+                                dictionary[go_id] = obsolete_term
 
                     print_out(line)
 
                 go_term_is_obsolete = False
                 state = 'no_term'
 
-            elif state == 'print':
+            elif state == 'accept_term':
                 print_out(line)
 
                 if not go_term_is_obsolete:
@@ -93,12 +122,33 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                         line.startswith('consider:')):
 
                     parent = regex_go_id.search(line).group()
-                    parents = dictionary.get(go_id, [])
-                    parents = [*parents, parent]
-                    dictionary[go_id] = parents
+                    child_term = dictionary[go_id]
+                    parents = [*child_term.parents, parent]
+
+                    child_term = child_term._replace(parents=parents)
+                    dictionary[go_id] = child_term
+
+                    parent_term = dictionary.get(parent, None)
+
+                    if parent_term is None:
+                        # Some parents relationships may appear before than the parents descriptions themselves
+                        # Yet it can also be that they do not belong to the hierarchy
+                        may_not_be_in_hierarchy.update({parent})
+                        parent_term = GOTerm(name="UNKNOWN", parents=[], children=[])
+
+                    parent_term = parent_term._replace(children=[*parent_term.children, go_id])
+                    dictionary[parent] = parent_term
 
             else:
                 continue
+
+        if create_dictionary:
+            not_be_in_hierarchy = may_not_be_in_hierarchy
+
+            for go_id in not_be_in_hierarchy:
+                # Delete terms that actually do not belong to the hierarchy
+                # They were only added because the were "parents" of obsolete terms (replacements/considerations)
+                del dictionary[go_id]
 
     return dictionary
 
