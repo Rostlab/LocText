@@ -40,9 +40,9 @@ def get_model_and_data():
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
     annotator = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True, kernel='linear', C=1)
     annotator.pipeline.execute(corpus, train=True)
-    X, y = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
+    X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
 
-    return (annotator, X, y)
+    return (annotator, X, y, groups)
 
 
 def plot_recursive_features(scoring_name, scores):

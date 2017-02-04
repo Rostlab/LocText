@@ -20,7 +20,7 @@ print(__doc__)
 SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ["stub"]
 
-annotator, X, y = get_model_and_data()
+annotator, X, y, groups = get_model_and_data()
 
 for scoring_func in SCORING_FUNCS:
     for scoring_name in SCORING_NAMES:

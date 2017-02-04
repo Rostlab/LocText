@@ -24,7 +24,7 @@ print(__doc__)
 SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ['f1_macro']
 
-annotator, X, y = get_model_and_data()
+annotator, X, y, groups = get_model_and_data()
 
 # See also: http://stackoverflow.com/questions/41998147/what-is-row-slicing-vs-what-is-column-slicing
 X_transformed = X

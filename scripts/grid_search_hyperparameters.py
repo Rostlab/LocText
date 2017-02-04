@@ -28,7 +28,7 @@ from util import my_cv_generator
 
 print(__doc__)
 
-annotator, X, y = get_model_and_data()
+annotator, X, y, groups = get_model_and_data()
 
 num_instances = len(y)
 

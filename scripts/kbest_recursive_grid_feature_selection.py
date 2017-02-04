@@ -1,3 +1,7 @@
+"""
+recursive `grid` and `all` should yield the same results (tested for few features) -- `all` should be faster (not tested)
+"""
+
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
@@ -21,7 +25,7 @@ print(__doc__)
 SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ['f1_macro']
 
-annotator, X, y = get_model_and_data()
+annotator, X, y, groups = get_model_and_data()
 
 num_instances, num_features = X.shape
 
