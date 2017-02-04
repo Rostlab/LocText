@@ -155,8 +155,8 @@ def evaluate(corpus, args):
 
     if is_only_one_model:
         annotator_model.pipeline.execute(corpus, train=True)
-        # selected_features = unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/kbe_recursive_all-1486228519.429743-NAMES.log", k_best=434)
-        # annotator_model.model.set_allowed_feature_names(annotator_model.pipeline.feature_set, selected_features)
+        selected_features = unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/rfe-1486231141.30873-NAMES.log", k_best=434)
+        annotator_model.model.set_allowed_feature_names(annotator_model.pipeline.feature_set, selected_features)
         annotator_model.model.write_vector_instances(corpus, annotator_model.pipeline.feature_set)
 
     annotator_gen_fun = (lambda training_set: train(training_set, args, annotator_model, submodels, execute_pipeline=not is_only_one_model))

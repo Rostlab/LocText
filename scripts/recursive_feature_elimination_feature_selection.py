@@ -15,45 +15,58 @@ from util import *
 from loctext.util import *
 import time
 
-annotator, X, y, groups = get_model_and_data()
-
-num_instances = len(y)
-
 SCORING_NAMES = [
     'f1'
 ]
 
-for scoring_name in SCORING_NAMES:
+def call(annotator, X, y, groups, selected_feature_keys=None):
 
-    rfecv = RFECV(
-        verbose=1,
-        n_jobs=-1,
-        estimator=annotator.model.model,
-        step=1,
-        cv=my_cv_generator(groups, num_instances),
-        scoring=scoring_name
-    )
+    if selected_feature_keys is not None:
+        my_transformer = select_features_transformer(selected_feature_keys)
+        print("BEFORE", X.shape)
+        X = my_transformer.fit_transform(X)
+        print("AFTER", X.shape)
 
-    start = time.time()
-    rfecv.fit(X, y)
-    end = time.time()
+    num_instances = len(y)
 
-    print("rfe", "Time for feature selection: ", (end - start))
-    print("rfe", "Optimal number of features : {}".format(rfecv.n_features_))
+    for scoring_name in SCORING_NAMES:
 
-    selected_feature_keys = [index for (index, value) in enumerate(rfecv.support_) if value]
+        rfecv = RFECV(
+            verbose=1,
+            n_jobs=-1,
+            estimator=annotator.model.model,
+            step=1,
+            cv=my_cv_generator(groups, num_instances),
+            scoring=scoring_name
+        )
 
-    print()
-    print()
-    print("rfe", "Max performance for {}: {}".format(scoring_name, rfecv.grid_scores_[rfecv.n_features_ - 1]))
-    print()
-    print()
+        start = time.time()
+        rfecv.fit(X, y)
+        end = time.time()
 
-    keys, names, fig_file = \
-        print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="rfe")
+        print("rfe", "Time for feature selection: ", (end - start))
+        print("rfe", "Optimal number of features : {}".format(rfecv.n_features_))
 
-    print()
-    print("\n".join([keys, names, fig_file]))
-    print()
+        selected_feature_keys = [index for (index, value) in enumerate(rfecv.support_) if value]
 
-    plot_recursive_features(scoring_name, scores, save_to=fig_file, show=False)
+        print()
+        print()
+        print("rfe", "Max performance for {}: {}".format(scoring_name, rfecv.grid_scores_[rfecv.n_features_ - 1]))
+        print()
+        print()
+
+        keys, names, fig_file = \
+            print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="rfe")
+
+        print()
+        print("\n".join([keys, names, fig_file]))
+        print()
+
+        plot_recursive_features(scoring_name, rfecv.grid_scores_, save_to=fig_file, show=False)
+
+
+if __name__ == "__main__":
+    import sys
+
+    annotator, X, y, groups = get_model_and_data()
+    call(annotator, X, y, groups, selected_feature_keys=None)

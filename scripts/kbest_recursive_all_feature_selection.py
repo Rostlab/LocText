@@ -17,7 +17,7 @@ from loctext.util import *
 import time
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import FunctionTransformer
+import recursive_feature_elimination_feature_selection
 
 print(__doc__)
 
@@ -87,3 +87,8 @@ for scoring_name in SCORING_NAMES:
         print()
 
         plot_recursive_features(scoring_name, scores, save_to=fig_file, show=False)
+
+        print()
+        print()
+
+        recursive_feature_elimination_feature_selection.call(annotator, X, y, groups, selected_feature_keys)
