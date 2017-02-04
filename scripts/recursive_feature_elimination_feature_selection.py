@@ -19,13 +19,15 @@ SCORING_NAMES = [
     'f1'
 ]
 
-def call(annotator, X, y, groups, selected_feature_keys=None):
+def call(annotator, X, y, groups, pre_selected_feature_keys=None):
 
-    if selected_feature_keys is not None:
-        my_transformer = select_features_transformer(selected_feature_keys)
+    if pre_selected_feature_keys is not None:
+        my_transformer = select_features_transformer(pre_selected_feature_keys)
         print("BEFORE", X.shape)
         X = my_transformer.fit_transform(X)
         print("AFTER", X.shape)
+
+    # X = X.tocsc()
 
     num_instances = len(y)
 
@@ -69,4 +71,4 @@ if __name__ == "__main__":
     import sys
 
     annotator, X, y, groups = get_model_and_data()
-    call(annotator, X, y, groups, selected_feature_keys=None)
+    call(annotator, X, y, groups, pre_selected_feature_keys=None)
