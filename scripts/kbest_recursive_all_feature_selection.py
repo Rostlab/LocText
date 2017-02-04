@@ -49,8 +49,7 @@ for scoring_name in SCORING_NAMES:
             selected_feature_keys = sorted_kbest_feature_keys[:num_seletected_kbest_features]
             my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"selected_feature_keys": selected_feature_keys})
 
-            svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
-            estimator = make_pipeline(my_transformer, svc)
+            estimator = make_pipeline(my_transformer, annotator.model.model)
 
             cv_scores = cross_val_score(
                 estimator,
