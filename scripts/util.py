@@ -66,6 +66,19 @@ def plot_recursive_features(scoring_name, scores, save_to=None, show=False):
     return fig
 
 
+def get_sorted_kbest_feature_keys(kbest_fitted_model):
+    return [fkey for fkey, _ in sorted(enumerate(kbest_fitted_model.scores_), key=lambda tuple: tuple[1], reverse=True)]
+
+
+def select_features_transformer_function(X, **kwargs):
+    selected_feature_keys = kwargs["selected_feature_keys"]
+
+    X_new = X[:, selected_feature_keys]
+    # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
+
+    return X_new
+
+
 class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones makes any change?
 
     def __init__(self, X_whole, y_whole, score_func, k=None):
@@ -93,16 +106,3 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
         X_new = self.kbest.transform(X)
         # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
         return self.svc.predict(X_new)
-
-
-def get_sorted_kbest_feature_keys(kbest_fitted_model):
-    return [fkey for fkey, _ in sorted(enumerate(kbest_fitted_model.scores_), key=lambda tuple: tuple[1], reverse=True)]
-
-
-def select_features_transformer_function(X, **kwargs):
-    selected_feature_keys = kwargs["selected_feature_keys"]
-
-    X_new = X[:, selected_feature_keys]
-    # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
-
-    return X_new
