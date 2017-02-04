@@ -40,30 +40,12 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
                 entity.features["is_receptor"] = any("recept" in t.word.lower() for t in entity.tokens)
                 entity.features["is_transporter"] = any("transport" in t.word.lower() for t in entity.tokens)
 
-                # Simple heuristic to know if some entities are abbreviations of another one
-                # The protein x is abbreviation of protein y if they are written as: y (x)"
-                # In the end, more generically, we call it a "synonym" relationship
-
-                prev2 = entity.prev_tokens(entity.sentence, 2)
-                next1 = entity.next_tokens(entity.sentence, 1)
-                in_parenthesis = len(prev2) == 2 and prev2[-1].word == "(" and len(next1) == 1 and next1[0].word == ")"
-
-                if (in_parenthesis):
-                    prev_entity = prev2[0].get_entity(entity.part)
-
-                    if prev_entity is not None and prev_entity.class_id == self.c_protein_class:
-                        merged_binary_features = {key: (b1 or b2) for ((key, b1), (_, b2)) in zip(prev_entity.features.items(), entity.features.items())}
-                        # Gave slightly worse results so far:
-                        # prev_entity.features = merged_binary_features
-                        # entity.features = merged_binary_features
-
-                        prev_entity.features['synonym'] = entity
-                        entity.features['synonym'] = prev_entity
-
         for edge in corpus.edges():
             sentence = edge.get_combined_sentence()
 
             protein = edge.entity1 if edge.entity1.class_id == self.c_protein_class else edge.entity2
+
+            # Could also check for its synonym, yet that gave worse results so far
 
             if protein.features["is_marker"]:
                 self.add(f_set, is_train, edge, 'f_is_marker')
