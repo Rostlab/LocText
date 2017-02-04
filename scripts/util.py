@@ -26,20 +26,18 @@ from sklearn.preprocessing import FunctionTransformer, maxabs_scale
 
 def my_cv_generator(groups, num_instances=None):
     if num_instances is not None:
-        print("SUPPP", len(groups))
-        print(num_instances, groups)
-        assert(num_instances == sum(v for v in groups.values()))
+        assert(num_instances == sum(len(v) for v in groups.values()))
 
     def map_indexes(doc_keys):
         # Convert document keys to the final instances indexes
         ret = [instance_index for doc_key in doc_keys for instance_index in groups[doc_key]]
-        assert (len(ret) == set(ret))
-        print("YOLO", ret)
+        assert(len(ret) == len(set(ret)))
         return ret
 
     k = 5
     for training_docs_keys, evaluation_doc_keys in Dataset._cv_kfold_splits_doc_keys_sets(groups.keys(), k, validation_set=True):
-        yield map_indexes(training_docs_keys), map_indexes(evaluation_doc_keys)
+        tr, ev = map_indexes(training_docs_keys), map_indexes(evaluation_doc_keys)
+        yield tr, ev
 
 
 def get_model_and_data():
