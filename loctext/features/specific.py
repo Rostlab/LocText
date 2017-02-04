@@ -53,7 +53,7 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
 
                     if prev_entity is not None and prev_entity.class_id == self.c_protein_class:
                         merged_binary_features = {key: (b1 or b2) for ((key, b1), (_, b2)) in zip(prev_entity.features.items(), entity.features.items())}
-                        # TODO investigate
+                        # Gave slightly worse results so far:
                         # prev_entity.features = merged_binary_features
                         # entity.features = merged_binary_features
 
