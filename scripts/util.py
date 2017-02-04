@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plot
+import sklearn
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
 from sklearn.feature_selection import RFECV
@@ -78,12 +79,12 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
             self.kbest_unfitted = False
 
         X_new = self.kbest.transform(X)
-        X_new = SklSVM._preprocess(X_new)
+        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
         return self.svc.fit(X_new, y)
 
     def predict(self, X):
         X_new = self.kbest.transform(X)
-        X_new = SklSVM._preprocess(X_new)
+        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
         return self.svc.predict(X_new)
 
 
@@ -95,6 +96,6 @@ def select_features_transformer_function(X, **kwargs):
     selected_feature_keys = kwargs["selected_feature_keys"]
 
     X_new = X[:, selected_feature_keys]
-    X_new = SklSVM._preprocess(X_new)
+    # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
 
     return X_new
