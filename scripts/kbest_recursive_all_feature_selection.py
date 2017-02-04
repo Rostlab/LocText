@@ -51,7 +51,16 @@ for scoring_name in SCORING_NAMES:
             svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
             estimator = make_pipeline(my_transformer, svc)
 
-            cv_scores = cross_val_score(estimator, X_transformed, y, scoring=scoring_name, cv=my_cv_generator(num_instances), verbose=True, n_jobs=-1)
+            cv_scores = cross_val_score(
+                estimator,
+                X_transformed,
+                y,
+                scoring=scoring_name,
+                cv=my_cv_generator(groups, num_instances),
+                verbose=True,
+                n_jobs=-1
+            )
+
             scores.append(cv_scores.mean())
 
         end = time.time()

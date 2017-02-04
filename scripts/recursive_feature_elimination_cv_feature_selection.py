@@ -38,7 +38,7 @@ for scoring_name in SCORING_NAMES:
         n_jobs=-1,
         estimator=annotator.model.model,
         step=1,
-        cv=my_cv_generator(num_instances),
+        cv=my_cv_generator(groups, num_instances),
         scoring=scoring_name
     )
 

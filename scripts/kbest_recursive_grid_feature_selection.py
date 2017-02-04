@@ -44,7 +44,7 @@ for scoring_name in SCORING_NAMES:
             estimator=estimator,
             param_grid=search_space,
             verbose=True,
-            cv=my_cv_generator(num_instances),
+            cv=my_cv_generator(groups, num_instances),
             scoring=scoring_name,
             refit=False,
             iid=False,

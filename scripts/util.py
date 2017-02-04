@@ -24,15 +24,22 @@ from sklearn.metrics import euclidean_distances
 from sklearn.preprocessing import FunctionTransformer, maxabs_scale
 
 
-def my_cv_generator(num_instances):
+def my_cv_generator(groups, num_instances=None):
+    if num_instances is not None:
+        print("SUPPP", len(groups))
+        print(num_instances, groups)
+        assert(num_instances == sum(v for v in groups.values()))
+
+    def map_indexes(doc_keys):
+        # Convert document keys to the final instances indexes
+        ret = [instance_index for doc_key in doc_keys for instance_index in groups[doc_key]]
+        assert (len(ret) == set(ret))
+        print("YOLO", ret)
+        return ret
+
     k = 5
-
-    index_keys = list(range(0, num_instances))
-    index_keys = Dataset._cv_kfold_splits_randomize_keys(index_keys)
-
-    for fold in range(k):
-        training, evaluation = Dataset._cv_kfold_split(index_keys, k, fold, validation_set=True)
-        yield training, evaluation
+    for training_docs_keys, evaluation_doc_keys in Dataset._cv_kfold_splits_doc_keys_sets(groups.keys(), k, validation_set=True):
+        yield map_indexes(training_docs_keys), map_indexes(evaluation_doc_keys)
 
 
 def get_model_and_data():
