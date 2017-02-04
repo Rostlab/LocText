@@ -64,7 +64,7 @@ for scoring_name in SCORING_NAMES:
             scores.append(cv_scores.mean())
 
         end = time.time()
-        print("\n\n{} : {} -- TIME for feature selection : {}".format(scoring_name, scoring_func, (end - start)))
+        print("kbest_r_a", "\n\n{} : {} -- Time for feature selection : {}".format(scoring_name, scoring_func, (end - start)))
 
         assert(len(scores) == min(MAX_NUM_FEATURES, num_features))
 
@@ -75,12 +75,12 @@ for scoring_name in SCORING_NAMES:
 
         print()
         print()
-        print("Max performance for {}, #features={}: {}".format(scoring_name, best_num_selected_features, best_scoring))
+        print("kbest_r_a", "Max performance for {}, #features={}: {}".format(scoring_name, best_num_selected_features, best_scoring))
         print()
         print()
 
         keys, names, fig_file = \
-            print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="kbe_recursive_all")
+            print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="kbest_r_a")
 
         print()
         print("\n".join([keys, names, fig_file]))

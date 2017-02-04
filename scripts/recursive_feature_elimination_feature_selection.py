@@ -38,9 +38,8 @@ for scoring_name in SCORING_NAMES:
     rfecv.fit(X, y)
     end = time.time()
 
-    print("TIME for feature selection: ", (end - start))
-
-    print("Optimal number of features : %d" % rfecv.n_features_)
+    print("rfe", "Time for feature selection: ", (end - start))
+    print("rfe", "Optimal number of features : {}".format(rfecv.n_features_))
 
     selected_feat_keys = []
 
