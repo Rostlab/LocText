@@ -31,7 +31,8 @@ X_transformed = X
 
 num_instances, num_features = X.shape
 
-MAX_NUM_FEATURES = 200
+MAX_NUM_FEATURES = 10
+EXTRA_FEATURES_PADDING = 10
 
 for scoring_name in SCORING_NAMES:
     for scoring_func in SCORING_FUNCS:
@@ -68,12 +69,22 @@ for scoring_name in SCORING_NAMES:
 
         assert(len(scores) == min(MAX_NUM_FEATURES, num_features))
 
-        max_index, max_scoring = max(enumerate(scores), key=lambda x: x[1])
-        max_num_selected_features = max_index + 1  # the first index starts in 0, this means 1 feature
+        best_index, best_scoring = max(enumerate(scores), key=lambda x: x[1])
+        best_num_selected_features = best_index + 1  # the first index starts in 0, this means 1 feature
+
+        selected_feature_keys = sorted_kbest_feature_keys[:(best_num_selected_features + EXTRA_FEATURES_PADDING)]
 
         print()
         print()
-        print("Max performance for {}, #features={}: {}".format(scoring_name, max_num_selected_features, max_scoring))
+        print("Max performance for {}, #features={}: {}".format(scoring_name, best_num_selected_features, best_scoring))
+        print()
         print()
 
-        plot_recursive_features(scoring_name, scores)
+        keys, names, fig_file = \
+            print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="kbe_recursive_all")
+
+        print()
+        print("\n".join([keys, names, fig_file]))
+        print()
+
+        plot_recursive_features(scoring_name, scores, save_to=fig_file, show=True)

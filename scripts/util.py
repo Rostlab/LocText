@@ -51,12 +51,19 @@ def get_model_and_data():
     return (annotator, X, y, groups)
 
 
-def plot_recursive_features(scoring_name, scores):
-    plot.figure()
+def plot_recursive_features(scoring_name, scores, save_to=None, show=False):
+    fig = plot.figure()
     plot.xlabel("Number of features selected")
     plot.ylabel("{}".format(scoring_name.upper()))
     plot.plot(range(1, len(scores) + 1), scores)
-    plot.show()
+
+    if save_to:
+        fig.savefig(save_to)
+
+    if show:
+        plot.show()
+
+    return fig
 
 
 class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones makes any change?
