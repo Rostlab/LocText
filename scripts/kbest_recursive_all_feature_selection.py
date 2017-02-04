@@ -47,7 +47,7 @@ for scoring_name in SCORING_NAMES:
         for num_seletected_kbest_features in range(1, min(MAX_NUM_FEATURES, num_features) + 1):
 
             selected_feature_keys = sorted_kbest_feature_keys[:num_seletected_kbest_features]
-            my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"selected_feature_keys": selected_feature_keys})
+            my_transformer = select_features_transformer(selected_feature_keys)
 
             estimator = make_pipeline(my_transformer, annotator.model.model)
 

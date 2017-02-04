@@ -41,16 +41,19 @@ for scoring_name in SCORING_NAMES:
     print("rfe", "Time for feature selection: ", (end - start))
     print("rfe", "Optimal number of features : {}".format(rfecv.n_features_))
 
-    selected_feat_keys = []
-
-    for index, value in enumerate(rfecv.support_):
-        if value:
-            selected_feat_keys.append(index)
+    selected_feature_keys = [index for (index, value) in enumerate(rfecv.support_) if value]
 
     print()
-    print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="rfe"))
     print()
-    print("Max performance for {}: {}".format(scoring_name, rfecv.grid_scores_[rfecv.n_features_ - 1]))
+    print("rfe", "Max performance for {}: {}".format(scoring_name, rfecv.grid_scores_[rfecv.n_features_ - 1]))
+    print()
     print()
 
-    plot_recursive_features(scoring_name, rfecv.grid_scores_)
+    keys, names, fig_file = \
+        print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="rfe")
+
+    print()
+    print("\n".join([keys, names, fig_file]))
+    print()
+
+    plot_recursive_features(scoring_name, scores, save_to=fig_file, show=False)

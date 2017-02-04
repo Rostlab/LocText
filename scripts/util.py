@@ -79,6 +79,10 @@ def select_features_transformer_function(X, **kwargs):
     return X_new
 
 
+def select_features_transformer(selected_feature_keys):
+    return FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"selected_feature_keys": selected_feature_keys})
+
+
 class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones makes any change?
 
     def __init__(self, X_whole, y_whole, score_func, k=None):
