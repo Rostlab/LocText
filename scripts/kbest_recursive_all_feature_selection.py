@@ -5,8 +5,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.feature_selection import RFECV
 from sklearn.datasets import make_classification
 from sklearn.datasets import load_iris
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import SelectKBest, mutual_info_classif, chi2
 
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset

@@ -32,8 +32,6 @@ def reversed_feature_set_map(feature_set):
 def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_date=None):
     import time
 
-    assert(isinstance(selected_feat_keys, list))
-
     if file_date is None:
         file_date = str(time.time())
 

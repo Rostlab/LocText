@@ -26,6 +26,7 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from util import *
 from loctext.util import *
+from sklearn.ensemble import RandomForestClassifier
 
 
 print(__doc__)
@@ -50,8 +51,6 @@ search_space = [
 
 SCORING_NAMES = [
     'f1',
-    'precision',
-    'recall'
 ]
 
 for scoring_name in SCORING_NAMES:
