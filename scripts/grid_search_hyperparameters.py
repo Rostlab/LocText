@@ -20,13 +20,15 @@ SCORING_NAMES = [
     'f1',
 ]
 
+# TODO put threshold
+
 SEARCH_SPACE = [
     {
-        'feat_sel__estimator__C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-        'feat_sel__estimator__tol': [1e-50],
-        'feat_sel__estimator__max_iter': [1000, 10000],
+        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
+        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+        # 'feat_sel__estimator__tol': [1e-50],
+        # 'feat_sel__estimator__max_iter': [1000, 10000],
         #
         'classify': [SVC()],
         'classify__kernel': ['rbf'],
@@ -36,11 +38,11 @@ SEARCH_SPACE = [
     },
 
     {
-        'feat_sel__estimator__C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-        'feat_sel__estimator__tol': [1e-50],
-        'feat_sel__estimator__max_iter': [1000, 10000],
+        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
+        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+        # 'feat_sel__estimator__tol': [1e-50],
+        # 'feat_sel__estimator__max_iter': [1000, 10000],
         #
         'classify': [SVC()],
         'classify__kernel': ['linear'],
@@ -49,11 +51,11 @@ SEARCH_SPACE = [
     },
 
     {
-        'feat_sel__estimator__C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-        'feat_sel__estimator__tol': [1e-50],
-        'feat_sel__estimator__max_iter': [1000, 10000],
+        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
+        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+        # 'feat_sel__estimator__tol': [1e-50],
+        # 'feat_sel__estimator__max_iter': [1000, 10000],
         #
         # see: http://scikit-learn.org/stable/auto_examples/model_selection/randomized_search.html
         'classify': [RandomForestClassifier],
