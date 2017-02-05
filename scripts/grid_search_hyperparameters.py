@@ -24,12 +24,12 @@ SCORING_NAMES = [
 
 SEARCH_SPACE = [
     {
-        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
-        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-        # 'feat_sel__estimator__tol': [1e-50],
-        # 'feat_sel__estimator__max_iter': [1000, 10000],
-        #
+    #     # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
+    #     # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+    #     # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+    #     # 'feat_sel__estimator__tol': [1e-50],
+    #     # 'feat_sel__estimator__max_iter': [1000, 10000],
+    #     #
         'classify': [SVC()],
         'classify__kernel': ['rbf'],
         'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
@@ -38,7 +38,10 @@ SEARCH_SPACE = [
     },
 
     {
-        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
+        # 'feat_sel': [SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False))],
+        # 'feat_sel__estimator__penalty': ['l1'],
+        # 'feat_sel__estimator__dual': [False],
+        # 'feat_sel__estimator__C': [1],
         # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
         # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
         # 'feat_sel__estimator__tol': [1e-50],
@@ -58,12 +61,12 @@ SEARCH_SPACE = [
         # 'feat_sel__estimator__max_iter': [1000, 10000],
         #
         # see: http://scikit-learn.org/stable/auto_examples/model_selection/randomized_search.html
-        'classify': [RandomForestClassifier],
-        'classify__max_features': [None, 'sqrt', 'log2'],
-        'classify__max__depth': [None, 3, 5, 10, 20],
-        'bootstrap': [True, False],
-        'n_jobs': [-1],
-        'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        # 'classify': [RandomForestClassifier()],
+        # 'classify__max_features': [None, 'sqrt', 'log2'],
+        # 'classify__max_depth': [None, 3, 5, 10, 20],
+        # 'classify__bootstrap': [True, False],
+        # 'classify__n_jobs': [-1],
+        # 'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
     },
 ]
 
@@ -72,9 +75,19 @@ SEARCH_SPACE = [
 annotator, X, y, groups = get_model_and_data()
 
 pipeline = Pipeline([
-    ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False))),
+    # ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False))),
     ('classify', SVC(kernel="linear"))
 ])
+
+feat_sel = SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-50))
+X_new = feat_sel.fit_transform(X, y)
+selected_feature_keys = feat_sel.get_support(indices=True)
+keys, names, fig_file = \
+    print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix='LinearSVC_random_state_2727_tol_1e-50')
+print()
+print(keys)
+print(names)
+print()
 
 for scoring_name in SCORING_NAMES:
     print()
@@ -88,11 +101,12 @@ for scoring_name in SCORING_NAMES:
         verbose=True,
         cv=my_cv_generator(groups, len(y)),
         scoring=scoring_name,
-        refit=False,
+        refit=True,
         iid=False,
+        n_jobs=-1,
     )
 
-    grid.fit(X, y)
+    grid.fit(X_new, y)
 
     print("Best parameters set found on development set:")
     print()
@@ -112,5 +126,6 @@ for scoring_name in SCORING_NAMES:
         params = grid.cv_results_['params'][index]
 
         print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+        print()
 
     print()

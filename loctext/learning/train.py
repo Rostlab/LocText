@@ -155,7 +155,7 @@ def evaluate(corpus, args):
 
     if is_only_one_model:
         annotator_model.pipeline.execute(corpus, train=True)
-        selected_features = unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/LinearSVC-1486292275.065055-NAMES.log", k_best=600)
+        selected_features = unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/tmp/LinearSVC-1486292275.065055-NAMES.log", k_best=600)
         annotator_model.model.set_allowed_feature_names(annotator_model.pipeline.feature_set, selected_features)
         annotator_model.model.write_vector_instances(corpus, annotator_model.pipeline.feature_set)
 
