@@ -49,7 +49,7 @@ def call(run_rfe):
                 selected_feature_keys = sorted_kbest_feature_keys[:num_seletected_kbest_features]
                 my_transformer = select_features_transformer(selected_feature_keys)
 
-                estimator = make_pipeline(my_transformer, SVC(kernel='linear', C=1))
+                estimator = make_pipeline(my_transformer, annotator.model.model)
 
                 cv_scores = cross_val_score(
                     estimator,
