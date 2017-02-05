@@ -24,7 +24,9 @@ from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
-from util import my_cv_generator
+from util import *
+from loctext.util import *
+
 
 print(__doc__)
 
