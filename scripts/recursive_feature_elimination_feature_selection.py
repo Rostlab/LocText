@@ -23,11 +23,7 @@ def call(annotator, X, y, groups, pre_selected_feature_keys=None):
 
     if pre_selected_feature_keys is not None:
         my_transformer = select_features_transformer(pre_selected_feature_keys)
-        print("BEFORE", X.shape)
         X = my_transformer.fit_transform(X)
-        print("AFTER", X.shape)
-
-    # X = X.tocsc()
 
     num_instances = len(y)
 
