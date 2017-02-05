@@ -1,21 +1,3 @@
-"""
-============================================================
-Parameter estimation using grid search with cross-validation
-============================================================
-
-This examples shows how a classifier is optimized by cross-validation,
-which is done using the :class:`sklearn.model_selection.GridSearchCV` object
-on a development set that comprises only half of the available labeled data.
-
-The performance of the selected hyper-parameters and trained model is
-then measured on a dedicated evaluation set that was not used during
-the model selection step.
-
-More details on tools available for model selection can be found in the
-sections on :ref:`cross_validation` and :ref:`grid_search`.
-
-"""
-
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 
@@ -31,27 +13,66 @@ from sklearn.ensemble import RandomForestClassifier
 
 print(__doc__)
 
-annotator, X, y, groups = get_model_and_data()
-
-num_instances = len(y)
-
-search_space = [
-    {
-        'kernel': ['rbf'],
-        'class_weight': [None, 'balanced'],
-        'C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'gamma': [2**log2 for log2 in list(range(3, -15, -2))],
-    },
-    {
-        'kernel': ['linear'],
-        'class_weight': [None, 'balanced'],
-        'C': [2**log2 for log2 in list(range(-7, 15, 1))],
-    }
-]
-
 SCORING_NAMES = [
     'f1',
 ]
+
+SEARCH_SPACE = [
+    {
+        'feat_sel': [SelectFromModel(LinearSVC(penalty="l1", dual=False))],
+        'feat_sel__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'feat_sel__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'feat_sel__random_state': [None, 2727, 1, 5, 10],
+        'feat_sel__tol': [1e-50],
+        'feat_sel__max_iter': [1000, 10000],
+        #
+        'classify': [SVC()],
+        'classify__kernel': ['rbf'],
+        'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'classify__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'classify__gamma': [2**log2 for log2 in list(range(3, -15, -2))],
+    },
+
+    {
+        'feat_sel': [SelectFromModel(LinearSVC(penalty="l1", dual=False))],
+        'feat_sel__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'feat_sel__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'feat_sel__random_state': [None, 2727, 1, 5, 10],
+        'feat_sel__tol': [1e-50],
+        'feat_sel__max_iter': [1000, 10000],
+        #
+        'classify': [SVC()],
+        'classify__kernel': ['linear'],
+        'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'classify__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+    },
+
+    {
+        'feat_sel': [SelectFromModel(LinearSVC(penalty="l1", dual=False))],
+        'feat_sel__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'feat_sel__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'feat_sel__random_state': [None, 2727, 1, 5, 10],
+        'feat_sel__tol': [1e-50],
+        'feat_sel__max_iter': [1000, 10000],
+        #
+        # see: http://scikit-learn.org/stable/auto_examples/model_selection/randomized_search.html
+        'classify': [RandomForestClassifier],
+        'classify__max_features': [None, 'sqrt', 'log2'],
+        'classify__max__depth': [None, 3, 5, 10, 20],
+        'bootstrap': [True, False],
+        'n_jobs': -1,
+        'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+    },
+]
+
+#####
+
+annotator, X, y, groups = get_model_and_data()
+
+pipeline = Pipeline([
+    ('feat_sel', SelectFromModel(LinearSVC(penalty="l1", dual=False)),
+    ('classify', SVC(kernel="linear"))
+])
 
 for scoring_name in SCORING_NAMES:
     print()
@@ -59,13 +80,11 @@ for scoring_name in SCORING_NAMES:
     print("# Tuning hyper-parameters for *** {} ***".format(scoring_name))
     print()
 
-    estimator = SVC()
-
     grid = GridSearchCV(
-        estimator=estimator,
-        param_grid=search_space,
+        estimator=pipeline,
+        param_grid=SEARCH_SPACE,
         verbose=True,
-        cv=my_cv_generator(groups, num_instances),
+        cv=my_cv_generator(groups, len(y)),
         scoring=scoring_name,
         refit=False,
         iid=False,
