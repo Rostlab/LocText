@@ -5,8 +5,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.feature_selection import RFECV
 from sklearn.datasets import make_classification
 from sklearn.datasets import load_iris
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import SelectKBest, mutual_info_classif, chi2
 
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
@@ -17,48 +16,87 @@ from loctext.util import *
 import time
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import FunctionTransformer
+import recursive_feature_elimination_feature_selection
 
 print(__doc__)
 
 SCORING_FUNCS = [mutual_info_classif]
-SCORING_NAMES = ['f1_macro']
+SCORING_NAMES = ['f1']
+MAX_NUM_FEATURES = 1500
+EXTRA_FEATURES_PADDING = 0
 
-annotator, X, y = get_model_and_data()
-X_transformed = X  # Keep for historical reasons; we experimented what's fastest csr or csc -- http://stackoverflow.com/questions/41998147/what-is-row-slicing-vs-what-is-column-slicing
+def call(run_rfe):
+    annotator, X, y, groups = get_model_and_data()
 
-num_instances, num_features = X.shape
+    # See also: http://stackoverflow.com/questions/41998147/what-is-row-slicing-vs-what-is-column-slicing
+    X_transformed = X
 
-for scoring_name in SCORING_NAMES:
-    for scoring_func in SCORING_FUNCS:
+    num_instances, num_features = X.shape
 
-        kbest = SelectKBest(scoring_func, k="all")
-        kbest.fit(X, y)
-        sorted_kbest_feature_keys = get_sorted_kbest_feature_keys(kbest)
+    for scoring_name in SCORING_NAMES:
+        for scoring_func in SCORING_FUNCS:
 
-        scores = []
+            kbest = SelectKBest(scoring_func, k="all")
+            kbest.fit(X, y)
+            sorted_kbest_feature_keys = get_sorted_kbest_feature_keys(kbest)
 
-        start = time.time()
-        for num_seletected_kbest_features in range(1, num_features + 1):
+            scores = []
 
-            selected_feature_keys = sorted_kbest_feature_keys[:num_seletected_kbest_features]
-            my_transformer = FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"selected_feature_keys": selected_feature_keys})
+            start = time.time()
+            for num_seletected_kbest_features in range(1, min(MAX_NUM_FEATURES, num_features) + 1):
 
-            svc = SVC(kernel='linear', C=1, verbose=False)  # TODO C=1 linear / rbf ??
-            estimator = make_pipeline(my_transformer, svc)
+                selected_feature_keys = sorted_kbest_feature_keys[:num_seletected_kbest_features]
+                my_transformer = select_features_transformer(selected_feature_keys)
 
-            cv_scores = cross_val_score(estimator, X_transformed, y, scoring=scoring_name, cv=my_cv_generator(num_instances), verbose=True, n_jobs=-1)
-            scores.append(cv_scores.mean())
+                estimator = make_pipeline(my_transformer, annotator.model.model)
 
-        end = time.time()
-        print("\n\n{} : {} -- TIME for feature selection : {}".format(scoring_name, scoring_func, (end - start)))
+                cv_scores = cross_val_score(
+                    estimator,
+                    X_transformed,
+                    y,
+                    scoring=scoring_name,
+                    cv=my_cv_generator(groups, num_instances),
+                    verbose=True,
+                    n_jobs=-1
+                )
 
-        assert(len(scores) == num_features)
+                scores.append(cv_scores.mean())
 
-        print()
-        # print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="rfe"))
-        print()
-        print("Max performance for {}: {}".format(scoring_name, max(scores)))
-        print()
+            end = time.time()
+            print("kbest_r_a", "\n\n{} : {} -- Time for feature selection : {}".format(scoring_name, scoring_func, (end - start)))
 
-        plot_recursive_features(scoring_name, scores)
+            assert(len(scores) == min(MAX_NUM_FEATURES, num_features))
+
+            best_index, best_scoring = max(enumerate(scores), key=lambda x: x[1])
+            best_num_selected_features = best_index + 1  # the first index starts in 0, this means 1 feature
+
+            selected_feature_keys = sorted_kbest_feature_keys[:(best_num_selected_features + EXTRA_FEATURES_PADDING)]
+
+            print()
+            print()
+            print("kbest_r_a", "Max performance for {}, #features={}: {}".format(scoring_name, best_num_selected_features, best_scoring))
+            print()
+            print()
+
+            keys, names, fig_file = \
+                print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="kbest_r_a")
+
+            print()
+            print("\n".join([keys, names, fig_file]))
+            print()
+
+            plot_recursive_features(scoring_name, scores, save_to=fig_file, show=not run_rfe)
+
+            print()
+            print()
+
+            if run_rfe:
+                recursive_feature_elimination_feature_selection.call(annotator, X, y, groups, selected_feature_keys)
+
+
+if __name__ == "__main__":
+    import sys
+
+    run_rfe = True if len(sys.argv) > 1 and sys.argv[1] == "run_rfe" else False
+
+    call(run_rfe)

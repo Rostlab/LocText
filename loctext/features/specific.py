@@ -1,18 +1,22 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, GO_NORM_ID, UNIPROT_NORM_ID, repo_path
 from nalaf.features.stemming import ENGLISH_STEMMER
+import pickle
 
 
-class IsProteinMarkerFeatureGenerator(EdgeFeatureGenerator):
+class IsSpecificProteinType(EdgeFeatureGenerator):
 
     def __init__(
         self,
         c_protein_class=PRO_ID,
         c_set_protein_markers=None,
         #
-        f_is_protein_marker=None,
+        f_is_marker=None,
+        f_is_enzyme=None,
+        f_is_receptor=None,
+        f_is_transporter=None,
     ):
 
         self.c_protein_class = c_protein_class
@@ -21,153 +25,140 @@ class IsProteinMarkerFeatureGenerator(EdgeFeatureGenerator):
             self.c_set_protein_markers = self.c_set_protein_markers
         else:
             self.c_set_protein_markers = \
-                {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2"}
-                # review all treatment or enzymes
-                # phosphatidylinositol-specific phospholipase C (PI-PLC -- treatment
+                {"GFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2"}
 
-        self.f_is_protein_marker = f_is_protein_marker
+        self.f_is_marker = f_is_marker
+        self.f_is_enzyme = f_is_enzyme
+        self.f_is_receptor = f_is_receptor
+        self.f_is_transporter = f_is_transporter
 
     def generate(self, corpus, f_set, is_train):
+        for entity in corpus.entities():
+            if entity.class_id == self.c_protein_class:
+                entity.features["is_marker"] = entity.text in self.c_set_protein_markers
+                entity.features["is_enzyme"] = any(t.word.endswith("ase") for t in entity.tokens)
+                entity.features["is_receptor"] = any("recept" in t.word.lower() for t in entity.tokens)
+                entity.features["is_transporter"] = any("transport" in t.word.lower() for t in entity.tokens)
+
         for edge in corpus.edges():
             sentence = edge.get_combined_sentence()
 
             protein = edge.entity1 if edge.entity1.class_id == self.c_protein_class else edge.entity2
 
-            is_protein_marker = protein.text in self.c_set_protein_markers
+            # Could also check for its synonym, yet that gave worse results so far
 
-            if is_protein_marker:
-                self.add(f_set, is_train, edge, 'f_is_protein_marker')
+            if protein.features["is_marker"]:
+                self.add(f_set, is_train, edge, 'f_is_marker')
+
+            if protein.features["is_enzyme"]:
+                self.add(f_set, is_train, edge, 'f_is_enzyme')
+
+            if protein.features["is_receptor"]:
+                self.add(f_set, is_train, edge, 'f_is_receptor')
+
+            if protein.features["is_transporter"]:
+                self.add(f_set, is_train, edge, 'f_is_transporter')
 
 
-class LocalizationRelationsRatio(EdgeFeatureGenerator):
+
+class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
     def __init__(
         self,
-        c_localization_class=LOC_ID,
-        c_localization_relations_ratios=None,
+        c_localization_enty_class=LOC_ID,
+        c_localization_norm_class=GO_NORM_ID,
+        c_protein_enty_class=PRO_ID,
+        c_protein_norm_class=UNIPROT_NORM_ID,
         #
-        f_localization_relation_ratio=None,
+        # ...constants...
+        #
+        f_corpus_unnormalized_total_background_loc_rels_ratios=None,
+        f_corpus_normalized_total_background_loc_rels_ratios=None,
+        #
+        f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,
+        f_SwissProt_normalized_total_background_loc_rels_ratios=None,
+        #
+        #
+        f_SwissProt_normalized_exists_relation=None,
     ):
 
-        self.c_localization_class = c_localization_class
+        self.c_localization_enty_class = c_localization_enty_class
+        self.c_localization_norm_class = c_localization_norm_class
+        self.c_protein_enty_class = c_protein_enty_class
+        self.c_protein_norm_class = c_protein_norm_class
 
-        if c_localization_relations_ratios is not None:
-            self.c_localization_relations_ratios = self.c_localization_relations_ratios
-        else:
-            self.c_localization_relations_ratios = {
-                "chromoplast": 0.0,
-                "integral outer membran": 0.0,
-                "envelop": 0.0,
-                "integral membran": 0.0,
-                "project": 0.0,
-                "mvb": 0.0,
-                "cilia": 0.0,
-                "chloroplast envelop": 0.0,
-                "microtubule-organizing centr": 0.0,
-                "nuclear por": 0.0,
-                "secretori": 0.0,
-                "extracellular": 0.0,
-                "nucleolus": 0.0,
-                "telomer": 0.0,
-                "centrosom": 0.0,
-                "nuclear envelop": 0.0,
-                "lumen": 0.0,
-                "nucleosom": 0.0,
-                "thylakoid membran": 0.0,
-                "cytoskeleton": 0.0,
-                "bud": 0.3333333333333333,
-                "microtubul": 0.3333333333333333,
-                "er": 0.35714285714285715,
-                "cell wal": 0.3888888888888889,
-                "nucleoli": 0.5,
-                "spindl": 0.5,
-                "plastid": 0.5,
-                "outer membran": 0.5,
-                "golgi membran": 0.5,
-                "chloroplast stroma": 0.5,
-                "transmembran": 0.5,
-                "kinetochor": 0.5,
-                "chromosom": 0.5675675675675675,
-                "endoplasmic reticulum": 0.5714285714285714,
-                "melanosom": 0.625,
-                "chloroplast": 0.6666666666666666,
-                "surfac": 0.6666666666666666,
-                "cytoplasm": 0.7777777777777778,
-                "peroxisom": 0.8,
-                "tonoplast": 0.8461538461538461,
-                "membran": 0.9090909090909091,
-                "mitochondrial matrix": 1.0,
-                "vacuolar surfac": 1.0,
-                "endoplasmic reticulum membran": 1.0,
-                "mitochondria": 1.0,
-                "lipid raft": 1.0,
-                "cis-golgi stack": 1.0,
-                "nuclei": 1.0,
-                "apical plasma membran": 1.0,
-                "mitochondrial inner membran": 1.0,
-                "prekinetochor": 1.0,
-                "chromocent": 1.0,
-                "mitochondrial outer membran": 1.0,
-                "thylakoid": 1.0,
-                "spindle pole bodi": 1.0,
-                "thylakoid membrane in chloroplast": 1.0,
-                "cell membran": 1.0,
-                "mitochondrial membran": 1.0,
-                "vacuol": 1.0,
-                "nuclear": 1.0344827586206897,
-                "mitochondri": 1.1818181818181819,
-                "secret": 1.2,
-                "vacuolar": 1.2,
-                "etioplast": 1.25,
-                "heterochromat": 1.25,
-                "lysosom": 1.25,
-                "nuclear matrix": 1.25,
-                "cytosol": 1.3333333333333333,
-                "cell surfac": 1.3333333333333333,
-                "nucleolar": 1.3333333333333333,
-                "plasma membran": 1.4285714285714286,
-                "nucleus": 1.4444444444444444,
-                "cvt": 1.5,
-                "cell boundari": 1.5,
-                "centromer": 1.5294117647058822,
-                "lipid particl": 1.5833333333333333,
-                "tgn": 2.0,
-                "basolater": 2.0,
-                "ccvs": 2.0,
-                "cell peripheri": 2.0,
-                "clathrin-coated vesicl": 2.0,
-                "intranuclear": 2.0,
-                "synaps": 2.0,
-                "outer mitochondrial membran": 2.0,
-                "golgi": 2.0,
-                "cellular protrus": 2.0,
-                "cajal bodi": 2.0,
-                "trans-golgi network": 2.0,
-                "vacuolar membran": 2.4285714285714284,
-                "endosom": 2.5833333333333335,
-                "heterochromatin": 3.0,
-                "peroxisomal membran": 3.0,
-                "golgi apparatus": 4.0,
-                "cell-surfac": 4.0,
-                "subnuclear": 5.0,
-                "extracellular matrix": 5.0,
-                "intermembran": 7.0,
-                "golgi stack": 7.0,
-            }
+        #
 
-        self.f_localization_relation_ratio = f_localization_relation_ratio
+        path = repo_path(["resources", "features", "corpus_unnormalized_total_background_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_corpus_unnormalized_total_background_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "corpus_normalized_total_background_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_corpus_normalized_total_background_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_SwissProt_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "SwissProt_normalized_total_background_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])  # TODO should not be called ratios, misleading
+        with open(path, "rb") as f:
+            self.c_SwissProt_relations = pickle.load(f)
+
+        #
+
+        self.f_corpus_unnormalized_total_background_loc_rels_ratios = f_corpus_unnormalized_total_background_loc_rels_ratios
+        self.f_corpus_normalized_total_background_loc_rels_ratios = f_corpus_normalized_total_background_loc_rels_ratios
+        #
+        self.f_SwissProt_normalized_total_absolute_loc_rels_ratios = f_SwissProt_normalized_total_absolute_loc_rels_ratios
+        self.f_SwissProt_normalized_total_background_loc_rels_ratios = f_SwissProt_normalized_total_background_loc_rels_ratios
+
+        #
+        #
+
+        self.f_SwissProt_normalized_exists_relation = f_SwissProt_normalized_exists_relation
+
 
     def generate(self, corpus, f_set, is_train):
         for edge in corpus.edges():
             sentence = edge.get_combined_sentence()
 
-            localization = edge.entity1 if edge.entity1.class_id == self.c_localization_class else edge.entity2
-            norm_text = ENGLISH_STEMMER.stem(localization.text)
+            protein, localization = edge.entity1, edge.entity2
+            if protein.class_id == self.c_localization_enty_class:
+                protein, localization = localization, protein
 
-            ratio = self.c_localization_relations_ratios.get(norm_text, 0)
-            ratio += 0.1  # Just to remove 0 weights, make minimally viable
+            def add_f_ratio(f_key, ratio):
+                ratio += 0.1  # Avoid absolute 0 weights
+                self.add_with_value(f_set, is_train, edge, f_key, ratio)
 
-            self.add_with_value(f_set, is_train, edge, 'f_localization_relation_ratio', ratio)
+            loc_keyed_text = ENGLISH_STEMMER.stem(localization.text)
+            loc_norm = localization.normalisation_dict.get(self.c_localization_norm_class, None)
+
+            ratio = self.c_corpus_unnormalized_total_background_loc_rels_ratios.get(loc_keyed_text, 0)
+            add_f_ratio("f_corpus_unnormalized_total_background_loc_rels_ratios", ratio)
+
+            ratio = self.c_corpus_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
+            add_f_ratio("f_corpus_normalized_total_background_loc_rels_ratios", ratio)
+
+            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(loc_norm, 0)
+            add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratios", ratio)
+
+            ratio = self.c_SwissProt_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
+            add_f_ratio("f_SwissProt_normalized_total_background_loc_rels_ratios", ratio)
+
+            pro_norm_ids_str = protein.normalisation_dict.get(self.c_protein_norm_class, None)
+            if not pro_norm_ids_str:  # catches None or empty strings
+                pro_norm_ids = []
+            else:
+                for pro_norm_id in pro_norm_ids_str.split(","):
+                    go_id_rels = self.c_SwissProt_relations.get(pro_norm_id, set())
+
+                    if loc_norm in go_id_rels:
+                        self.add(f_set, is_train, edge, "f_SwissProt_normalized_exists_relation")
 
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):

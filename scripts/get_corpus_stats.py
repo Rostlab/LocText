@@ -7,73 +7,71 @@ from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from util import my_cv_generator
 import time
 from collections import Counter
+import pickle
 
 corpus = read_corpus("LocText")
-# locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
-# locTextModel.pipeline.execute(corpus, train=True)
 
-pro_all_counter = Counter()
-loc_all_counter = Counter()
+mode = "unnormalized"
 
-pro_is_related_counter = Counter()
-loc_is_related_counter = Counter()
+mention_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
+relation_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
+ratio_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
 
-pro_ratio = {}
-loc_ratio = {}
+#
 
 def entity2text(entity):
     return ENGLISH_STEMMER.stem(entity.text)
 
+def entity2norm(entity):
+    n_id, n_val = list(entity.normalisation_dict.items())[0]
+    return n_val
+
+def entity2key(entity):
+    if mode == "unnormalized":
+        return entity2text(entity)
+    elif mode == "normalized":
+        return entity2norm(entity)
+
+#
+
 for entity in corpus.entities():
-    if entity.class_id == PRO_ID:
-        pro_all_counter.update({entity2text(entity)})
-    elif entity.class_id == LOC_ID:
-        loc_all_counter.update({entity2text(entity)})
+    mention_mode_total_counter[entity.class_id].update({entity2key(entity)})
+
 
 for rel in corpus.relations():
     if rel.class_id != REL_PRO_LOC_ID:
         continue
 
-    if rel.entity1.class_id == PRO_ID:
-        pro, loc = rel.entity1, rel.entity2
-    else:
-        pro, loc = rel.entity2, rel.entity1
+    relation_mode_total_counter[rel.entity1.class_id].update({entity2key(rel.entity1)})
+    relation_mode_total_counter[rel.entity2.class_id].update({entity2key(rel.entity2)})
 
-    pro_is_related_counter.update({entity2text(pro)})
-    loc_is_related_counter.update({entity2text(loc)})
 
-for pro, total_count in pro_all_counter.items():
-    rel_count = pro_is_related_counter.get(pro, 0)
-    pro_ratio[pro] = (rel_count / total_count)
+for type_key, mention_counter in mention_mode_total_counter.items():
+    relation_counter = relation_mode_total_counter[type_key]
 
-for loc, total_count in loc_all_counter.items():
-    rel_count = loc_is_related_counter.get(loc, 0)
-    loc_ratio[loc] = (rel_count / total_count)
-
-pro_ratio_sorted = sorted(pro_ratio.items(), key=lambda pair: pair[1])
-loc_ratio_sorted = sorted(loc_ratio.items(), key=lambda pair: pair[1])
+    for entity_key, mention_count in mention_counter.items():
+        relation_count = relation_counter.get(entity_key, 0)
+        ratio_mode_total_counter[type_key][entity_key] = (relation_count / mention_count)
 
 #######################################################################################################################
 
-# print()
-# print(pro_all_counter)
-# print()
-# print(loc_all_counter)
-# print()
-# print(pro_is_related_counter)
-# print()
-# print(loc_is_related_counter)
-print()
-for key, val in pro_ratio_sorted:
-    print('"{}": {},'.format(key, val))
+for type_key, ratio_counter in ratio_mode_total_counter.items():
+    if type_key == LOC_ID:
+        ratio_sorted = sorted(ratio_counter.items(), key=lambda pair: pair[1])
+
+        print()
+        for entity_key, val in ratio_sorted:
+            print('"{}": {},'.format(entity_key, val))
+
+        print()
+        print("Total entity_keys: ", len(ratio_sorted))
+        print()
 
 print()
-print()
 
-for key, val in loc_ratio_sorted:
-    print('"{}": {},'.format(key, val))
-
-print()
+out_path = repo_path(["resources", "features", "corpus_" + mode + "_total_background_loc_rels_ratios.pickle"])
+with open(out_path, "wb") as f:
+    pickle.dump(ratio_mode_total_counter[LOC_ID], f)
 
 for marker in {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2", "Snf7"}:
-    print(marker, pro_ratio.get(ENGLISH_STEMMER.stem(marker)))
+    print(marker, ratio_mode_total_counter[PRO_ID].get(ENGLISH_STEMMER.stem(marker)))

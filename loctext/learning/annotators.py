@@ -1,7 +1,16 @@
+from nalaf.learning.taggers import RelationExtractor
+from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.learning.taggers import Tagger, RelationExtractor
 from nalaf.preprocessing.tokenizers import TmVarTokenizer, NLTK_TOKENIZER
-from loctext.features.specific import IsProteinMarkerFeatureGenerator, LocalizationRelationsRatio, LocationWordFeatureGenerator, ProteinWordFeatureGenerator
+from nalaf.structures.relation_pipelines import RelationExtractionPipeline
+from loctext.features.specific import IsSpecificProteinType, LocalizationRelationsRatios, LocationWordFeatureGenerator, ProteinWordFeatureGenerator
+from nalaf.features.relations import TokenFeatureGenerator
+from nalaf.features.relations.context import LinearDistanceFeatureGenerator
+from nalaf.features.relations.context import EntityOrderFeatureGenerator
+from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
+from nalaf.features.relations.path import PathFeatureGenerator
+from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.new.sentence import SentenceFeatureGenerator
 from nalaf.features.relations.new.dependency import DependencyFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenFeatureGenerator, EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator, EntityHeadTokenChainFeatureGenerator
@@ -74,11 +83,20 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_counts_in_between_total=2.2,  # 2.2
 
                 f_order=3,  # 3
+
                 f_bow=None,  # 4
                 f_pos=None,  # 5
+
                 f_tokens_count=None,  # 6
                 f_tokens_count_before=None,  # 7
                 f_tokens_count_after=None,  # 8
+
+                f_sentence_is_negated=None,  # 105
+                f_main_verbs=None,  # 106
+
+                f_entity1_count=None,  # 110
+                f_entity2_count=None,  # 111
+                f_diff_sents_together_count=None,  # 112
             ),
 
             DependencyFeatureGenerator(
@@ -94,36 +112,48 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
                 f_OW_pos_N_gram=None,  # 11
                 f_OW_tokens_count=None,  # 12
                 f_OW_tokens_count_without_punct=None,  # 13
+                f_OW_is_negated=None,  # 101
                 #
                 f_IW_bow_N_gram=None,  # 14
                 f_IW_pos_N_gram=None,  # 15
                 f_IW_tokens_count=None,  # 16
                 f_IW_tokens_count_without_punct=None,  # 17
+                f_IW_is_negated=None,  # 102
                 #
-                f_LD_bow_N_gram=None,  # 18
-                f_LD_pos_N_gram=None,  # 19
+                f_LD_bow_N_gram=18,  # 18
+                f_LD_pos_N_gram=19,  # 19
                 f_LD_tokens_count=None,  # 20
                 f_LD_tokens_count_without_punct=21,  # 21
+                f_LD_is_negated=None,  # 103
                 #
                 #
-                f_PD_bow_N_gram=None,  # 22
-                f_PD_pos_N_gram=None,  # 23
+                f_PD_bow_N_gram=22,  # 22
+                f_PD_pos_N_gram=23,  # 23
                 f_PD_tokens_count=None,  # 24
                 f_PD_tokens_count_without_punct=25,  # 25
+                f_PD_is_negated=None,  # 104
                 #
-                f_PD_undirected_edges_N_gram=None,  # 26
+                f_PD_undirected_edges_N_gram=26,  # 26
                 f_PD_directed_edges_N_gram=None,  # 27
                 f_PD_full_N_gram=None,  # 28
                 #
                 #
             ),
 
-            IsProteinMarkerFeatureGenerator(
-                f_is_protein_marker=40,
+            IsSpecificProteinType(
+                f_is_marker=40,
+                f_is_enzyme=41,
+                f_is_receptor=None,
+                f_is_transporter=None,
             ),
 
-            LocalizationRelationsRatio(
-                f_localization_relation_ratio=42,
+            LocalizationRelationsRatios(
+                f_corpus_unnormalized_total_background_loc_rels_ratios=50,  # 50
+                f_corpus_normalized_total_background_loc_rels_ratios=None,  # 51
+                f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,  # 52
+                f_SwissProt_normalized_total_background_loc_rels_ratios=None,
+                #
+                f_SwissProt_normalized_exists_relation=58,
             ),
 
         ]

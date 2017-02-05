@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plot
+import sklearn
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold
 from sklearn.feature_selection import RFECV
@@ -24,15 +25,20 @@ from sklearn.metrics import euclidean_distances
 from sklearn.preprocessing import FunctionTransformer, maxabs_scale
 
 
-def my_cv_generator(num_instances):
+def my_cv_generator(groups, num_instances=None):
+    if num_instances is not None:
+        assert(num_instances == sum(len(v) for v in groups.values()))
+
+    def map_indexes(doc_keys):
+        # Convert document keys to the final instances indexes
+        ret = [instance_index for doc_key in doc_keys for instance_index in groups[doc_key]]
+        assert(len(ret) == len(set(ret)))
+        return ret
+
     k = 5
-
-    index_keys = list(range(0, num_instances))
-    index_keys = Dataset._cv_kfold_splits_randomize_keys(index_keys)
-
-    for fold in range(k):
-        training, evaluation = Dataset._cv_kfold_split(index_keys, k, fold, validation_set=True)
-        yield training, evaluation
+    for training_docs_keys, evaluation_doc_keys in Dataset._cv_kfold_splits_doc_keys_sets(groups.keys(), k, validation_set=True):
+        tr, ev = map_indexes(training_docs_keys), map_indexes(evaluation_doc_keys)
+        yield tr, ev
 
 
 def get_model_and_data():
@@ -40,17 +46,41 @@ def get_model_and_data():
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
     annotator = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True, kernel='linear', C=1)
     annotator.pipeline.execute(corpus, train=True)
-    X, y = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
+    X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
 
-    return (annotator, X, y)
+    return (annotator, X, y, groups)
 
 
-def plot_recursive_features(scoring_name, scores):
-    plot.figure()
+def plot_recursive_features(scoring_name, scores, save_to=None, show=False):
+    fig = plot.figure()
     plot.xlabel("Number of features selected")
     plot.ylabel("{}".format(scoring_name.upper()))
     plot.plot(range(1, len(scores) + 1), scores)
-    plot.show()
+
+    if save_to:
+        fig.savefig(save_to)
+
+    if show:
+        plot.show()
+
+    return fig
+
+
+def get_sorted_kbest_feature_keys(kbest_fitted_model):
+    return [fkey for fkey, _ in sorted(enumerate(kbest_fitted_model.scores_), key=lambda tuple: tuple[1], reverse=True)]
+
+
+def select_features_transformer_function(X, **kwargs):
+    selected_feature_keys = kwargs["selected_feature_keys"]
+
+    X_new = X[:, selected_feature_keys]
+    # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
+
+    return X_new
+
+
+def select_features_transformer(selected_feature_keys):
+    return FunctionTransformer(select_features_transformer_function, accept_sparse=True, kw_args={"selected_feature_keys": selected_feature_keys})
 
 
 class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones makes any change?
@@ -73,23 +103,10 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
             self.kbest_unfitted = False
 
         X_new = self.kbest.transform(X)
-        X_new = SklSVM._preprocess(X_new)
+        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
         return self.svc.fit(X_new, y)
 
     def predict(self, X):
         X_new = self.kbest.transform(X)
-        X_new = SklSVM._preprocess(X_new)
+        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
         return self.svc.predict(X_new)
-
-
-def get_sorted_kbest_feature_keys(kbest_fitted_model):
-    return [fkey for fkey, _ in sorted(enumerate(kbest_fitted_model.scores_), key=lambda tuple: tuple[1], reverse=True)]
-
-
-def select_features_transformer_function(X, **kwargs):
-    selected_feature_keys = kwargs["selected_feature_keys"]
-
-    X_new = X[:, selected_feature_keys]
-    X_new = SklSVM._preprocess(X_new)
-
-    return X_new

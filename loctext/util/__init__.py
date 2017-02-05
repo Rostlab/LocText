@@ -33,16 +33,16 @@ def reversed_feature_set_map(feature_set):
 def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_date=None):
     import time
 
-    assert(isinstance(selected_feat_keys, list))
-
     if file_date is None:
         file_date = str(time.time())
+
+    all_filenames_prefix = "{}-{}-".format(file_prefix, file_date)
 
     reversed_feature_set = reversed_feature_set_map(feature_set)
     selected_feat_names = [reversed_feature_set[feat_key] for feat_key in selected_feat_keys]
 
     def _pickle_beautified_file(name, feats):
-        file_name = "{}-{}-{}.log".format(file_prefix, file_date, name)
+        file_name = all_filenames_prefix + name + ".log"
         with open(file_name, 'w') as f:
             def _print(string=""):
                 print(string, file=f)
@@ -67,8 +67,9 @@ def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_d
 
     keys_file = _pickle_beautified_file("KEYS", selected_feat_keys)
     names_file = _pickle_beautified_file("NAMES", selected_feat_names)
+    fig_file = all_filenames_prefix + "FIGURE.pdf"
 
-    return (keys_file, names_file)
+    return (keys_file, names_file, fig_file)
 
 
 def unpickle_beautified_file(file_path, k_best=None):

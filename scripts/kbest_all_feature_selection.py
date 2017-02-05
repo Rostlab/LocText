@@ -20,7 +20,7 @@ print(__doc__)
 SCORING_FUNCS = [mutual_info_classif]
 SCORING_NAMES = ["stub"]
 
-annotator, X, y = get_model_and_data()
+annotator, X, y, groups = get_model_and_data()
 
 for scoring_func in SCORING_FUNCS:
     for scoring_name in SCORING_NAMES:
@@ -33,7 +33,7 @@ for scoring_func in SCORING_FUNCS:
 
         print("TIME for feature selection: ", (end - start))
 
-        selected_feat_keys = get_kbest_feature_keys(kbest)
+        selected_feat_keys = get_sorted_kbest_feature_keys(kbest)
 
         print()
         print(print_selected_features(selected_feat_keys, annotator.pipeline.feature_set, file_prefix="kbest"))
