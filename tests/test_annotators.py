@@ -166,7 +166,7 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
     assert corpus_percentage in [TEST_MIN_CORPUS_PERCENTAGE, 1.0], "corpus_percentage must == {} or 1.0. You gave: {}".format(str(TEST_MIN_CORPUS_PERCENTAGE), str(corpus_percentage))
 
     corpus = read_corpus("LocText", corpus_percentage)
-
+    # add '--evaluation_level', '1' since this argument is required
     rel_evaluation = evaluate_with_argv(['--corpus_percentage', str(corpus_percentage), '--model', model])
 
     print("LocText " + model, rel_evaluation)
