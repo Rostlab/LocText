@@ -58,7 +58,7 @@ for scoring_name in SCORING_NAMES:
     print("# Tuning hyper-parameters for *** {} ***".format(scoring_name))
     print()
 
-    estimator = SVC(C=1, verbose=False),  # TODO C=1 linear / rbf ??
+    estimator = SVC()
 
     grid = GridSearchCV(
         estimator=estimator,
