@@ -1,4 +1,8 @@
 # Be able to call directly such as `python test_annotators.py`
+from build.lib.nalaf.learning.taggers import StubSamePartRelationExtractor
+
+from loctext.learning.annotators import StringTagger
+
 try:
     from .context import loctext
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
@@ -60,6 +64,7 @@ def test_baseline_SS(corpus_percentage):
     print("SS Baseline", rel_evaluation)
 
     return rel_evaluation
+
 
 
 def test_LocText_SS(corpus_percentage):
@@ -168,6 +173,33 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
 
     return rel_evaluation
+
+# def test_baseline_full(corpus_percentage):
+#     corpus_percentage = 0.04
+#     corpus = read_corpus("LocText", corpus_percentage)
+#
+#     if corpus_percentage == 1.0:
+#         EXPECTED_F = 0.6652
+#         EXPECTED_F_SE = 0.0026
+#     else:
+#         EXPECTED_F = 0.6918
+#         EXPECTED_F_SE = 0.0031
+#
+#     StringTagger(True, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').annotate(corpus)
+#
+#     # edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=None)
+#     # annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
+#
+#     annotator_gen_fun = (lambda _: StubSamePartRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
+#
+#     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
+#     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+#
+#     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+#     print("Full Baseline", rel_evaluation)
+
+
+# def test_loctext_full():
 
 
 if __name__ == "__main__":

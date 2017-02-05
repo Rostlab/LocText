@@ -439,7 +439,6 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
 
         return target_corpus
 
-
 class StringTagger(Tagger):
     def __init__(self, send_whole_once, protein_id, localization_id, organism_id,
                  uniprot_norm_id, go_norm_id, taxonomy_norm_id):
@@ -486,13 +485,13 @@ class StringTagger(Tagger):
 
             for norm in normalizations:
 
-                if str(norm["type"]).isdigit():
-                    type_id = str(norm["id"])
-                else:
+                if type(norm["type"]) is str:
                     if len(str(norm["id"]).split('|')):
                         uniprot_id = str(norm["id"]).split('|')[0]
                     else:
                         uniprot_id = str(norm["id"])
+                else:
+                    type_id = str(norm["id"])
 
             if(len(entities) != (index+1) and start == entities[index+1]["start"] and end == entities[index+1]["end"]):
                 if uniprot_id != "":
@@ -542,13 +541,13 @@ class StringTagger(Tagger):
 
             for norm in normalizations:
 
-                if str(norm["type"]).isdigit():
-                    type_id = str(norm["id"])
-                else:
+                if type(norm["type"]) is str:
                     if len(str(norm["id"]).split('|')):
                         uniprot_id = str(norm["id"]).split('|')[0]
                     else:
                         uniprot_id = str(norm["id"])
+                else:
+                    type_id = str(norm["id"])
 
             if(len(entities) != (index+1) and start == entities[index+1]["start"] and end == entities[index+1]["end"]):
                 if uniprot_id != "":
@@ -608,3 +607,24 @@ class StringTagger(Tagger):
 
         # Verify entity offsets - No warnings should be displayed
         dataset.validate_entity_offsets()
+
+
+# Write the class which uses Tagger and RelationExtractor. In the constructor,
+# use ner_kw_args and re_kw_args as arguments for name entity recognition and relation extractor.
+# Call annotate method using ner and re, inside "def annotate(dataset)" method.
+# class LocTextAnnotator(Tagger, RelationExtractor):
+#     def __init__(self,
+#                  **ner_kw_args,
+#                  **re_kw_args):
+#         self.ner_kw_args = ner_kw_args
+#         self.re_kw_args = re_kw_args
+#
+#         super().__init__(**ner_kw_args, **re_kw_args)
+#
+#         # annotate for named entity recognition
+#         def ner_annotate(self, **ner_kw_args):
+#             self.ner_kw_args.annotate()
+#
+#        # annotate for relation extraction
+#         def re_annotate(self, **re_kw_args):
+#             self.re_kw_args.annotate()
