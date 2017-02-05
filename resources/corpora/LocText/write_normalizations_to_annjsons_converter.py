@@ -11,8 +11,8 @@ import csv
 
 
 locText_json_files_path = './LocText_anndoc_original_without_normalizations/LocText_master_json/pool'
-pubMed_tsv_file_path = './interFile_modified.tsv'
-output_json_files_path = './LocText_annjson_with_normalizations'
+pubMed_tsv_file_path = './interFile_modified_by_Tanya.tsv'
+output_json_files_path = './LocText_annjson_with_normalizations_latest_5_feb_2017'
 
 """
 Finds the annotated file and uses the information in interFile_modified.tsv file and

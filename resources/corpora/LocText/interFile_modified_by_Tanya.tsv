@@ -896,8 +896,8 @@ PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 15486337	bri1	Protein	O22476	abs	751	755
 15486337	bri1	Protein	O22476	abs	764	768
 15486337	bri1	Protein	O22476	abs	802	806
-23543752	AP-1 Âµ adaptin subunit	Protein	O22715	abs	390	412
-23543752	AP-1 Î¼ adaptin	Protein	O22715	title	4	18
+23543752	AP-1 µ adaptin subunit	Protein	O22715	abs	390	412
+23543752	AP-1 µ adaptin	Protein	O22715	title	4	18
 23543752	ap1m2	Protein	O22715	abs	682	687
 23543752	ap1m2	Protein	O22715	abs	937	942
 23543752	AP1M2	Protein	O22715	abs	414	419
@@ -1081,8 +1081,8 @@ PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 16628192	HZF1	Protein	P17020	abs	1111	1115
 16628192	HZF1	Protein	P17020	abs	1263	1267
 11502169	Mdh1p	Protein	P17505	abs	731	736
-20829347	C/EBPÎ²	Protein	P17676	abs	989	995
-20829347	C/EBPÎ²	Protein	P17676	abs	1025	1031
+20829347	C/EBPβ	Protein	P17676	abs	989	995
+20829347	C/EBPβ	Protein	P17676	abs	1025	1031
 12612081	protein tyrosine phosphatase	Protein	P17706	abs	10	38
 12612081	TC45	Protein	P17706	abs	146	150
 12612081	TC45	Protein	P17706	abs	187	191
@@ -1237,15 +1237,15 @@ PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 17081065	pigment-epithelium derived factor	Protein	P36955	abs	1130	1163
 10207082	gef1	Protein	P37020	abs	10	14
 10207082	Gef1p	Protein	P37020	abs	1010	1015
-20829347	peroxisome proliferator-activated receptor gamma	Protein	P37231	title	121	169
-20829347	peroxisome proliferator-activated receptor Î³	Protein	P37231	abs	741	785
-20829347	PPARÎ³	Protein	P37231	abs	787	792
-20829347	PPARÎ³	Protein	P37231	abs	895	900
-20829347	PPARÎ³	Protein	P37231	abs	953	958
-20829347	PPARÎ³	Protein	P37231	abs	1047	1052
-20829347	PPARÎ³	Protein	P37231	abs	1102	1107
-20829347	PPARÎ³	Protein	P37231	abs	1273	1278
-20829347	PPARÎ³	Protein	P37231	abs	1450	1455
+20829347	peroxisome proliferator-activated receptor γ	Protein	P37231	title	121	169
+20829347	peroxisome proliferator-activated receptor γ	Protein	P37231	abs	741	785
+20829347	PPARγ	Protein	P37231	abs	787	792
+20829347	PPARγ	Protein	P37231	abs	895	900
+20829347	PPARγ	Protein	P37231	abs	953	958
+20829347	PPARγ	Protein	P37231	abs	1047	1052
+20829347	PPARγ	Protein	P37231	abs	1102	1107
+20829347	PPARγ	Protein	P37231	abs	1273	1278
+20829347	PPARγ	Protein	P37231	abs	1450	1455
 16595633	alpha-synuclein	Protein	P37840	abs	137	152
 16595633	alpha-synuclein	Protein	P37840	abs	213	228
 16595633	alpha-synuclein	Protein	P37840	abs	639	654

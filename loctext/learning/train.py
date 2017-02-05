@@ -193,7 +193,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
 
     if corpus_name == "LocText":
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
-        dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations/')
+        dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations_latest_5_feb_2017/')
 
     if corpus_name == "LocText_original":
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
