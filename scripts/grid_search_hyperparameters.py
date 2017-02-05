@@ -8,7 +8,10 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextSSmodelRelationExtractor
 from util import *
 from loctext.util import *
+from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVC
 
 
 print(__doc__)
@@ -19,12 +22,11 @@ SCORING_NAMES = [
 
 SEARCH_SPACE = [
     {
-        'feat_sel': [SelectFromModel(LinearSVC(penalty="l1", dual=False))],
-        'feat_sel__C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'feat_sel__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        'feat_sel__random_state': [None, 2727, 1, 5, 10],
-        'feat_sel__tol': [1e-50],
-        'feat_sel__max_iter': [1000, 10000],
+        'feat_sel__estimator__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+        'feat_sel__estimator__tol': [1e-50],
+        'feat_sel__estimator__max_iter': [1000, 10000],
         #
         'classify': [SVC()],
         'classify__kernel': ['rbf'],
@@ -34,12 +36,11 @@ SEARCH_SPACE = [
     },
 
     {
-        'feat_sel': [SelectFromModel(LinearSVC(penalty="l1", dual=False))],
-        'feat_sel__C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'feat_sel__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        'feat_sel__random_state': [None, 2727, 1, 5, 10],
-        'feat_sel__tol': [1e-50],
-        'feat_sel__max_iter': [1000, 10000],
+        'feat_sel__estimator__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+        'feat_sel__estimator__tol': [1e-50],
+        'feat_sel__estimator__max_iter': [1000, 10000],
         #
         'classify': [SVC()],
         'classify__kernel': ['linear'],
@@ -48,19 +49,18 @@ SEARCH_SPACE = [
     },
 
     {
-        'feat_sel': [SelectFromModel(LinearSVC(penalty="l1", dual=False))],
-        'feat_sel__C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'feat_sel__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        'feat_sel__random_state': [None, 2727, 1, 5, 10],
-        'feat_sel__tol': [1e-50],
-        'feat_sel__max_iter': [1000, 10000],
+        'feat_sel__estimator__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+        'feat_sel__estimator__tol': [1e-50],
+        'feat_sel__estimator__max_iter': [1000, 10000],
         #
         # see: http://scikit-learn.org/stable/auto_examples/model_selection/randomized_search.html
         'classify': [RandomForestClassifier],
         'classify__max_features': [None, 'sqrt', 'log2'],
         'classify__max__depth': [None, 3, 5, 10, 20],
         'bootstrap': [True, False],
-        'n_jobs': -1,
+        'n_jobs': [-1],
         'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
     },
 ]
@@ -70,7 +70,7 @@ SEARCH_SPACE = [
 annotator, X, y, groups = get_model_and_data()
 
 pipeline = Pipeline([
-    ('feat_sel', SelectFromModel(LinearSVC(penalty="l1", dual=False)),
+    ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False))),
     ('classify', SVC(kernel="linear"))
 ])
 
