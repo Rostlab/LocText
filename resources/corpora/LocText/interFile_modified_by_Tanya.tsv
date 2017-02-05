@@ -1596,7 +1596,7 @@ PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 23150645	PyrD	Protein	Protein	abs	1502	1506
 23150645	PyrR	Protein	Protein	abs	1493	1497
 23150645	PyrR	Protein	K7WIZ6	abs	1573	1577
-11502169	Sdh1p	Protein	Protein	abs	786	791
+11502169	Sdh1p	Protein	Q00711	abs	786	791
 205532	acetylglutamate kinase	Protein	Q01217	abs	341	363
 205532	acetylglutamyl-phosphate reductase	Protein	Q01217	abs	365	399
 12177201	DAT	Protein	Q01959	abs	44	47
