@@ -2,15 +2,8 @@ from nalaf.learning.taggers import RelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.learning.taggers import Tagger, RelationExtractor
-from nalaf.preprocessing.tokenizers import TmVarTokenizer, NLTK_TOKENIZER
-from nalaf.structures.relation_pipelines import RelationExtractionPipeline
+from nalaf.preprocessing.tokenizers import TmVarTokenizer
 from loctext.features.specific import IsSpecificProteinType, LocalizationRelationsRatios, LocationWordFeatureGenerator, ProteinWordFeatureGenerator
-from nalaf.features.relations import TokenFeatureGenerator
-from nalaf.features.relations.context import LinearDistanceFeatureGenerator
-from nalaf.features.relations.context import EntityOrderFeatureGenerator
-from nalaf.features.relations.context import IntermediateTokensFeatureGenerator
-from nalaf.features.relations.path import PathFeatureGenerator
-from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator, BagOfWordsFeatureGenerator, StemmedBagOfWordsFeatureGenerator
 from nalaf.features.relations.new.sentence import SentenceFeatureGenerator
 from nalaf.features.relations.new.dependency import DependencyFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenFeatureGenerator, EntityHeadTokenUpperCaseFeatureGenerator, EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator, EntityHeadTokenChainFeatureGenerator
@@ -490,7 +483,8 @@ class StringTagger(Tagger):
             response_data = json_response.json()
         except requests.exceptions.ConnectionError as err:
             print(
-                "Sever is not running. For this application you need to install Docker https://docs.docker.com/engine/installation/ \n"
+                "Sever is not running. For this application you need to install Docker "
+                "https://docs.docker.com/engine/installation/ \n"
                 "You only need to build the docker image once, like this: '$docker build -t tagger .' \n"
                 "To run the docker image, you type this command: '$docker run -p 5000:5000 tagger'")
         return response_data

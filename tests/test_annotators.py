@@ -8,7 +8,7 @@ try:
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
     pass
 
-from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv
@@ -174,29 +174,27 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
 
     return rel_evaluation
 
-# def test_baseline_full(corpus_percentage):
-#     corpus_percentage = 0.04
-#     corpus = read_corpus("LocText", corpus_percentage)
-#
-#     if corpus_percentage == 1.0:
-#         EXPECTED_F = 0.6652
-#         EXPECTED_F_SE = 0.0026
-#     else:
-#         EXPECTED_F = 0.6918
-#         EXPECTED_F_SE = 0.0031
-#
-#     StringTagger(True, 'e_1', 'e_2', 'e_3', 'n_7', 'n_8', 'n_9').annotate(corpus)
-#
-#     # edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=None)
-#     # annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
-#
-#     annotator_gen_fun = (lambda _: StubSamePartRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
-#
-#     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
-#     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-#
-#     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
-#     print("Full Baseline", rel_evaluation)
+
+# Test case for baseline with prediction_annotations from StringTagger.
+def test_baseline_full(corpus_percentage):
+    corpus = read_corpus("LocText", 0.02)
+
+    if corpus_percentage == 1.0:
+        EXPECTED_F = 0.6652
+        EXPECTED_F_SE = 0.0026
+    else:
+        EXPECTED_F = 0.6918
+        EXPECTED_F_SE = 0.0031
+
+    StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(corpus)
+
+    annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
+
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
+    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    print("Full Baseline", rel_evaluation)
 
 
 # def test_loctext_full():
