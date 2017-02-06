@@ -10,6 +10,9 @@ GO_NORM_ID = 'n_8'
 TAXONOMY_NORM_ID = 'n_9'
 STRING_NORM_ID = 'n_10'
 
+BOTH_ANN_AND_PRED_ANN = "both"
+ONLY_PRED_ANN = "pred_ann"
+
 repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 def repo_path(listOrString):

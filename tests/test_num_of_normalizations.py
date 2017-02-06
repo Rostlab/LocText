@@ -1,11 +1,14 @@
 from loctext.learning.train import read_corpus
 
+
 def num_normalizations(dataset):
     count = 0
     for data in dataset.entities():
+        # Non normalized entities will have "None" value in it. So do not count it.
         if data.normalisation_dict != {'n_7': None}:
-            count+=1
+            count += 1
     return count
+
 
 # Test to find number of new normalizations = number of old normalizations + Greens [Newly normalized records by Tanya]
 def test_num_of_normalization_in_new_file():
