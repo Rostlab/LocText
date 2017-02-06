@@ -478,7 +478,8 @@ class StringTagger(Tagger):
     def get_string_tagger_json_response(self, payload):
         base_url = "http://127.0.0.1:5000/annotate/post"
         try:
-            json_response = requests.post(base_url, json=dict(text=payload, ids="-22,-3,9606"))
+            entity_types = "-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955"
+            json_response = requests.post(base_url, json=dict(text=payload, ids=entity_types))
             json_response.status_code = 200
             response_data = json_response.json()
         except requests.exceptions.ConnectionError as err:
