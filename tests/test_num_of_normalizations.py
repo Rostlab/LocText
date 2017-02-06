@@ -1,43 +1,18 @@
-import csv
+from loctext.learning.train import read_corpus
 
-OLD_TSV_FILE_NAME = "../resources/corpora/LocText/interFile_modified.tsv"
-NEW_TSV_FILE_NAME = "../resources/corpora/LocText/interFile_modified_by_Tanya.tsv"
+def num_normalizations(dataset):
+    count = 0
+    for data in dataset.entities():
+        if data.normalisation_dict != {'n_7': None}:
+            count+=1
+    return count
 
-
-# Count number of ID's which have normalizations
-def count_normalized_id(filename):
-    alist = []
-    with open(filename) as tsv_file:
-        # Skip first line
-        data = dict(enumerate(csv.reader(tsv_file, delimiter='\t')))
-        for row in data:
-            if data[row][3] != "Protein":
-                alist.append(row)
-        return len(alist)
-
-
-# Count number of ID's which does not have normalizations
-def count_non_normalized_id(filename):
-    alist = []
-    with open(filename) as tsv_file:
-        # Skip first line
-        data = dict(enumerate(csv.reader(tsv_file, delimiter='\t')))
-        for row in data:
-            if data[row][3] == 'Protein':
-                alist.append(row)
-        return len(alist)
-
-
-# Count number of newly created records.
-def count_newly_normalized_records():
-    return count_non_normalized_id(OLD_TSV_FILE_NAME) - count_non_normalized_id(NEW_TSV_FILE_NAME)
-
-
-# Test to find number of new normalizations = new of old normalizations + Greens [Newly normalized records]
+# Test to find number of new normalizations = number of old normalizations + Greens [Newly normalized records by Tanya]
 def test_num_of_normalization_in_new_file():
-    num_of_normalization_in_new_file = count_normalized_id(NEW_TSV_FILE_NAME)
-    num_of_normalization_in_old_file = count_normalized_id(OLD_TSV_FILE_NAME)
-    assert (num_of_normalization_in_new_file == num_of_normalization_in_old_file + count_newly_normalized_records()), \
-            "the number of normalizations in the new corpus is not equal to number of normalizations of " \
-            "the previous corpus + the number of greens [Newly normalized id count]"
-    print("Number of newly normalized ID's [Greens] in new file: ", count_newly_normalized_records())
+
+    old_dataset = read_corpus("LocText_v1", corpus_percentage=1.0)
+    new_dataset = read_corpus("LocText_v2", corpus_percentage=1.0)
+
+    # 8 is the number of newly normalized records from Tanya.
+    assert num_normalizations(new_dataset) == num_normalizations(old_dataset) + 8
+    print("Number of newly normalized ID's [Greens] in new file: ", num_normalizations(new_dataset) - num_normalizations(old_dataset))
