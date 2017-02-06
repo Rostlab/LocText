@@ -192,11 +192,16 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
 
     __corpora_dir = repo_path(["resources", "corpora"])
 
-    if corpus_name == "LocText":
+    if corpus_name in ["LocText", "LocText_v2"]:  # With reviewed normalizations (8 new protein normalizations made by Tanya; no other modifications)
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations_latest_5_feb_2017/')
 
-    if corpus_name == "LocText_original":
+    if corpus_name == "LocText_v1":  # With normalizations
+        dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
+        dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations/')
+        dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations_latest_5_feb_2017/')
+
+    if corpus_name == "LocText_v0_original":  # Without normalizations at all
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_master_json/pool/')
 
