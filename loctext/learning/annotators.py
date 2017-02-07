@@ -338,6 +338,7 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
 
         return target_corpus
 
+
 class StringTagger(Tagger):
     def __init__(self, send_whole_once, protein_id, localization_id, organism_id,
                  uniprot_norm_id, go_norm_id, taxonomy_norm_id):
