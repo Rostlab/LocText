@@ -53,6 +53,17 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
         self.execute_pipeline = execute_pipeline
 
+        # With the following two settings we try force the model to always give the same results between runs
+        # and avoid slight variations due to different random generators initializations
+
+        if not model_params.get("tol"):
+            # As of 2017-Feb-7, default in SVC is 1e-3: http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
+            model_params["tol"] = 1e-8
+
+        if not model_params.get("random_state"):
+            # TODO model_params["random_state"] = 2727
+            pass
+
         # TODO this would require setting the default model_path
         self.model = model if model else SklSVM(**model_params)
 
