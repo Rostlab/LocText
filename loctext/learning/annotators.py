@@ -356,6 +356,8 @@ class StringTagger(Tagger):
     def get_string_tagger_json_response(self, payload):
         base_url = "http://127.0.0.1:5000/annotate/post"
         try:
+            # Explicitly put all organisms in to force try to normalize all their proteins,
+            # not only when their [organism] names appear together with a protein name
             entity_types = "-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955"
             json_response = requests.post(base_url, json=dict(text=payload, ids=entity_types))
             json_response.status_code = 200
@@ -373,6 +375,9 @@ class StringTagger(Tagger):
         return urllib.request.urlopen(url).getcode() == 200
 
     # sets the predicted annotations of the parts based on JSON response entity values.
+    # TODO I understand that you either send the whole text or part by part, yet the core of both methods should be \
+    # exactly the same. Likely you need a inner private function that writes the entities, then two further wrapper \
+    # functions which either loop by documents or by parts, or perhaps these both can be written in a single function.
     def set_predicted_annotations(self, json_response, part):
 
         entities = json_response["entities"]
@@ -515,10 +520,14 @@ class StringTagger(Tagger):
 # usage of LoctextAnnotator:
 # StringTagger creates entities (ner) and RelationExtraction gets those entities and creates relations (re)
 class LocTextAnnotator(Tagger, RelationExtractor):
+
     def __init__(self, dataset):
         self.dataset = dataset
 
-        #super().__init__(ner_kw_args, re_kw_args)
+        # TODO you must pass the **ner_kw_args and **re_kw_args parameter at initialization
+
+        # TODO guys, you must pass the necessary parameters somewhoe to the super Tagger and RelationExtractor
+        # super().__init__(ner_kw_args, re_kw_args)
 
     # annotate for named entity recognition
     def ner_annotate(self, **ner_kw_args):
