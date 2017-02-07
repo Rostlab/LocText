@@ -1,23 +1,11 @@
 from loctext.learning.train import read_corpus
 
-
-# def num_normalizations(dataset):
-#     count = 0
-#     for data in dataset.entities():
-#         # The dictionary must be non empty and must contain a value that is non empty (for example, not None, or not "")
-#         if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
-#             print(list(data.normalisation_dict.values())[0])
-#             print(data.normalisation_dict)
-#             count += 1
-#     return count
-
 def num_normalizations(dataset):
     count = 0
     for data in dataset.entities():
-        # The dictionary must be non empty and must contain a value that is non empty (for example, not None, or not "")
-        # if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
-        if data.normalisation_dict:# != {'n_7': None}:# and data.normalisation_dict != {'n_9': ""}:
+        if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
             count += 1
+
     return count
 
 
@@ -34,7 +22,6 @@ def test_num_of_normalization_in_new_file():
     assert(len(list(old_dataset.predicted_relations())) == len(list(new_dataset.predicted_relations())) == 0)
 
     # Test now new number of normalizations
-
     print("Actually obtained number of newly normalized ID's: ", num_normalizations(new_dataset) - num_normalizations(old_dataset))
 
     # 8 is the number of newly normalized records from Tanya, [Greens] in new file.

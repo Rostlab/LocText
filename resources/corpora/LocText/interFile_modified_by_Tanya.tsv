@@ -897,7 +897,7 @@ PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 15486337	bri1	Protein	O22476	abs	764	768
 15486337	bri1	Protein	O22476	abs	802	806
 23543752	AP-1 µ adaptin subunit	Protein	O22715	abs	390	412
-23543752	AP-1 µ adaptin	Protein	O22715	title	4	18
+23543752	AP-1 μ adaptin	Protein	O22715	title	4	18
 23543752	ap1m2	Protein	O22715	abs	682	687
 23543752	ap1m2	Protein	O22715	abs	937	942
 23543752	AP1M2	Protein	O22715	abs	414	419
@@ -1237,7 +1237,7 @@ PubMedId	Entity	EntityType	NormalizedID	title/abs	Start	End
 17081065	pigment-epithelium derived factor	Protein	P36955	abs	1130	1163
 10207082	gef1	Protein	P37020	abs	10	14
 10207082	Gef1p	Protein	P37020	abs	1010	1015
-20829347	peroxisome proliferator-activated receptor γ	Protein	P37231	title	121	169
+20829347	peroxisome proliferator-activated receptor gamma	Protein	P37231	title	121	169
 20829347	peroxisome proliferator-activated receptor γ	Protein	P37231	abs	741	785
 20829347	PPARγ	Protein	P37231	abs	787	792
 20829347	PPARγ	Protein	P37231	abs	895	900
