@@ -16,6 +16,15 @@ def test_num_of_normalization_in_new_file():
     old_dataset = read_corpus("LocText_v1", corpus_percentage=1.0)
     new_dataset = read_corpus("LocText_v2", corpus_percentage=1.0)
 
-    # 8 is the number of newly normalized records from Tanya.
+    # First of all, count of entities & relations remains equal (and ofc there are 0 predictions)
+    assert(len(list(old_dataset.annotations())) == len(list(new_dataset.annotations())))
+    assert(len(list(old_dataset.predicted_annotations())) == len(list(new_dataset.predicted_annotations())) == 0)
+    assert(len(list(old_dataset.relations())) == len(list(new_dataset.relations())))
+    assert(len(list(old_dataset.predicted_relations())) == len(list(new_dataset.predicted_relations())) == 0)
+
+    # Test now new number of normalizations
+
+    print("Actually obtained number of newly normalized ID's: ", num_normalizations(new_dataset) - num_normalizations(old_dataset))
+
+    # 8 is the number of newly normalized records from Tanya, [Greens] in new file.
     assert num_normalizations(new_dataset) == num_normalizations(old_dataset) + 8
-    print("Number of newly normalized ID's [Greens] in new file: ", num_normalizations(new_dataset) - num_normalizations(old_dataset))
