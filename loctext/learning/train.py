@@ -12,7 +12,7 @@ def parse_arguments(argv=[]):
 
     parser = argparse.ArgumentParser(description='dooh')
 
-    parser.add_argument('--model', required=True, choices=["D0"])  # TODO indicate different DX models or combinations
+    parser.add_argument('--model', required=True, choices=["D0", "D1"])  # TODO indicate different DX models or combinations
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
@@ -93,9 +93,12 @@ def _select_annotator_model(args):
 
     # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
 
-    D0 = LocTextDXModelRelationExtractor(
+    if args.model.startswith("D"):
+        sentence_distance = int(args.model[1])
+
+    DX = LocTextDXModelRelationExtractor(
         pro_id, loc_id, rel_id,
-        sentence_distance=0,
+        sentence_distance=sentence_distance,
         feature_generators=indirect_feature_generators,
         execute_pipeline=False,
         model=None,
@@ -108,12 +111,13 @@ def _select_annotator_model(args):
         C=1,
     )
 
-    ann_switcher["D0"] = D0
+    ann_switcher[args.model] = DX
 
     # TODO put in other DX models as necessary
 
-    if args.model == "Combined":
-        ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["D0"], ds_model=ann_switcher["DS"])
+    # TODO put combinations
+    # if args.model == "Combined":
+    #     ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["D0"], ds_model=ann_switcher["DS"])
 
     model = ann_switcher[args.model]
     submodels = _select_annotator_submodels(model)
