@@ -20,7 +20,7 @@ import urllib.request
 from collections import OrderedDict
 
 
-class LocTextSSmodelRelationExtractor(RelationExtractor):
+class LocTextDXModelRelationExtractor(RelationExtractor):
 
     def __init__(
             self,

@@ -10,7 +10,7 @@ from sklearn.feature_selection import mutual_info_classif
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+from loctext.learning.annotators import LocTextDXModelRelationExtractor
 from util import *
 from loctext.util import *
 import time

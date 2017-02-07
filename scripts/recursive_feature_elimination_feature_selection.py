@@ -10,7 +10,7 @@ from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+from loctext.learning.annotators import LocTextDXModelRelationExtractor
 from util import *
 from loctext.util import *
 import time

@@ -25,7 +25,7 @@ from nalaf.structures.data import Dataset
 
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+from loctext.learning.annotators import LocTextDXModelRelationExtractor
 from nalaf import is_debug_mode, is_verbose_mode
 
 print(__doc__)
@@ -33,7 +33,7 @@ print(__doc__)
 is_debug_mode = is_verbose_mode = True
 
 corpus = read_corpus("LocText")
-locTextModel = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
+locTextModel = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 locTextModel.pipeline.execute(corpus, train=True)
 X, y, groups = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
 

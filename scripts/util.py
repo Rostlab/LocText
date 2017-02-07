@@ -16,7 +16,7 @@ from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor
+from loctext.learning.annotators import LocTextDXModelRelationExtractor
 from loctext.util import *
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
@@ -44,7 +44,7 @@ def my_cv_generator(groups, num_instances=None):
 def get_model_and_data():
     corpus = read_corpus("LocText")
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
-    annotator = LocTextSSmodelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True, kernel='linear', C=1)
+    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, preprocess=True, kernel='linear', C=1)
     annotator.pipeline.execute(corpus, train=True)
     X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
 

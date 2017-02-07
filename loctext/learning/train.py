@@ -1,5 +1,5 @@
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextCombinedModelRelationExtractor
+from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
 from loctext.learning.evaluations import relation_accept_uniprot_go
@@ -12,7 +12,7 @@ def parse_arguments(argv=[]):
 
     parser = argparse.ArgumentParser(description='dooh')
 
-    parser.add_argument('--model', required=True, choices=["SS", "DS", "Combined"])
+    parser.add_argument('--model', required=True, choices=["D0"])  # TODO indicate different DX models or combinations
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
@@ -93,7 +93,7 @@ def _select_annotator_model(args):
 
     # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
 
-    SS = LocTextSSmodelRelationExtractor(
+    D0 = LocTextDXModelRelationExtractor(
         pro_id, loc_id, rel_id,
         sentence_distance=0,
         feature_generators=indirect_feature_generators,
@@ -108,12 +108,12 @@ def _select_annotator_model(args):
         C=1,
     )
 
-    ann_switcher["SS"] = SS
+    ann_switcher["D0"] = D0
 
     # TODO put in other DX models as necessary
 
     if args.model == "Combined":
-        ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["SS"], ds_model=ann_switcher["DS"])
+        ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["D0"], ds_model=ann_switcher["DS"])
 
     model = ann_switcher[args.model]
     submodels = _select_annotator_submodels(model)
@@ -129,7 +129,7 @@ def _select_annotator_submodels(model):
 
 def _select_submodel_params(annotator, args):
 
-    if isinstance(annotator, LocTextSSmodelRelationExtractor):
+    if isinstance(annotator, LocTextDXModelRelationExtractor):
         return (args.minority_class_ss_model, args.majority_class_undersampling_ss_model, args.svm_hyperparameter_c_ss_model)
 
     raise AssertionError()
