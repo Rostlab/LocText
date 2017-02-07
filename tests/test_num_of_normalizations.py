@@ -4,8 +4,8 @@ from loctext.learning.train import read_corpus
 def num_normalizations(dataset):
     count = 0
     for data in dataset.entities():
-        # Non normalized entities will have "None" value in it. So do not count it.
-        if data.normalisation_dict != {'n_7': None}:
+        # The dictionary must be non empty and must contain a value that is non empty (for example, not None, or not "")
+        if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
             count += 1
     return count
 
