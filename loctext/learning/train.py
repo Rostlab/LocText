@@ -1,5 +1,5 @@
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
-from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextDSmodelRelationExtractor, LocTextCombinedModelRelationExtractor
+from loctext.learning.annotators import LocTextSSmodelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
 from loctext.learning.evaluations import relation_accept_uniprot_go
@@ -30,6 +30,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--svm_hyperparameter_c_ss_model', action="store", default=0.0080)
     parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
 
+    # TODO clean and review how to set parameters for all different sentece models
     parser.add_argument('--minority_class_ds_model', type=int, default=+1, choices=[-1, +1])
     parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.07, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
     parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
@@ -88,9 +89,9 @@ def _select_annotator_model(args):
 
     }.get(args.feature_generators)
 
-    # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
-
     ann_switcher = {}
+
+    # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
 
     SS = LocTextSSmodelRelationExtractor(
         pro_id, loc_id, rel_id,
@@ -108,7 +109,7 @@ def _select_annotator_model(args):
 
     ann_switcher["SS"] = SS
 
-    # DS = LocTextDSmodelRelationExtractor(pro_id, loc_id, rel_id, feature_generators=indirect_feature_generators, execute_pipeline=False, model=None, classification_threshold=args.svm_threshold_ds_model, use_tree_kernel=args.use_tk)
+    # TODO put in other DX models as necessary
 
     if args.model == "Combined":
         ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["SS"], ds_model=ann_switcher["DS"])
@@ -129,9 +130,6 @@ def _select_submodel_params(annotator, args):
 
     if isinstance(annotator, LocTextSSmodelRelationExtractor):
         return (args.minority_class_ss_model, args.majority_class_undersampling_ss_model, args.svm_hyperparameter_c_ss_model)
-
-    elif isinstance(annotator, LocTextDSmodelRelationExtractor):
-        return (args.minority_class_ds_model, args.majority_class_undersampling_ds_model, args.svm_hyperparameter_c_ds_model)
 
     raise AssertionError()
 
