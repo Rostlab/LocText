@@ -177,7 +177,7 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
 
 # Test case for baseline with prediction_annotations from StringTagger.
 def test_baseline_full(corpus_percentage):
-    corpus = read_corpus("LocText", 0.04)
+    corpus = read_corpus("LocText", 0.4)
 
     if corpus_percentage == 1.0:
         EXPECTED_F = 0.6652
@@ -186,7 +186,7 @@ def test_baseline_full(corpus_percentage):
         EXPECTED_F = 0.6918
         EXPECTED_F_SE = 0.0031
 
-    StringTagger(True, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(corpus)
+    StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(corpus)
 
     annotator_gen_fun = (lambda _: StubRelationExtractorFull(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
 

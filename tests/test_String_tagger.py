@@ -5,13 +5,13 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TA
 
 # test when content of documents is sent in parts
 def test_annotate_string_tagger_whole_text_false():
-    dataset = read_corpus("LocText", corpus_percentage=0.04)  # 10116 Rattus norvegicus (rat)
+    dataset = read_corpus("LocText", corpus_percentage=1.0)
     StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(dataset)
 
 
 # test when the whole content of document is sent at once
 def test_annotate_string_tagger_whole_text_true():
-    dataset = read_corpus("LocText", corpus_percentage=0.04)
+    dataset = read_corpus("LocText", corpus_percentage=1.0)
     StringTagger(True, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(dataset)
 
 

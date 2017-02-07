@@ -228,7 +228,7 @@ class StringTagger(Tagger):
         return urllib.request.urlopen(url).getcode() == 200
 
     # helps to set the predicted annotations of the whole text based on JSON response entity values
-    def text_full(self, norm, entity_type_ids, entity_uniprot_ids, document, start, end, length, isPart=False):
+    def text_full(self, norm, entity_type_ids, entity_uniprot_ids, document, start, end, length):
         for partId, part in document.parts.items():
             text = part.text[start - length:end - length + 1]
 
@@ -248,11 +248,12 @@ class StringTagger(Tagger):
                                                norm=norm_dictionary)
 
                 part.predicted_annotations.append(entity_dictionary)
+
+                break
             length += len(part.text) + 1
 
-
     # helps to set the predicted annotations of the parts based on JSON response entity values
-    def text_part(self, norm, entity_type_ids, entity_uniprot_ids, part, start, end, isPart=True):
+    def text_part(self, norm, entity_type_ids, entity_uniprot_ids, part, start, end):
 
         if str(norm["type"]) == "-3":
             norm_dictionary = {self.taxonomy_norm_id: entity_type_ids}
@@ -271,7 +272,7 @@ class StringTagger(Tagger):
         part.predicted_annotations.append(entity_dictionary)
 
     # sets the predicted annotations of the parts or the whole text based on JSON response entity values
-    def set_predicted_annotations(self, json_response, part_or_document, isWhole):
+    def set_predicted_annotations(self,json_response, part_or_document, isWhole):
 
         entities = json_response["entities"]
 
@@ -310,10 +311,9 @@ class StringTagger(Tagger):
                     entity_type_ids += type_id
 
                     if isWhole == True:
-                        self.text_full(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, length, isWhole)
-                        break
+                        self.text_full(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, length)
                     else:
-                        self.text_part(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, isWhole)
+                        self.text_part(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end)
 
                 entity_uniprot_ids = ""
                 entity_type_ids = ""
