@@ -28,6 +28,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             entity2_class,
             rel_type,
             sentence_distance=0,
+            selected_features_file=None,
             feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
@@ -38,6 +39,8 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
 
         self.sentence_distance = sentence_distance
         edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=self.sentence_distance)
+
+        self.selected_features_file = selected_features_file
 
         if pipeline:
             feature_generators = pipeline.feature_generators
