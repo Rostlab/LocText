@@ -1,11 +1,22 @@
 from loctext.learning.train import read_corpus
 
 
+# def num_normalizations(dataset):
+#     count = 0
+#     for data in dataset.entities():
+#         # The dictionary must be non empty and must contain a value that is non empty (for example, not None, or not "")
+#         if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
+#             print(list(data.normalisation_dict.values())[0])
+#             print(data.normalisation_dict)
+#             count += 1
+#     return count
+
 def num_normalizations(dataset):
     count = 0
     for data in dataset.entities():
         # The dictionary must be non empty and must contain a value that is non empty (for example, not None, or not "")
-        if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
+        # if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
+        if data.normalisation_dict:# != {'n_7': None}:# and data.normalisation_dict != {'n_9': ""}:
             count += 1
     return count
 

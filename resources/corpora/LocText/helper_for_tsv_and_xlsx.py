@@ -94,3 +94,21 @@ file2 = 'interFile_modified_by_Tanya.tsv'
 # check the differences
 print(OrderedDict(find_occurrences(file1)))
 print(OrderedDict(find_occurrences(file2)))
+
+
+# FILE1 = './interFile_modified_by_Tanya.tsv'
+# FILE2 ='./interFile_modified.tsv'
+#
+# # create a list of not-normalized rows
+# def not_normalized_rows(input_file):
+#     a_list = []
+#     with open(input_file) as tsv_file:
+#         data = dict(enumerate(csv.reader(tsv_file, delimiter='\t')))
+#         for row in data:
+#             if data[row][2] == 'Location':
+#             # if data[row][3] == 'Protein' and data[row][2] == 'Protein':
+#                 a_list.append(row)
+#     return a_list  # len(a_list)) if number of not-normalized rows is needed
+#
+# print(len(not_normalized_rows(FILE1)))
+# print(len(not_normalized_rows(FILE2)))
