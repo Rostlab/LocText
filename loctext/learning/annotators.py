@@ -27,6 +27,7 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
             entity1_class,
             entity2_class,
             rel_type,
+            sentence_distance=0,
             feature_generators=None,
             pipeline=None,
             execute_pipeline=True,
@@ -35,6 +36,9 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
 
         super().__init__(entity1_class, entity2_class, rel_type)
 
+        self.sentence_distance = sentence_distance
+        edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=self.sentence_distance)
+
         if pipeline:
             feature_generators = pipeline.feature_generators
         elif feature_generators is not None:  # Trick: if [], this will use pipeline's default generators
@@ -42,8 +46,8 @@ class LocTextSSmodelRelationExtractor(RelationExtractor):
         else:
             feature_generators = self.feature_generators()
 
-        edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=0)
-        self.pipeline = pipeline if pipeline else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, tokenizer=TmVarTokenizer(), edge_generator=edge_generator, feature_generators=feature_generators)
+        self.pipeline = pipeline if pipeline \
+            else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, tokenizer=TmVarTokenizer(), edge_generator=edge_generator, feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 

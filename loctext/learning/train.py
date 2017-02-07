@@ -95,6 +95,7 @@ def _select_annotator_model(args):
 
     SS = LocTextSSmodelRelationExtractor(
         pro_id, loc_id, rel_id,
+        sentence_distance=0,
         feature_generators=indirect_feature_generators,
         execute_pipeline=False,
         model=None,
