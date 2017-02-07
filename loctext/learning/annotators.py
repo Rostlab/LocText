@@ -1,4 +1,4 @@
-from nalaf.learning.taggers import RelationExtractor
+from nalaf.learning.taggers import RelationExtractor, StubRelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.learning.taggers import Tagger, RelationExtractor
@@ -17,6 +17,7 @@ from loctext.util import UNIPROT_NORM_ID, STRING_NORM_ID
 from nalaf.structures.data import Entity
 import requests
 import urllib.request
+from collections import OrderedDict
 
 
 class LocTextSSmodelRelationExtractor(RelationExtractor):
@@ -417,7 +418,7 @@ class StringTagger(Tagger):
                     entity_dictionary = Entity(class_id=self.localization_id, offset=start-1, text=part.text[start-1:end],
                                                norm=norm_dictionary)
                 else:
-                    norm_dictionary = {self.uniprot_norm_id: entity_uniprot_ids, STRING_NORM_ID: entity_type_ids}
+                    norm_dictionary = OrderedDict([(self.uniprot_norm_id, entity_uniprot_ids), (STRING_NORM_ID, entity_type_ids)])
                     entity_dictionary = Entity(class_id=self.protein_id, offset=start-1, text=part.text[start-1:end],
                                                norm=norm_dictionary)
 
@@ -477,7 +478,7 @@ class StringTagger(Tagger):
                             entity_dictionary = Entity(class_id=self.localization_id, offset=start-length, text=text,
                                                        norm=norm_dictionary)
                         else:
-                            norm_dictionary = {self.uniprot_norm_id: entity_uniprot_ids, STRING_NORM_ID: entity_type_ids}
+                            norm_dictionary = OrderedDict([(self.uniprot_norm_id, entity_uniprot_ids), (STRING_NORM_ID, entity_type_ids)])
                             entity_dictionary = Entity(class_id=self.protein_id, offset=start-length, text=text,
                                                        norm=norm_dictionary)
 
@@ -511,22 +512,18 @@ class StringTagger(Tagger):
         dataset.validate_entity_offsets()
 
 
-# Write the class which uses Tagger and RelationExtractor. In the constructor,
-# use ner_kw_args and re_kw_args as arguments for name entity recognition and relation extractor.
-# Call annotate method using ner and re, inside "def annotate(dataset)" method.
-# class LocTextAnnotator(Tagger, RelationExtractor):
-#     def __init__(self,
-#                  **ner_kw_args,
-#                  **re_kw_args):
-#         self.ner_kw_args = ner_kw_args
-#         self.re_kw_args = re_kw_args
-#
-#         super().__init__(**ner_kw_args, **re_kw_args)
-#
-#         # annotate for named entity recognition
-#         def ner_annotate(self, **ner_kw_args):
-#             self.ner_kw_args.annotate()
-#
-#        # annotate for relation extraction
-#         def re_annotate(self, **re_kw_args):
-#             self.re_kw_args.annotate()
+# usage of LoctextAnnotator:
+# StringTagger creates entities (ner) and RelationExtraction gets those entities and creates relations (re)
+class LocTextAnnotator(Tagger, RelationExtractor):
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+        #super().__init__(ner_kw_args, re_kw_args)
+
+    # annotate for named entity recognition
+    def ner_annotate(self, **ner_kw_args):
+        StringTagger(ner_kw_args).annotate(self.dataset)
+
+    # annotate for relation extraction
+    def re_annotate(self, **re_kw_args):
+        StubRelationExtractor(re_kw_args).annotate(self.dataset)
