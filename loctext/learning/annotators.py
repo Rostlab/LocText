@@ -1,4 +1,4 @@
-from nalaf.learning.taggers import RelationExtractor, StubRelationExtractor
+from nalaf.learning.taggers import RelationExtractor, StubRelationExtractor, StubRelationExtractorFull
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.learning.taggers import Tagger, RelationExtractor
@@ -228,7 +228,7 @@ class StringTagger(Tagger):
         return urllib.request.urlopen(url).getcode() == 200
 
     # helps to set the predicted annotations of the whole text based on JSON response entity values
-    def text_full(self, norm, entity_type_ids, entity_uniprot_ids, document, start, end, length, isPart):
+    def text_full(self, norm, entity_type_ids, entity_uniprot_ids, document, start, end, length, isPart=False):
         for partId, part in document.parts.items():
             text = part.text[start - length:end - length + 1]
 
@@ -248,12 +248,11 @@ class StringTagger(Tagger):
                                                norm=norm_dictionary)
 
                 part.predicted_annotations.append(entity_dictionary)
-
-                break
             length += len(part.text) + 1
 
+
     # helps to set the predicted annotations of the parts based on JSON response entity values
-    def text_part(self, norm, entity_type_ids, entity_uniprot_ids, part, start, end, length, isPart):
+    def text_part(self, norm, entity_type_ids, entity_uniprot_ids, part, start, end, isPart=True):
 
         if str(norm["type"]) == "-3":
             norm_dictionary = {self.taxonomy_norm_id: entity_type_ids}
@@ -272,7 +271,7 @@ class StringTagger(Tagger):
         part.predicted_annotations.append(entity_dictionary)
 
     # sets the predicted annotations of the parts or the whole text based on JSON response entity values
-    def set_predicted_annotations(self,json_response, part_or_document, isPart):
+    def set_predicted_annotations(self, json_response, part_or_document, isWhole):
 
         entities = json_response["entities"]
 
@@ -310,10 +309,11 @@ class StringTagger(Tagger):
 
                     entity_type_ids += type_id
 
-                if isPart == True:
-                    self.text_full(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, length, isPart)
-                else:
-                    self.text_part(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, length, isPart)
+                    if isWhole == True:
+                        self.text_full(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, length, isWhole)
+                        break
+                    else:
+                        self.text_part(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, isWhole)
 
                 entity_uniprot_ids = ""
                 entity_type_ids = ""
@@ -346,23 +346,18 @@ class StringTagger(Tagger):
 # StringTagger creates entities (ner) and RelationExtraction gets those entities and creates relations (re)
 class LocTextAnnotator(Tagger, RelationExtractor):
 
-    def __init__(self, dataset, ner_kw_args, re_kw_args):
+    def __init__(self, predicts_classes, entity1_class, entity2_class, relation_type, dataset):
+
+        Tagger.__init__(self, predicts_classes=predicts_classes)
+        RelationExtractor.__init__(self,entity1_class=entity1_class,
+                                   entity2_class=entity2_class,
+                                   relation_type=relation_type)
         self.dataset = dataset
-        self.ner_kw_args= ner_kw_args
-        self.re_kw_args = re_kw_args
-
-        super(Tagger).__init__(ner_kw_args)
-        super(RelationExtractor).__init__(re_kw_args)
-
-        # TODO you must pass the **ner_kw_args and **re_kw_args parameter at initialization
-
-        # TODO guys, you must pass the necessary parameters somewhoe to the super Tagger and RelationExtractor
-        # super().__init__(ner_kw_args, re_kw_args)
 
     # annotate for named entity recognition
     def ner_annotate(self, **ner_kw_args):
-        StringTagger(ner_kw_args).annotate(self.dataset)
+        StringTagger(**ner_kw_args).annotate(self.dataset)
 
     # annotate for relation extraction
     def re_annotate(self, **re_kw_args):
-        StubRelationExtractor(re_kw_args).annotate(self.dataset)
+        return StubRelationExtractorFull(**re_kw_args).annotate #(self.dataset)

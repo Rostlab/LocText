@@ -1,14 +1,14 @@
 # Be able to call directly such as `python test_annotators.py`
 from build.lib.nalaf.learning.taggers import StubSamePartRelationExtractor
 
-from loctext.learning.annotators import StringTagger
+from loctext.learning.annotators import StringTagger, LocTextAnnotator
 
 try:
     from .context import loctext
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
     pass
 
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, ONLY_PRED_ANN
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, ONLY_PRED_ANN
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor, StubRelationExtractorFull
 from loctext.learning.train import read_corpus, evaluate_with_argv
@@ -186,7 +186,7 @@ def test_baseline_full(corpus_percentage):
         EXPECTED_F = 0.6918
         EXPECTED_F_SE = 0.0031
 
-    StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(corpus)
+    StringTagger(True, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(corpus)
 
     annotator_gen_fun = (lambda _: StubRelationExtractorFull(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
 
@@ -194,6 +194,34 @@ def test_baseline_full(corpus_percentage):
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     #assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    print("Full Baseline", rel_evaluation)
+
+
+def test_loctext_full(corpus_percentage):
+    corpus = read_corpus("LocText", 0.04)
+
+    if corpus_percentage == 1.0:
+        EXPECTED_F = 0.6652
+        EXPECTED_F_SE = 0.0026
+    else:
+        EXPECTED_F = 0.6918
+        EXPECTED_F_SE = 0.0031
+
+    ner_kw_args = {'send_whole_once': False, 'protein_id': PRO_ID, 'localization_id': LOC_ID, 'organism_id': ORG_ID,
+                   'uniprot_norm_id': UNIPROT_NORM_ID, 'go_norm_id': GO_NORM_ID, 'taxonomy_norm_id': TAXONOMY_NORM_ID}
+
+    tagger_args = [UNIPROT_NORM_ID, STRING_NORM_ID]
+
+    re_kw_args = {'entity1_class': PRO_ID, 'entity2_class': LOC_ID, 'relation_type': REL_PRO_LOC_ID}
+
+    loctext_annotator = LocTextAnnotator(tagger_args, PRO_ID, LOC_ID, REL_PRO_LOC_ID, corpus)
+    loctext_annotator.ner_annotate(**ner_kw_args)
+
+    annotator_gen_fun = (lambda _: loctext_annotator.re_annotate(**re_kw_args))
+    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
+    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+    #
+    # #assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("Full Baseline", rel_evaluation)
 
 
