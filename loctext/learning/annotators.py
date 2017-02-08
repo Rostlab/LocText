@@ -194,8 +194,11 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
 
 
 class StringTagger(Tagger):
-    def __init__(self, send_whole_once, protein_id, localization_id, organism_id,
-                 uniprot_norm_id, go_norm_id, taxonomy_norm_id):
+
+    def __init__(self, protein_id, localization_id, organism_id,
+                 uniprot_norm_id, go_norm_id, taxonomy_norm_id,
+                 send_whole_once = True, host = 'http://127.0.0.1:5000'):
+        super().__init__([UNIPROT_NORM_ID, STRING_NORM_ID])
         self.send_whole_once = send_whole_once
         self.protein_id = protein_id
         self.localization_id = localization_id
@@ -203,16 +206,17 @@ class StringTagger(Tagger):
         self.uniprot_norm_id = uniprot_norm_id
         self.go_norm_id = go_norm_id
         self.taxonomy_norm_id = taxonomy_norm_id
-        super().__init__([UNIPROT_NORM_ID, STRING_NORM_ID])
+        self.host = host
 
     # gets String Tagger JSON response, by making a REST call.
     def get_string_tagger_json_response(self, payload):
-        base_url = "http://127.0.0.1:5000/annotate/post"
+        base_url = self.host + "/annotate/post"
         try:
             # Explicitly put all organisms in to force try to normalize all their proteins,
             # not only when their [organism] names appear together with a protein name
-            entity_types = "-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955"
-            json_response = requests.post(base_url, json=dict(text=payload, ids=entity_types))
+            entity_types = "-22,-3,9606,10090,3702,4932,4896,511145,6239,7227" # ,7955
+            autodetect = True
+            json_response = requests.post(base_url, json=dict(text=payload, ids=entity_types, autodetect=autodetect))
             json_response.status_code = 200
             response_data = json_response.json()
         except requests.exceptions.ConnectionError as err:
@@ -272,7 +276,7 @@ class StringTagger(Tagger):
         part.predicted_annotations.append(entity_dictionary)
 
     # sets the predicted annotations of the parts or the whole text based on JSON response entity values
-    def set_predicted_annotations(self,json_response, part_or_document, isWhole):
+    def set_predicted_annotations(self, json_response, part_or_document, is_whole):
 
         entities = json_response["entities"]
 
@@ -310,7 +314,7 @@ class StringTagger(Tagger):
 
                     entity_type_ids += type_id
 
-                    if isWhole == True:
+                    if is_whole == True:
                         self.text_full(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, length)
                     else:
                         self.text_part(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end)
@@ -322,7 +326,7 @@ class StringTagger(Tagger):
     # primary method which will be called to set predicated annotations based on JSON response from STRING tagger.
     def annotate(self, dataset):
 
-        for docId, document in dataset.documents.items():
+        for docid, document in dataset.documents.items():
 
             if self.send_whole_once:
                 # Note: dataset contains only the text content without separating into parts.
@@ -344,17 +348,15 @@ class StringTagger(Tagger):
 # StringTagger creates entities (ner) and RelationExtraction gets those entities and creates relations (re)
 class LocTextAnnotator(Tagger, RelationExtractor):
 
-    def __init__(self, dataset, predict_classes, **re_kw_args):
+    def __init__(self, predict_classes, ner_kw_args, re_kw_args):
 
         Tagger.__init__(self, predicts_classes=predict_classes)
         RelationExtractor.__init__(self, **re_kw_args)
 
-        self.dataset = dataset
+        self.string_tagger = StringTagger(ner_kw_args)
+        self.relation_extractor = StubRelationExtractorFull(re_kw_args)
 
-    # annotate for named entity recognition
-    def ner_annotate(self, **ner_kw_args):
-        StringTagger(**ner_kw_args).annotate(self.dataset)
-
-    # annotate for relation extraction
-    def re_annotate(self, **re_kw_args):
-        return StubRelationExtractorFull(**re_kw_args).annotate
+    def annotate(self, dataset):
+        self.string_tagger.annotate(dataset)
+        self.relation_extractor.annotate(dataset)
+        return dataset

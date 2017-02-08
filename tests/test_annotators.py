@@ -187,7 +187,7 @@ def test_baseline_full(corpus_percentage):
         EXPECTED_F_SE = 0.0031
 
     distance = 0
-    StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(corpus)
+    StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False).annotate(corpus)
 
     # Call StubRelationExtractorFull with distance=0 and entities_to_use = "pred_ann" [predicated annotations only]
     annotator_gen_fun = (lambda _: StubRelationExtractorFull(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance, ONLY_PRED_ANN).annotate)
