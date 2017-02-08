@@ -198,7 +198,10 @@ def test_baseline_full(corpus_percentage):
     #assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("Full Baseline", rel_evaluation)
 
-
+"""
+The reason why we are not using both Predicted annotation and annotations of a part
+https://github.com/juanmirocks/LocText/issues/33
+"""
 def test_loctext_full(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 

@@ -327,7 +327,6 @@ class StringTagger(Tagger):
             if self.send_whole_once:
                 # Note: dataset contains only the text content without separating into parts.
                 json_response = self.get_string_tagger_json_response(document.get_text())
-                # self.set_entities_of_whole_doc(json_response, document)
                 self.set_predicted_annotations(json_response, document, self.send_whole_once)
             else:
                 for partId, part in document.parts.items():
@@ -335,7 +334,6 @@ class StringTagger(Tagger):
                     json_response = self.get_string_tagger_json_response(part.text)
 
                     # Set entity information to part.predicated_annotations list
-                    # self.set_predicted_annotations(json_response, part)
                     self.set_predicted_annotations(json_response, part, self.send_whole_once)
 
         # Verify entity offsets - No warnings should be displayed
@@ -359,4 +357,4 @@ class LocTextAnnotator(Tagger, RelationExtractor):
 
     # annotate for relation extraction
     def re_annotate(self, **re_kw_args):
-        return StubRelationExtractorFull(**re_kw_args).annotate #(self.dataset)
+        return StubRelationExtractorFull(**re_kw_args).annotate
