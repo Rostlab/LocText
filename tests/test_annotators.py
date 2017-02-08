@@ -214,7 +214,7 @@ def test_loctext_full(corpus_percentage):
 
     re_kw_args = {'entity1_class': PRO_ID, 'entity2_class': LOC_ID, 'relation_type': REL_PRO_LOC_ID}
 
-    loctext_annotator = LocTextAnnotator(tagger_args, PRO_ID, LOC_ID, REL_PRO_LOC_ID, corpus)
+    loctext_annotator = LocTextAnnotator(corpus, tagger_args, **re_kw_args)
     loctext_annotator.ner_annotate(**ner_kw_args)
 
     annotator_gen_fun = (lambda _: loctext_annotator.re_annotate(**re_kw_args))

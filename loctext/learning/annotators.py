@@ -346,12 +346,11 @@ class StringTagger(Tagger):
 # StringTagger creates entities (ner) and RelationExtraction gets those entities and creates relations (re)
 class LocTextAnnotator(Tagger, RelationExtractor):
 
-    def __init__(self, predicts_classes, entity1_class, entity2_class, relation_type, dataset):
+    def __init__(self, dataset, predict_classes, **re_kw_args):
 
-        Tagger.__init__(self, predicts_classes=predicts_classes)
-        RelationExtractor.__init__(self,entity1_class=entity1_class,
-                                   entity2_class=entity2_class,
-                                   relation_type=relation_type)
+        Tagger.__init__(self, predicts_classes=predict_classes)
+        RelationExtractor.__init__(self, **re_kw_args)
+
         self.dataset = dataset
 
     # annotate for named entity recognition
