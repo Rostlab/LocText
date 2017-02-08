@@ -6,6 +6,7 @@ from loctext.learning.evaluations import relation_accept_uniprot_go
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
+from collections import OrderedDict
 
 def parse_arguments(argv=[]):
     import argparse
@@ -89,7 +90,7 @@ def _select_annotator_submodels(args):
 
     }.get(args.feature_generators)
 
-    submodels = {}
+    submodels = OrderedDict()  # TODO Order kinda matters...
     submodels_names = set(args.model.split(","))
 
     if "D0" in submodels_names:
@@ -154,14 +155,16 @@ def train(training_set, args, submodel, execute_pipeline):
 
 
 def evaluate(corpus, args):
-    submodels = _select_annotator_submodels(args)
-
     evaluator = args.evaluator
+
+    submodels = _select_annotator_submodels(args)
+    execute_only_features = False
 
     for submodel_name, submodel in submodels.items():
         print("Executing :", submodel_name)
 
-        submodel.pipeline.execute(corpus, train=True)
+        submodel.pipeline.execute(corpus, train=True, only_features=execute_only_features)
+        execute_only_features = True
         selected_features = unpickle_beautified_file(submodel.selected_features_file)
         submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
         submodel.model.write_vector_instances(corpus, submodel.pipeline.feature_set)
@@ -170,11 +173,6 @@ def evaluate(corpus, args):
 
         evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
         rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-
-    # if len(submodels) > 1:
-    #     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
-    #     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-
 
     return rel_evaluation
 
