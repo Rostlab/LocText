@@ -177,7 +177,7 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
 
 # Test case for baseline with prediction_annotations from StringTagger.
 def test_baseline_full(corpus_percentage):
-    corpus = read_corpus("LocText", 0.4)
+    corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
         EXPECTED_F = 0.6652
@@ -186,9 +186,11 @@ def test_baseline_full(corpus_percentage):
         EXPECTED_F = 0.6918
         EXPECTED_F_SE = 0.0031
 
+    distance = 0
     StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(corpus)
 
-    annotator_gen_fun = (lambda _: StubRelationExtractorFull(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
+    # Call StubRelationExtractorFull with distance=0 and entities_to_use = "pred_ann" [predicated annotations only]
+    annotator_gen_fun = (lambda _: StubRelationExtractorFull(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance, ONLY_PRED_ANN).annotate)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
@@ -198,7 +200,7 @@ def test_baseline_full(corpus_percentage):
 
 
 def test_loctext_full(corpus_percentage):
-    corpus = read_corpus("LocText", 0.04)
+    corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
         EXPECTED_F = 0.6652
@@ -207,25 +209,24 @@ def test_loctext_full(corpus_percentage):
         EXPECTED_F = 0.6918
         EXPECTED_F_SE = 0.0031
 
+    tagger_args = [UNIPROT_NORM_ID, STRING_NORM_ID]
     ner_kw_args = {'send_whole_once': False, 'protein_id': PRO_ID, 'localization_id': LOC_ID, 'organism_id': ORG_ID,
                    'uniprot_norm_id': UNIPROT_NORM_ID, 'go_norm_id': GO_NORM_ID, 'taxonomy_norm_id': TAXONOMY_NORM_ID}
 
-    tagger_args = [UNIPROT_NORM_ID, STRING_NORM_ID]
+    relation_extractor_args = {'entity1_class': PRO_ID, 'entity2_class': LOC_ID, 'relation_type': REL_PRO_LOC_ID}
+    re_kw_args = {'entity1_class': PRO_ID, 'entity2_class': LOC_ID, 'relation_type': REL_PRO_LOC_ID,
+                  'distance': None, 'entities_to_use': ONLY_PRED_ANN}
 
-    re_kw_args = {'entity1_class': PRO_ID, 'entity2_class': LOC_ID, 'relation_type': REL_PRO_LOC_ID}
-
-    loctext_annotator = LocTextAnnotator(corpus, tagger_args, **re_kw_args)
+    loctext_annotator = LocTextAnnotator(corpus, tagger_args, **relation_extractor_args)
     loctext_annotator.ner_annotate(**ner_kw_args)
 
+    # Calls relation extractor with distance=None and entities_to_use = "pred_ann" [predicated annotations only]
     annotator_gen_fun = (lambda _: loctext_annotator.re_annotate(**re_kw_args))
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-    #
-    # #assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+
+    #assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("Full Baseline", rel_evaluation)
-
-
-# def test_loctext_full():
 
 
 if __name__ == "__main__":

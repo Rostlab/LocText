@@ -5,13 +5,13 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TA
 
 # test when content of documents is sent in parts
 def test_annotate_string_tagger_whole_text_false():
-    dataset = read_corpus("LocText", corpus_percentage=1.0)
+    dataset = read_corpus("LocText", corpus_percentage=0.4)
     StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(dataset)
 
 
 # test when the whole content of document is sent at once
 def test_annotate_string_tagger_whole_text_true():
-    dataset = read_corpus("LocText", corpus_percentage=1.0)
+    dataset = read_corpus("LocText", corpus_percentage=0.4)
     StringTagger(True, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(dataset)
 
 
@@ -22,8 +22,8 @@ def num_annotated_entities(corpus):
 
 # test if number of annotations of parts is less than or equal to the number of annotations of the whole content
 def test_number_of_tagged_entities():
-    dataset_false = read_corpus("LocText", corpus_percentage=0.04)
-    dataset_true = read_corpus("LocText", corpus_percentage=0.04)
+    dataset_false = read_corpus("LocText", corpus_percentage=0.4)
+    dataset_true = read_corpus("LocText", corpus_percentage=0.4)
     StringTagger(False, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(dataset_false)
     StringTagger(True, PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID).annotate(dataset_true)
     assert num_annotated_entities(dataset_false) <= num_annotated_entities(dataset_true)
