@@ -211,7 +211,7 @@ class StringTagger(Tagger):
         host='http://127.0.0.1:5000'
     ):
 
-        super().__init__([uniprot_norm_id, STRING_NORM_ID])
+        super().__init__([uniprot_norm_id, string_norm_id])
 
         self.send_whole_once = send_whole_once
         self.protein_id = protein_id
