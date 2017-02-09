@@ -6,13 +6,14 @@ from loctext.learning.evaluations import relation_accept_uniprot_go
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
+from collections import OrderedDict
 
 def parse_arguments(argv=[]):
     import argparse
 
     parser = argparse.ArgumentParser(description='dooh')
 
-    parser.add_argument('--model', required=True, choices=["D0", "D1"])  # TODO indicate different DX models or combinations
+    parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1"])
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
@@ -77,7 +78,7 @@ def parse_arguments_string(arguments=""):
     return parse_arguments(arguments.split("\s+"))
 
 
-def _select_annotator_model(args):
+def _select_annotator_submodels(args):
     # WARN: we should read the class ids from the corpus
     pro_id = PRO_ID
     loc_id = LOC_ID
@@ -89,45 +90,50 @@ def _select_annotator_model(args):
 
     }.get(args.feature_generators)
 
-    ann_switcher = {}
+    submodels = OrderedDict()  # TODO Order kinda matters...
+    submodels_names = set(args.model.split(","))
 
-    # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
+    if "D0" in submodels_names:
+        # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
 
-    if args.model.startswith("D"):
-        sentence_distance = int(args.model[1])
+        submodels["D0"] = LocTextDXModelRelationExtractor(
+            pro_id, loc_id, rel_id,
+            sentence_distance=0,
+            selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/0_LinearSVC-1486292275.065055-NAMES.log",
+            # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
+            feature_generators=indirect_feature_generators,
+            execute_pipeline=False,
+            model=None,
+            classification_threshold=args.svm_threshold_ss_model,
+            use_tree_kernel=args.use_tk,
+            preprocess=True,
+            #
+            class_weight=None,
+            kernel='linear',
+            C=1,
+        )
 
-    DX = LocTextDXModelRelationExtractor(
-        pro_id, loc_id, rel_id,
-        sentence_distance=sentence_distance,
-        feature_generators=indirect_feature_generators,
-        execute_pipeline=False,
-        model=None,
-        classification_threshold=args.svm_threshold_ss_model,
-        use_tree_kernel=args.use_tk,
-        preprocess=True,
-        #
-        class_weight=None,
-        kernel='linear',
-        C=1,
-    )
+    if "D1" in submodels_names:
 
-    ann_switcher[args.model] = DX
-
-    # TODO put in other DX models as necessary
-
-    # TODO put combinations
-    # if args.model == "Combined":
-    #     ann_switcher["Combined"] = LocTextCombinedModelRelationExtractor(pro_id, loc_id, rel_id, ss_model=ann_switcher["D0"], ds_model=ann_switcher["DS"])
-
-    model = ann_switcher[args.model]
-    submodels = _select_annotator_submodels(model)
-
-    return (model, submodels)
+        submodels["D1"] = LocTextDXModelRelationExtractor(
+            pro_id, loc_id, rel_id,
+            sentence_distance=1,
+            selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/1_LinearSVC-1486481526.730234-NAMES.log",
+            feature_generators=indirect_feature_generators,
+            execute_pipeline=False,
+            model=None,
+            classification_threshold=args.svm_threshold_ss_model,
+            use_tree_kernel=args.use_tk,
+            preprocess=True,
+            #
+            class_weight=None,
+            kernel='linear',
+            C=1,
+        )
 
 
-def _select_annotator_submodels(model):
-    # Simple switch for either single or combined models
-    submodels = model.submodels if hasattr(model, 'submodels') else [model]
+    assert submodels, "No submodel!"
+
     return submodels
 
 
@@ -139,35 +145,34 @@ def _select_submodel_params(annotator, args):
     raise AssertionError()
 
 
-def train(training_set, args, annotator_model, submodels, execute_pipeline):
+def train(training_set, args, submodel, execute_pipeline):
+    if execute_pipeline:
+        submodel.pipeline.execute(training_set, train=True)
 
-    for index, submodel in enumerate(submodels):
-        print("About to train model {}={}".format(index, submodel.__class__.__name__))
+    submodel.model.train(training_set)
 
-        if execute_pipeline:
-            submodel.pipeline.execute(training_set, train=True)
-
-        submodel.model.train(training_set)
-
-    return annotator_model.annotate
+    return submodel.annotate
 
 
 def evaluate(corpus, args):
-    annotator_model, submodels = _select_annotator_model(args)
-    is_only_one_model = len(submodels) == 1
-
-    if is_only_one_model:
-        annotator_model.pipeline.execute(corpus, train=True)
-        selected_features = unpickle_beautified_file("/Users/juanmirocks/Work/hck/LocText/tmp/LinearSVC-1486292275.065055-NAMES.log", k_best=600)
-        # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
-        annotator_model.model.set_allowed_feature_names(annotator_model.pipeline.feature_set, selected_features)
-        annotator_model.model.write_vector_instances(corpus, annotator_model.pipeline.feature_set)
-
-    annotator_gen_fun = (lambda training_set: train(training_set, args, annotator_model, submodels, execute_pipeline=not is_only_one_model))
     evaluator = args.evaluator
 
-    evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
-    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+    submodels = _select_annotator_submodels(args)
+    execute_only_features = False
+
+    for submodel_name, submodel in submodels.items():
+        print("Executing :", submodel_name)
+
+        submodel.pipeline.execute(corpus, train=True, only_features=execute_only_features)
+        execute_only_features = True
+        selected_features = unpickle_beautified_file(submodel.selected_features_file)
+        submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
+        submodel.model.write_vector_instances(corpus, submodel.pipeline.feature_set)
+
+        annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
+
+        evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
+        rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     return rel_evaluation
 
