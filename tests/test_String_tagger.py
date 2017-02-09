@@ -19,7 +19,7 @@ def test_annotate_string_tagger_whole_text_true():
 
 
 # get the number of annotated entities in a dataset
-def num_annotated_entities(corpus):
+def num_predicted_entities(corpus):
     return len(list(corpus.predicted_entities()))
 
 
@@ -27,11 +27,13 @@ def num_annotated_entities(corpus):
 def test_number_of_tagged_entities():
     dataset_parts = read_corpus("LocText", corpus_percentage=1.0)
     dataset_whole = read_corpus("LocText", corpus_percentage=1.0)
+    assert 0 == num_predicted_entities(dataset_parts) == num_predicted_entities(dataset_whole)
+
     TAGGER_SEND_PARTS.annotate(dataset_parts)
     TAGGER_SEND_WHOLE.annotate(dataset_whole)
-    # with all organisms explicitly added, parts gives one more entity.
+    # with all organisms explicitly added, parts currently gives one more entity.
     # with only human explicitly added, then the inequality holds
-    assert num_annotated_entities(dataset_parts) <= num_annotated_entities(dataset_whole)
+    assert num_predicted_entities(dataset_parts) <= num_predicted_entities(dataset_whole)
 
 
 # assert statements needs to be written here for verification based on test.
