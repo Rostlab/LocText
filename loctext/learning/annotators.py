@@ -223,6 +223,7 @@ class StringTagger(Tagger):
         self.taxonomy_norm_id = taxonomy_norm_id
         self.host = host
 
+
     # gets String Tagger JSON response, by making a REST call.
     def get_string_tagger_json_response(self, payload):
         base_url = self.host + "/annotate/post"
@@ -242,9 +243,35 @@ class StringTagger(Tagger):
                 "To run the docker image, you type this command: '$docker run -p 5000:5000 tagger'")
         return response_data
 
-    # return true if server is running (for testing purposes)
-    def server_is_running(host, url):
+
+    def annotate(self, dataset):
+        """
+        Primary method which will be called to set predicated annotations based on JSON response from STRING tagger.
+        """
+
+        for docid, document in dataset.documents.items():
+
+            if self.send_whole_once:
+                # Note: dataset contains only the text content without separating into parts.
+                json_response = self.get_string_tagger_json_response(document.get_text())
+                self.set_predicted_annotations(json_response, document, self.send_whole_once)
+            else:
+                for partId, part in document.parts.items():
+                    # Retrieve JSON response
+                    json_response = self.get_string_tagger_json_response(part.text)
+
+                    # Set entity information to part.predicated_annotations list
+                    self.set_predicted_annotations(json_response, part, self.send_whole_once)
+
+        # Verify entity offsets - No warnings should be displayed
+        dataset.validate_entity_offsets()
+
+
+    def server_is_running(self, host=None):
+        """Return true if server is running"""
+        host = host if host else self.host
         return urllib.request.urlopen(url).getcode() == 200
+
 
     # helps to set the predicted annotations of the whole text based on JSON response entity values
     def text_full(self, norm, entity_type_ids, entity_uniprot_ids, document, start, end, length):
@@ -271,6 +298,7 @@ class StringTagger(Tagger):
                 break
             length += len(part.text) + 1
 
+
     # helps to set the predicted annotations of the parts based on JSON response entity values
     def text_part(self, norm, entity_type_ids, entity_uniprot_ids, part, start, end):
 
@@ -289,6 +317,7 @@ class StringTagger(Tagger):
                                        norm=norm_dictionary)
 
         part.predicted_annotations.append(entity_dictionary)
+
 
     # sets the predicted annotations of the parts or the whole text based on JSON response entity values
     def set_predicted_annotations(self, json_response, part_or_document, is_whole):
@@ -336,27 +365,6 @@ class StringTagger(Tagger):
 
                 entity_uniprot_ids = ""
                 entity_type_ids = ""
-
-
-    # primary method which will be called to set predicated annotations based on JSON response from STRING tagger.
-    def annotate(self, dataset):
-
-        for docid, document in dataset.documents.items():
-
-            if self.send_whole_once:
-                # Note: dataset contains only the text content without separating into parts.
-                json_response = self.get_string_tagger_json_response(document.get_text())
-                self.set_predicted_annotations(json_response, document, self.send_whole_once)
-            else:
-                for partId, part in document.parts.items():
-                    # Retrieve JSON response
-                    json_response = self.get_string_tagger_json_response(part.text)
-
-                    # Set entity information to part.predicated_annotations list
-                    self.set_predicted_annotations(json_response, part, self.send_whole_once)
-
-        # Verify entity offsets - No warnings should be displayed
-        dataset.validate_entity_offsets()
 
 
 # usage of LoctextAnnotator:

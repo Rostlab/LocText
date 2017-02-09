@@ -3,16 +3,19 @@ from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 
 
+TAGGER_SEND_PARTS = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False)
+TAGGER_SEND_WHOLE = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
+
 # test when content of documents is sent in parts
 def test_annotate_string_tagger_whole_text_false():
     dataset = read_corpus("LocText", corpus_percentage=1.0)
-    StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID,send_whole_once=False).annotate(dataset)
+    TAGGER_SEND_PARTS.annotate(dataset)
 
 
 # test when the whole content of document is sent at once
 def test_annotate_string_tagger_whole_text_true():
     dataset = read_corpus("LocText", corpus_percentage=1.0)
-    StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID,send_whole_once=True).annotate(dataset)
+    TAGGER_SEND_WHOLE.annotate(dataset)
 
 
 # get the number of annotated entities in a dataset
@@ -24,8 +27,8 @@ def num_annotated_entities(corpus):
 def test_number_of_tagged_entities():
     dataset_parts = read_corpus("LocText", corpus_percentage=1.0)
     dataset_whole = read_corpus("LocText", corpus_percentage=1.0)
-    StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False).annotate(dataset_parts)
-    StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True).annotate(dataset_whole)
+    TAGGER_SEND_PARTS.annotate(dataset_parts)
+    TAGGER_SEND_WHOLE.annotate(dataset_whole)
     # with all organisms explicitly added, parts gives one more entity.
     # with only human explicitly added, then the inequality holds
     assert num_annotated_entities(dataset_parts) <= num_annotated_entities(dataset_whole)
@@ -34,11 +37,9 @@ def test_number_of_tagged_entities():
 # assert statements needs to be written here for verification based on test.
 # Many tests are already performed in the String-Tagger.
 def test_json_response():
-    assert StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False) \
-               .get_string_tagger_json_response("simple text") == {"entities": []}
+    assert TAGGER_SEND_PARTS.get_string_tagger_json_response("simple text") == {"entities": []}
 
-    assert StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False) \
-               .get_string_tagger_json_response("p53") == {"entities": [
+    assert TAGGER_SEND_PARTS.get_string_tagger_json_response("p53") == {"entities": [
         {"end": 3, "normalizations": [{"id": "FBpp0083753", "type": 7227}, {"id": "", "type": "uniprot:7227"}],
          "start": 1},
         {"end": 3, "normalizations": [{"id": "ENSDARP00000051548", "type": 7955},
@@ -52,11 +53,9 @@ def test_json_response():
         {"end": 3, "normalizations": [{"id": "FBpp0072177", "type": 7227},
                                       {"id": "P08841|TBB3_DROME", "type": "uniprot:7227"}], "start": 1}]}
 
-    assert StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False) \
-               .get_string_tagger_json_response("p53") != {"entities": []}
+    assert TAGGER_SEND_PARTS.get_string_tagger_json_response("p53") != {"entities": []}
 
-    assert StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True) \
-               .get_string_tagger_json_response("p53") == {"entities": [
+    assert TAGGER_SEND_WHOLE.get_string_tagger_json_response("p53") == {"entities": [
         {"end": 3, "normalizations": [{"id": "FBpp0083753", "type": 7227}, {"id": "", "type": "uniprot:7227"}],
          "start": 1},
         {"end": 3, "normalizations": [{"id": "ENSDARP00000051548", "type": 7955},
@@ -70,8 +69,7 @@ def test_json_response():
         {"end": 3, "normalizations": [{"id": "FBpp0072177", "type": 7227},
                                       {"id": "P08841|TBB3_DROME", "type": "uniprot:7227"}], "start": 1}]}
 
-    assert StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False) \
-               .get_string_tagger_json_response("p53 nucleus human") == {"entities": [
+    assert TAGGER_SEND_PARTS.get_string_tagger_json_response("p53 nucleus human") == {"entities": [
         {"end": 3, "normalizations": [{"id": "FBpp0083753", "type": 7227}, {"id": "", "type": "uniprot:7227"}],
          "start": 1},
         {"end": 3, "normalizations": [{"id": "ENSDARP00000051548", "type": 7955},
@@ -90,5 +88,4 @@ def test_json_response():
 
 # passes if server is running
 def test_check_if_server_is_running():
-    assert StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False) \
-               .server_is_running("http://localhost:5000/") is True
+    assert TAGGER_SEND_PARTS.server_is_running("http://localhost:5000/") is True
