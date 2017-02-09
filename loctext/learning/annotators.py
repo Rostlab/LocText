@@ -260,8 +260,9 @@ class StringTagger(Tagger):
 
         except Exception as e:
             server_running = self.server_is_running()
-            msg = "Failed call to STRING-tagger-server ({}). Server running: {}. Response status: {}". \
-                format("https://github.com/juanmirocks/STRING-tagger-server", server_running, response_status)
+            howto_install = "https://github.com/juanmirocks/STRING-tagger-server"
+            msg = "Failed call to STRING-tagger-server ({}; {}). Server running: {}. Response status: {}". \
+                format(entry_point, howto_install, server_running, response_status)
             raise(msg, e)
 
 
