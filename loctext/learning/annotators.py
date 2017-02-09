@@ -13,7 +13,6 @@ from nalaf.features.relations.sentence import NamedEntityCountFeatureGenerator
 from nalaf.features.relations.entityhead import EntityHeadTokenUpperCaseFeatureGenerator, \
     EntityHeadTokenDigitsFeatureGenerator, EntityHeadTokenPunctuationFeatureGenerator
 from nalaf.learning.taggers import Tagger
-from loctext.util import UNIPROT_NORM_ID, STRING_NORM_ID
 from nalaf.structures.data import Entity
 import requests
 import urllib.request
@@ -199,15 +198,27 @@ class LocTextCombinedModelRelationExtractor(RelationExtractor):
 
 class StringTagger(Tagger):
 
-    def __init__(self, protein_id, localization_id, organism_id,
-                 uniprot_norm_id, go_norm_id, taxonomy_norm_id,
-                 send_whole_once = True, host = 'http://127.0.0.1:5000'):
-        super().__init__([UNIPROT_NORM_ID, STRING_NORM_ID])
+    def __init__(
+        self,
+        protein_id,
+        localization_id,
+        organism_id,
+        uniprot_norm_id,
+        string_norm_id,
+        go_norm_id,
+        taxonomy_norm_id,
+        send_whole_once=True,
+        host='http://127.0.0.1:5000'
+    ):
+
+        super().__init__([uniprot_norm_id, STRING_NORM_ID])
+
         self.send_whole_once = send_whole_once
         self.protein_id = protein_id
         self.localization_id = localization_id
         self.organism_id = organism_id
         self.uniprot_norm_id = uniprot_norm_id
+        self.string_norm_id = string_norm_id
         self.go_norm_id = go_norm_id
         self.taxonomy_norm_id = taxonomy_norm_id
         self.host = host
@@ -251,7 +262,7 @@ class StringTagger(Tagger):
                                                norm=norm_dictionary)
                 else:
                     norm_dictionary = OrderedDict(
-                        [(self.uniprot_norm_id, entity_uniprot_ids), (STRING_NORM_ID, entity_type_ids)])
+                        [(self.uniprot_norm_id, entity_uniprot_ids), (self.string_norm_id, entity_type_ids)])
                     entity_dictionary = Entity(class_id=self.protein_id, offset=start - length, text=text,
                                                norm=norm_dictionary)
 
@@ -273,7 +284,7 @@ class StringTagger(Tagger):
                                        norm=norm_dictionary)
         else:
             norm_dictionary = OrderedDict(
-                [(self.uniprot_norm_id, entity_uniprot_ids), (STRING_NORM_ID, entity_type_ids)])
+                [(self.uniprot_norm_id, entity_uniprot_ids), (self.string_norm_id, entity_type_ids)])
             entity_dictionary = Entity(class_id=self.protein_id, offset=start - 1, text=part.text[start - 1:end],
                                        norm=norm_dictionary)
 
