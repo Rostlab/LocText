@@ -308,7 +308,7 @@ class StringTagger(Tagger):
 
                     entity_type_ids += type_id
 
-                    if is_whole == True:
+                    if is_whole is True:
                         self.text_full(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end, length)
                     else:
                         self.text_part(norm, entity_type_ids, entity_uniprot_ids, part_or_document, start, end)
