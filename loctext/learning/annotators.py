@@ -1,4 +1,4 @@
-from nalaf.learning.taggers import RelationExtractor, StubRelationExtractor, StubRelationExtractorFull
+from nalaf.learning.taggers import RelationExtractor, StubRelationExtractor
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.learning.taggers import Tagger, RelationExtractor
@@ -352,14 +352,15 @@ class StringTagger(Tagger):
 class LocTextAnnotator(Tagger, RelationExtractor):
 
     def __init__(self, predict_classes, ner_kw_args, re_kw_args):
-
+        # TODO better define init
         Tagger.__init__(self, predicts_classes=predict_classes)
         RelationExtractor.__init__(self, **re_kw_args)
 
-        self.string_tagger = StringTagger(ner_kw_args)
-        self.relation_extractor = StubRelationExtractorFull(re_kw_args)
+        self.ner = StringTagger(**ner_kw_args)
+        # TODO
+        self.re = StubRelationExtractorFull(**re_kw_args)
 
     def annotate(self, dataset):
-        self.string_tagger.annotate(dataset)
-        self.relation_extractor.annotate(dataset)
+        self.ner.annotate(dataset)
+        self.re.annotate(dataset)
         return dataset
