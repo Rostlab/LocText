@@ -274,10 +274,13 @@ class StringTagger(Tagger):
 
         entities = json_response["entities"]
 
-        for index in range(len(entities)):
-            start = entities[index]["start"]
-            end = entities[index]["end"]
-            normalizations = entities[index]["normalizations"]
+        for index, entity in enumerate(entities):
+            next_entity = entities[index + 1] if (index + 1) != len(entities) else None
+
+            start = entity["start"]
+            end = entity["end"]
+            normalizations = entity["normalizations"]
+
             uniprot_id = ""
             entity_uniprot_ids = ""
             type_id = ""
@@ -294,8 +297,7 @@ class StringTagger(Tagger):
                 else:
                     type_id = str(norm["id"])
 
-                if (len(entities) != (index + 1) and start == entities[index + 1]["start"] and end ==
-                    entities[index + 1]["end"]):
+                if (next_entity and start == next_entity["start"] and end == next_entity["end"]):
                     if uniprot_id != "":
                         entity_uniprot_ids += uniprot_id + ","
                     entity_type_ids += type_id + ","
@@ -319,7 +321,7 @@ class StringTagger(Tagger):
 
     # helps to set the predicted annotations of the whole text based on JSON response entity values
     def text_full(self, norm, entity_type_ids, entity_uniprot_ids, document, start, end, length):
-        for partId, part in document.parts.items():
+        for partid, part in document.parts.items():
             text = part.text[start - length:end - length + 1]
 
             if text != "":
@@ -334,6 +336,7 @@ class StringTagger(Tagger):
                 else:
                     norm_dictionary = OrderedDict(
                         [(self.uniprot_norm_id, entity_uniprot_ids), (self.string_norm_id, entity_type_ids)])
+
                     entity_dictionary = Entity(class_id=self.protein_id, offset=start - length, text=text,
                                                norm=norm_dictionary)
 
