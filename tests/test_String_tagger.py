@@ -39,6 +39,8 @@ def test_number_of_tagged_entities():
 def test_json_response():
     assert TAGGER_SEND_PARTS.get_string_tagger_json_response("simple text") == {"entities": []}
 
+    assert TAGGER_SEND_PARTS.get_string_tagger_json_response("p53") != {"entities": []}
+
     assert TAGGER_SEND_PARTS.get_string_tagger_json_response("p53") == {"entities": [
         {"end": 3, "normalizations": [{"id": "FBpp0083753", "type": 7227}, {"id": "", "type": "uniprot:7227"}],
          "start": 1},
@@ -52,8 +54,6 @@ def test_json_response():
                                       {"id": "O46339|HTH_DROME", "type": "uniprot:7227"}], "start": 1},
         {"end": 3, "normalizations": [{"id": "FBpp0072177", "type": 7227},
                                       {"id": "P08841|TBB3_DROME", "type": "uniprot:7227"}], "start": 1}]}
-
-    assert TAGGER_SEND_PARTS.get_string_tagger_json_response("p53") != {"entities": []}
 
     assert TAGGER_SEND_WHOLE.get_string_tagger_json_response("p53") == {"entities": [
         {"end": 3, "normalizations": [{"id": "FBpp0083753", "type": 7227}, {"id": "", "type": "uniprot:7227"}],

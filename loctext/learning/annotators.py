@@ -224,26 +224,6 @@ class StringTagger(Tagger):
         self.host = host
 
 
-    # gets String Tagger JSON response, by making a REST call.
-    def get_string_tagger_json_response(self, payload):
-        base_url = self.host + "/annotate/post"
-        try:
-            # Explicitly put all organisms in to force try to normalize all their proteins,
-            # not only when their [organism] names appear together with a protein name
-            entity_types = "-22,-3,9606,10090,3702,4932,4896,511145,6239,7227" # ,7955
-            autodetect = True
-            json_response = requests.post(base_url, json=dict(text=payload, ids=entity_types, autodetect=autodetect))
-            json_response.status_code = 200
-            response_data = json_response.json()
-        except requests.exceptions.ConnectionError as err:
-            print(
-                "Sever is not running. For this application you need to install Docker "
-                "https://docs.docker.com/engine/installation/ \n"
-                "You only need to build the docker image once, like this: '$docker build -t tagger .' \n"
-                "To run the docker image, you type this command: '$docker run -p 5000:5000 tagger'")
-        return response_data
-
-
     def annotate(self, dataset):
         """
         Primary method which will be called to set predicated annotations based on JSON response from STRING tagger.
@@ -255,12 +235,34 @@ class StringTagger(Tagger):
                 json_response = self.get_string_tagger_json_response(document.get_text())
                 self.set_predicted_annotations(json_response, document, self.send_whole_once)
             else:
-                for partId, part in document.parts.items():
+                for partid, part in document.parts.items():
                     json_response = self.get_string_tagger_json_response(part.text)
                     self.set_predicted_annotations(json_response, part, self.send_whole_once)
 
         # Verify entity offsets - No warnings should be displayed
         dataset.validate_entity_offsets()
+
+
+    # gets String Tagger JSON response, by making a REST call.
+    def get_string_tagger_json_response(self, payload):
+        entry_point = self.host + "/annotate/post"
+        response_status = None
+
+        try:
+            # Explicitly put all organisms in to force try to normalize all their proteins,
+            # not only when their [organism] names appear together with a protein name
+            entity_types = "-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955"
+            json_response = requests.post(entry_point, json=dict(text=payload, ids=entity_types, autodetect=True))
+            response_status = json_response.status_code
+            assert response_status == 200
+            response = json_response.json()
+            return response
+
+        except Exception as e:
+            server_running = self.server_is_running()
+            msg = "Failed call to STRING-tagger-server ({}). Server running: {}. Response status: {}". \
+                format("https://github.com/juanmirocks/STRING-tagger-server", server_running, response_status)
+            raise(msg, e)
 
 
     def server_is_running(self, host=None):
