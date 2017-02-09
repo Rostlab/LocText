@@ -64,7 +64,8 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             model_params["tol"] = 1e-8
 
         if not model_params.get("random_state"):
-            # TODO model_params["random_state"] = 2727
+            # TODO set with this
+            model_params["random_state"] = 2727
             pass
 
         # TODO this would require setting the default model_path
