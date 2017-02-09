@@ -325,48 +325,45 @@ class StringTagger(Tagger):
     # helps to set the predicted annotations of the whole text based on JSON response entity values
     def text_full(self, norm, entity_type_ids, entity_uniprot_ids, document, start, end, length):
         for partid, part in document.parts.items():
-            text = part.text[start - length:end - length + 1]
+
+            offset = start - length
+            text = part.text[offset:end - length + 1]
 
             if text != "":
                 if str(norm["type"]) == "-3":
-                    norm_dictionary = {self.taxonomy_norm_id: entity_type_ids}
-                    entity_dictionary = Entity(class_id=self.organism_id, offset=start - length, text=text,
-                                               norm=norm_dictionary)
+                    norm_dic = {self.taxonomy_norm_id: entity_type_ids}
+                    normed_entity = Entity(class_id=self.organism_id, offset=offset, text=text, norm=norm_dic)
                 elif str(norm["type"]) == "-22":
-                    norm_dictionary = {self.go_norm_id: entity_type_ids}
-                    entity_dictionary = Entity(class_id=self.localization_id, offset=start - length, text=text,
-                                               norm=norm_dictionary)
+                    norm_dic = {self.go_norm_id: entity_type_ids}
+                    normed_entity = Entity(class_id=self.localization_id, offset=offset, text=text, norm=norm_dic)
                 else:
-                    norm_dictionary = OrderedDict(
-                        [(self.uniprot_norm_id, entity_uniprot_ids), (self.string_norm_id, entity_type_ids)])
+                    norm_dic = OrderedDict([(self.uniprot_norm_id, entity_uniprot_ids), (self.string_norm_id, entity_type_ids)])
+                    normed_entity = Entity(class_id=self.protein_id, offset=offset, text=text, norm=norm_dic)
 
-                    entity_dictionary = Entity(class_id=self.protein_id, offset=start - length, text=text,
-                                               norm=norm_dictionary)
-
-                part.predicted_annotations.append(entity_dictionary)
+                part.predicted_annotations.append(normed_entity)
 
                 break
+
             length += len(part.text) + 1
 
 
     # helps to set the predicted annotations of the parts based on JSON response entity values
     def text_part(self, norm, entity_type_ids, entity_uniprot_ids, part, start, end):
 
-        if str(norm["type"]) == "-3":
-            norm_dictionary = {self.taxonomy_norm_id: entity_type_ids}
-            entity_dictionary = Entity(class_id=self.organism_id, offset=start - 1, text=part.text[start - 1:end],
-                                       norm=norm_dictionary)
-        elif str(norm["type"]) == "-22":
-            norm_dictionary = {self.go_norm_id: entity_type_ids}
-            entity_dictionary = Entity(class_id=self.localization_id, offset=start - 1, text=part.text[start - 1:end],
-                                       norm=norm_dictionary)
-        else:
-            norm_dictionary = OrderedDict(
-                [(self.uniprot_norm_id, entity_uniprot_ids), (self.string_norm_id, entity_type_ids)])
-            entity_dictionary = Entity(class_id=self.protein_id, offset=start - 1, text=part.text[start - 1:end],
-                                       norm=norm_dictionary)
+        offset = start - 1
+        text = part.text[offset:end]
 
-        part.predicted_annotations.append(entity_dictionary)
+        if str(norm["type"]) == "-3":
+            norm_dic = {self.taxonomy_norm_id: entity_type_ids}
+            normed_entity = Entity(class_id=self.organism_id, offset=offset, text=text, norm=norm_dic)
+        elif str(norm["type"]) == "-22":
+            norm_dic = {self.go_norm_id: entity_type_ids}
+            normed_entity = Entity(class_id=self.localization_id, offset=offset, text=text, norm=norm_dic)
+        else:
+            norm_dic = OrderedDict([(self.uniprot_norm_id, entity_uniprot_ids), (self.string_norm_id, entity_type_ids)])
+            normed_entity = Entity(class_id=self.protein_id, offset=offset, text=text, norm=norm_dic)
+
+        part.predicted_annotations.append(normed_entity)
 
 
 # usage of LoctextAnnotator:
