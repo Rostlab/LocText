@@ -313,13 +313,10 @@ class StringTagger(Tagger):
 
                     norm_ids += norm_id
 
-                    if is_whole is True:
-                        self.text_full(norm, norm_ids, uniprot_ids, part_or_document, start, end, length)
-                    else:
-                        self.text_part(norm, norm_ids, uniprot_ids, part_or_document, start, end)
-
-                uniprot_ids = ""
-                norm_ids = ""
+            if is_whole is True:
+                self.text_full(norm, norm_ids, uniprot_ids, part_or_document, start, end, length)
+            else:
+                self.text_part(norm, norm_ids, uniprot_ids, part_or_document, start, end)
 
 
     # helps to set the predicted annotations of the whole text based on JSON response entity values
