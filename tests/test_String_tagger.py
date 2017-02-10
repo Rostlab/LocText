@@ -1,10 +1,10 @@
 from loctext.learning.annotators import StringTagger
 from loctext.learning.train import read_corpus
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 
 
-TAGGER_SEND_PARTS = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False)
-TAGGER_SEND_WHOLE = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
+TAGGER_SEND_PARTS = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False)
+TAGGER_SEND_WHOLE = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
 
 # test when content of documents is sent in parts
 def test_annotate_string_tagger_whole_text_false():

@@ -210,7 +210,7 @@ class StringTagger(Tagger):
         host='http://127.0.0.1:5000'
     ):
 
-        super().__init__([uniprot_norm_id, string_norm_id])
+        super().__init__([protein_id, localization_id, organism_id])
 
         self.protein_id = protein_id
         self.localization_id = localization_id
@@ -242,7 +242,7 @@ class StringTagger(Tagger):
 
 
     def get_string_tagger_json_response(self, text):
-        entry_point = self.host + "/annotate/post"
+        entry_point = self.host + "/annotate"
         response_status = None
 
         try:
@@ -260,46 +260,57 @@ class StringTagger(Tagger):
             howto_install = "https://github.com/juanmirocks/STRING-tagger-server"
             msg = "Failed call to STRING-tagger-server ({}; {}). Server running: {}. Response status: {}". \
                 format(entry_point, howto_install, server_running, response_status)
-            raise(msg, e)
+
+            raise Exception(msg, e)
 
 
     def is_server_running(self, host=None):
         """Return true if server is running"""
         host = host if host else self.host
-        return urllib.request.urlopen(url).getcode() == 200
+        return urllib.request.urlopen(host).getcode() == 200
 
 
     def create_nalaf_entity(self, tagger_entity, original_text):
 
-        offset = int(tagger_entity["start"])
-        entity_text = original_text[offset, int(tagger_entity["end"])]
+        offset = tagger_entity["start"]
+        end = tagger_entity["end"]
+        entity_text = original_text[offset:end]
         is_protein = False
 
-        n_class_id = None
+        e_class_id = n_class_id = None
         norms = []
 
         for norm in tagger_entity["ids"]:
+            # assumption: the e_class_id and n_class_id once set will not change
 
             if norm["type"] == "-3":
+                e_class_id = self.organism_id
                 n_class_id = self.taxonomy_norm_id
                 norms.append(norm["id"])
 
             elif norm["type"] == "-22":
-                class_id = self.localization_id
+                e_class_id = self.localization_id
+                n_class_id = self.go_norm_id
                 norms.append(norm["id"])
 
             elif norm["type"].startswith("uniprot_ac:"):
-                class_id = self.protein_id
+                e_class_id = self.protein_id
+                n_class_id = self.uniprot_norm_id
                 norms.append(norm["id"])
+
+        assert e_class_id is not None
 
         if not norms:
             norms = None
         else:
             norms = ",".join(norms)
 
-        norms_dic = {n_class_id: norms}
+        if n_class_id:
+            norms_dic = {n_class_id: norms}
+        else:
+            norms_dic = None
 
-        pred_entity = Entity(class_id=class_id, offset=offset, text=entity_text, norm=norms_dic)
+        pred_entity = Entity(class_id=e_class_id, offset=offset, text=entity_text, norm=norms_dic)
 
         return pred_entity
 
