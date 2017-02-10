@@ -89,5 +89,5 @@ def test_json_response():
 
 
 # passes if server is running
-def test_check_if_server_is_running():
-    assert TAGGER_SEND_PARTS.server_is_running("http://localhost:5000/") is True
+def test_check_if_is_server_running():
+    assert TAGGER_SEND_PARTS.is_server_running("http://localhost:5000/") is True
