@@ -298,7 +298,10 @@ class StringTagger(Tagger):
                 n_class_id = self.uniprot_norm_id
                 norms.append(norm["id"])
 
-        assert e_class_id is not None
+            elif norm["type"].startswith("string_id:"):
+                e_class_id = self.protein_id
+
+        assert e_class_id is not None, tagger_entity
 
         if not norms:
             norms = None
