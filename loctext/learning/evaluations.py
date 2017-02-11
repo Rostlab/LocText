@@ -72,7 +72,7 @@ def _go_ids_accept_multiple(gold, pred):
         elif decision is None:
             one_is_None = True
 
-    if one_is_None is None:
+    if one_is_None:
         return None
     else:
         return False
