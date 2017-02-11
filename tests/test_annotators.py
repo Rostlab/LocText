@@ -54,6 +54,11 @@ elif EVALUATION_LEVEL == 4:
 
 EVALUATOR = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
+STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
+
+
+# -----------------------------------------------------------------------------------
+
 
 def test_baseline_D0(corpus_percentage):
     if (corpus_percentage == 1.0):
@@ -174,7 +179,7 @@ def test_LocText_D0_D1(corpus_percentage):
         EXPECTED_F = 0.6667
         EXPECTED_F_SE = 0.0027
 
-    _test_LocText(corpus_percentage, model='D0_D1', EXPECTED_F=EXPECTED_F)
+    _test_LocText(corpus_percentage, model='D0,D1', EXPECTED_F=EXPECTED_F)
 
 
 # -----------------------------------------------------------------------------------
@@ -183,18 +188,14 @@ def test_LocText_D0_D1(corpus_percentage):
 # "Full" as in the full pipeline: first ner, then re
 def test_baseline_full(corpus_percentage):
     if (corpus_percentage == 1.0):
-        # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
-        # r_5	241	106	90	0	0	0.6945	0.7281	0.7109	0.0028	0.6945	0.7281	0.7109	0.0028
-        # Computation(precision=0.6945244956772334, precision_SE=0.0028956219539813754, recall=0.7280966767371602, recall_SE=0.004139235568395008, f_measure=0.7109144542772862, f_measure_SE=0.002781031509621811)
-        EXPECTED_F = 0.7109
-        EXPECTED_F_SE = 0.0028
+        EXPECTED_F = 0.3447
+        EXPECTED_F_SE = 0.0033
     else:
-        # Computation(precision=0.7657657657657657, precision_SE=0.004062515118259012, recall=0.6640625, recall_SE=0.006891900506329359, f_measure=0.7112970711297071, f_measure_SE=0.004544881638992179)
-        EXPECTED_F = 0.7113
-        EXPECTED_F_SE = 0.0046
+        EXPECTED_F = None
+        EXPECTED_F_SE = None
 
     corpus = read_corpus("LocText", corpus_percentage)
-    StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True).annotate(corpus)
+    STRING_TAGGER.annotate(corpus)
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, use_gold=False, use_pred=True).annotate)
 
@@ -254,6 +255,9 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
 
     return rel_evaluation
+
+
+# -----------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
