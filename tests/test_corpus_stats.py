@@ -4,7 +4,7 @@ try:
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
     pass
 
-from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf.learning.taggers import StubSamePartRelationExtractor, StubRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv
@@ -45,7 +45,14 @@ def test_count_relations_dists_without_repetitions():
 
 def test_count_relations_dists_normalizations_without_repetitions():
     _test(
-        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first'],
+        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="soft"
+        ),
         None,  # meaning: str.__eq__
         #
         0.81,
@@ -57,7 +64,14 @@ def test_count_relations_dists_normalizations_without_repetitions():
 
 def test_count_relations_dists_normalizations_without_repetitions_considering_hierarchy():
     _test(
-        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first'],
+        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="soft"
+        ),
         relation_accept_uniprot_go,
         #
         0.83,
