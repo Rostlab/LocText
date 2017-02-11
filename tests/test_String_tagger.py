@@ -31,8 +31,7 @@ def test_annotate_string_tagger_whole_text_true():
 
 # get the number of annotated entities in a dataset
 def num_predicted_entities(corpus):
-    if run_tests:
-        return len(list(corpus.predicted_entities()))
+    return len(list(corpus.predicted_entities()))
 
 
 # test if number of annotations of parts is less than or equal to the number of annotations of the whole content
@@ -50,7 +49,7 @@ def test_number_of_tagged_entities():
         num_preds_with_parts = num_predicted_entities(dataset_parts)
         num_preds_with_whole = num_predicted_entities(dataset_whole)
 
-        print("Numbers:", num_preds_with_parts, num_preds_with_whole)
+        print("Numbers, real: ", len(list(dataset_parts.entities())), "vs. pred", num_preds_with_parts, num_preds_with_whole)
 
         assert num_preds_with_parts == num_preds_with_whole
 
