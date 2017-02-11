@@ -44,15 +44,14 @@ def _uniprot_ids_accept_multiple(gold, pred):
     if gold == pred:
         return True
 
-    golds = gold.split(',')
-
-    # see (nalaf) evaluators::_normalized_first
-    golds = [gold for gold in golds if not gold.startswith("UNKNOWN:")]
+    # see (nalaf) evaluators::_normalized_fun
+    golds = [g for g in gold.split(',') if not g.startswith("UNKNOWN:")]
+    preds = [p for p in pred.split(',')]
 
     if not golds:
         return None
 
-    return any(g == p for (g, p) in product(golds, pred.split(',')))
+    return any(g == p for (g, p) in product(golds, preds))
 
 
 def _go_ids_accept_multiple(gold, pred):
@@ -63,9 +62,16 @@ def _go_ids_accept_multiple(gold, pred):
     if gold == pred:
         return True
 
+    # see (nalaf) evaluators::_normalized_fun
+    golds = [g for g in gold.split(',') if not g.startswith("UNKNOWN:")]
+    preds = [p for p in pred.split(',')]
+
+    if not golds:
+        return None
+
     one_is_None = False
 
-    for (g, p) in product(gold.split(','), pred.split(',')):
+    for (g, p) in product(golds, preds):
         decision = _go_ids_accept_single(g, p)
         if decision is True:
             return True

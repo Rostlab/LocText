@@ -46,10 +46,24 @@ def parse_arguments(argv=[]):
         ENTITY_MAP_FUN = 'lowercased'
         RELATION_ACCEPT_FUN = str.__eq__
     elif args.evaluation_level == 3:
-        ENTITY_MAP_FUN = 'normalized_first'
+        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="softest"
+        )
         RELATION_ACCEPT_FUN = str.__eq__
     elif args.evaluation_level == 4:
-        ENTITY_MAP_FUN = 'normalized_first'
+        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="softest"
+        )
         RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
     args.evaluator = DocumentLevelRelationEvaluator(
