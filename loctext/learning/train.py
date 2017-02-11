@@ -8,6 +8,7 @@ from loctext.util import *
 from collections import OrderedDict
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from loctext.learning.annotators import StringTagger
+from collections import Counter
 
 def parse_arguments(argv=[]):
     import argparse
@@ -208,8 +209,27 @@ def evaluate(training_corpus, test_corpus, args):
             annotator = annotator_gen_fun(training_corpus)
             annotator(test_corpus)
 
-            for rel in test_corpus.predicted_relations():
-                print(rel)
+            macro_counter, micro_counter = Counter()
+
+            for docid, doc in test_corpus.documents.items():
+                doc_rels = set()
+
+                for rel in doc.map_relations(use_predicted=True, relation_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN).keys():
+                    micro_counter.update(rel)
+
+                    if rel not in doc_rels:
+                        macro_counter.update(rel)
+                        doc_rels.update({rel})
+
+            for rel, count in macro_counter.items():
+                print("MACRO", rel, count)
+
+            print()
+
+            for rel, count in micro_counter.items():
+                print("MICRO", rel, count)
+
+            rel_evaluation = macro_counter, micro_counter
 
     return rel_evaluation
 
