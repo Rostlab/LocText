@@ -17,12 +17,12 @@ def relation_accept_uniprot_go(gold, pred):
     # Note: the | separator is defined by and depends on nalaf
 
     [_, g_pro_key, g_n_7, g_loc_key, g_n_8] = gold.split("|")
-    assert g_pro_key == UNIPROT_NORM_ID
-    assert g_loc_key == GO_NORM_ID
+    assert g_pro_key == UNIPROT_NORM_ID, gold
+    assert g_loc_key == GO_NORM_ID, gold
 
     [_, p_pro_key, p_n_7, p_loc_key, p_n_8] = pred.split("|")
-    assert p_pro_key == UNIPROT_NORM_ID
-    assert p_loc_key == GO_NORM_ID
+    assert p_pro_key == UNIPROT_NORM_ID, pred
+    assert p_loc_key == GO_NORM_ID, pred
 
     uniprot_accept = _uniprot_ids_accept_multiple(g_n_7, p_n_7)
     go_accept = _go_ids_accept_multiple(g_n_8, p_n_8)
