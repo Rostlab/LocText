@@ -24,7 +24,7 @@ def relation_accept_uniprot_go(gold, pred):
     assert p_pro_key == UNIPROT_NORM_ID
     assert p_loc_key == GO_NORM_ID
 
-    uniprot_accept = _uniprot_ids_accept(g_n_7, p_n_7)
+    uniprot_accept = _uniprot_ids_accept_multiple(g_n_7, p_n_7)
     go_accept = _go_ids_accept(g_n_8, p_n_8)
     combined = {uniprot_accept, go_accept}
 
@@ -36,7 +36,7 @@ def relation_accept_uniprot_go(gold, pred):
         return None
 
 
-def _uniprot_ids_accept(gold, pred):
+def _uniprot_ids_accept_multiple(gold, pred):
 
     if gold == pred:
         return True
