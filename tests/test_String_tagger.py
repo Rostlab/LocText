@@ -46,7 +46,16 @@ def test_number_of_tagged_entities():
         TAGGER_SEND_WHOLE.annotate(dataset_whole)
         # with all organisms explicitly added, parts currently gives one more entity.
         # with only human explicitly added, then the inequality holds
-        assert num_predicted_entities(dataset_parts) <= num_predicted_entities(dataset_whole)
+
+        num_preds_with_parts = num_predicted_entities(dataset_parts)
+        num_preds_with_whole = num_predicted_entities(dataset_whole)
+
+        print("Numbers:", num_preds_with_parts, num_preds_with_whole)
+
+        assert num_preds_with_parts == num_preds_with_whole
+
+        for pred_part, pred_whole in zip(dataset_parts.predicted_entities(), dataset_whole.predicted_entities()):
+            assert(pred_part == pred_whole)
 
 
 def test_basic_json_responses():
