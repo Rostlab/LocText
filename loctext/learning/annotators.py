@@ -208,7 +208,7 @@ class StringTagger(Tagger):
         taxonomy_norm_id,
         # Default: explicitly put all organisms in to force try to normalize all their proteins,
         # not only when their [organism] names appear together with a protein name
-        tagger_entity_types="-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955",
+        tagger_entity_types="-22,-3,9606,3702,4932,10090,4896,511145,6239,7227,7955",
         send_whole_once=True,
         host='http://127.0.0.1:5000'
     ):
