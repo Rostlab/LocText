@@ -278,8 +278,7 @@ class StringTagger(Tagger):
             json_response = requests.post(entry_point, json=dict(text=text, ids=entity_types, autodetect=True))
             response_status = json_response.status_code
             assert response_status == 200
-            response = json_response.json()
-            return response
+            return json_response.json()
 
         except Exception as e:
             server_running = self.is_server_running()
