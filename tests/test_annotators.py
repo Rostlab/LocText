@@ -8,7 +8,7 @@ try:
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
     pass
 
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv
@@ -41,7 +41,7 @@ elif EVALUATION_LEVEL == 4:
 EVALUATOR = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
 
 
-def test_baseline_SS(corpus_percentage):
+def test_baseline_D0(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if (corpus_percentage == 1.0):
@@ -61,13 +61,12 @@ def test_baseline_SS(corpus_percentage):
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
-    print("SS Baseline", rel_evaluation)
+    print("D0 Baseline", rel_evaluation)
 
     return rel_evaluation
 
 
-
-def test_LocText_SS(corpus_percentage):
+def test_LocText_D0(corpus_percentage):
 
     if (corpus_percentage == 1.0):
         # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
@@ -78,10 +77,13 @@ def test_LocText_SS(corpus_percentage):
         EXPECTED_F = 0.6779
         EXPECTED_F_SE = 0.0045
 
-    _test_LocText(corpus_percentage, model='SS', EXPECTED_F=EXPECTED_F)
+    _test_LocText(corpus_percentage, model='D0', EXPECTED_F=EXPECTED_F)
 
 
-def test_baseline_DS(corpus_percentage):
+# -----------------------------------------------------------------------------------
+
+
+def test_baseline_D1(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
@@ -98,12 +100,12 @@ def test_baseline_DS(corpus_percentage):
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
-    print("DS Baseline", rel_evaluation)
+    print("D1 Baseline", rel_evaluation)
 
     return rel_evaluation
 
 
-def test_LocText_DS(corpus_percentage):
+def test_LocText_D1(corpus_percentage):
 
     if (corpus_percentage == 1.0):
         EXPECTED_F = 0.4094
@@ -112,10 +114,13 @@ def test_LocText_DS(corpus_percentage):
         EXPECTED_F = 0.4301
         EXPECTED_F_SE = 0.0043
 
-    _test_LocText(corpus_percentage, model='DS', EXPECTED_F=EXPECTED_F)
+    _test_LocText(corpus_percentage, model='D1', EXPECTED_F=EXPECTED_F)
 
 
-def test_baseline_Combined(corpus_percentage):
+# -----------------------------------------------------------------------------------
+
+
+def test_baseline_D0_D1(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
@@ -141,13 +146,12 @@ def test_baseline_Combined(corpus_percentage):
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
-    print("DS Baseline", rel_evaluation)
+    print("D1 Baseline", rel_evaluation)
 
     return rel_evaluation
 
-
 # Note: would be way better to be able to reuse the already trained models in the other tests methods
-def test_LocText_Combined(corpus_percentage):
+def test_LocText_D0_D1(corpus_percentage):
 
     if (corpus_percentage == 1.0):
         EXPECTED_F = 0.5734
@@ -156,26 +160,12 @@ def test_LocText_Combined(corpus_percentage):
         EXPECTED_F = 0.6667
         EXPECTED_F_SE = 0.0027
 
-    _test_LocText(corpus_percentage, model='Combined', EXPECTED_F=EXPECTED_F)
+    _test_LocText(corpus_percentage, model='D0_D1', EXPECTED_F=EXPECTED_F)
 
 
-def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001):
-    # Note: EXPECTED_F=None will make the test fail for non-yet verified evaluations
-    # Note: the real StdErr's are around ~0.0027-0.0095. Decrease them by default to be more strict with tests
-
-    assert corpus_percentage in [TEST_MIN_CORPUS_PERCENTAGE, 1.0], "corpus_percentage must == {} or 1.0. You gave: {}".format(str(TEST_MIN_CORPUS_PERCENTAGE), str(corpus_percentage))
-
-    corpus = read_corpus("LocText", corpus_percentage)
-    # add '--evaluation_level', '1' since this argument is required
-    rel_evaluation = evaluate_with_argv(['--corpus_percentage', str(corpus_percentage), '--model', model])
-
-    print("LocText " + model, rel_evaluation)
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
-
-    return rel_evaluation
+# -----------------------------------------------------------------------------------
 
 
-# Test case for baseline with prediction_annotations from StringTagger.
 def test_baseline_full(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
@@ -195,13 +185,10 @@ def test_baseline_full(corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    #assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    # assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
     print("Full Baseline", rel_evaluation)
 
-"""
-The reason why we are not using both Predicted annotation and annotations of a part
-https://github.com/juanmirocks/LocText/issues/33
-"""
+
 def test_loctext_full(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
@@ -228,8 +215,26 @@ def test_loctext_full(corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    #assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
-    print("Full Baseline", rel_evaluation)
+    # assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1), rel_evaluation.f_measure
+    print("Full LocText", rel_evaluation)
+
+
+# -----------------------------------------------------------------------------------
+
+
+def _test_LocText(corpus_percentage, model, EXPECTED_F=None, EXPECTED_F_SE=0.001):
+    # Note: EXPECTED_F=None will make the test fail for non-yet verified evaluations
+    # Note: the real StdErr's are around ~0.0027-0.0095. Decrease them by default to be more strict with tests
+
+    assert corpus_percentage in [TEST_MIN_CORPUS_PERCENTAGE, 1.0], "corpus_percentage must == {} or 1.0. You gave: {}".format(str(TEST_MIN_CORPUS_PERCENTAGE), str(corpus_percentage))
+
+    corpus = read_corpus("LocText", corpus_percentage)
+    rel_evaluation = evaluate_with_argv(['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL)])
+
+    print("LocText " + model, rel_evaluation)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
+
+    return rel_evaluation
 
 
 if __name__ == "__main__":
@@ -237,4 +242,4 @@ if __name__ == "__main__":
     test_baseline()
 
     corpus_percentage = float(sys.argv[2]) if len(sys.argv) == 3 else TEST_MIN_CORPUS_PERCENTAGE
-    test_LocText_SS(corpus_percentage)
+    test_LocText_D0(corpus_percentage)

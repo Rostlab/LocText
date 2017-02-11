@@ -203,13 +203,16 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations_latest_5_feb_2017/')
 
-    if corpus_name == "LocText_v1":  # With normalizations
+    if corpus_name == "LocText_v1":  # With normalizations; normalizations done in excel sheet
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations/')
 
-    if corpus_name == "LocText_v0_original":  # Without normalizations at all
+    if corpus_name == "LocText_v0":  # Original as annotated from tagtog, without normalizations at all
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_master_json/pool/')
+
+    else:
+        raise AssertionError(("Corpus not recognized: ", corpus_name))
 
     corpus = HTMLReader(dir_html).read()
 
