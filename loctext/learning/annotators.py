@@ -206,6 +206,9 @@ class StringTagger(Tagger):
         uniprot_norm_id,
         go_norm_id,
         taxonomy_norm_id,
+        # Default: explicitly put all organisms in to force try to normalize all their proteins,
+        # not only when their [organism] names appear together with a protein name
+        tagger_entity_types="-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955",
         send_whole_once=True,
         host='http://127.0.0.1:5000'
     ):
@@ -218,6 +221,7 @@ class StringTagger(Tagger):
         self.uniprot_norm_id = uniprot_norm_id
         self.go_norm_id = go_norm_id
         self.taxonomy_norm_id = taxonomy_norm_id
+        self.tagger_entity_types = tagger_entity_types
         self.send_whole_once = send_whole_once
         self.host = host
 
@@ -270,9 +274,7 @@ class StringTagger(Tagger):
         response_status = None
 
         try:
-            # Explicitly put all organisms in to force try to normalize all their proteins,
-            # not only when their [organism] names appear together with a protein name
-            entity_types = "-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955"
+            entity_types = self.tagger_entity_types
             json_response = requests.post(entry_point, json=dict(text=text, ids=entity_types, autodetect=True))
             response_status = json_response.status_code
             assert response_status == 200
