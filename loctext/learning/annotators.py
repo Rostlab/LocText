@@ -354,7 +354,7 @@ class LocTextAnnotator(Tagger, RelationExtractor):
 
         self.ner = StringTagger(**ner_kw_args)
         # TODO
-        self.re = StubRelationExtractorFull(**re_kw_args)
+        self.re = ???
 
     def annotate(self, dataset):
         self.ner.annotate(dataset)

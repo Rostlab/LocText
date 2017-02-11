@@ -10,7 +10,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, STRING_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
-from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor, StubRelationExtractorFull
+from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv
 from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator, CombinatorEdgeGenerator
@@ -189,7 +189,7 @@ def test_baseline_full(corpus_percentage):
     distance = 0
     StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False).annotate(corpus)
 
-    # Call StubRelationExtractorFull with distance=0 and entities_to_use = "pred_ann" [predicated annotations only]
+    # TODO Call StubRelationExtractorFull with distance=0 and entities_to_use = "pred_ann" [predicated annotations only]
     annotator_gen_fun = (lambda _: StubRelationExtractorFull(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance, ONLY_PRED_ANN).annotate)
 
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
