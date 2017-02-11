@@ -17,6 +17,10 @@ def test_annotate_string_tagger_whole_text_false():
         dataset = read_corpus("LocText", corpus_percentage=1.0)
         TAGGER_SEND_PARTS.annotate(dataset)
 
+        # Special analysis as it contains unicode chracters (μ)
+        for e in dataset.documents["23543752"].predicted_entities():
+            print(e)
+
 
 # test when the whole content of document is sent at once
 def test_annotate_string_tagger_whole_text_true():
