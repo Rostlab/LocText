@@ -18,6 +18,7 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+    parser.add_argument('--test_corpus', required=False, choices=["SwissProt", "LocText"])
     parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
     parser.add_argument('--predict_entities', default=False, type=bool, choices=[True, False])
@@ -178,7 +179,7 @@ def train(training_set, args, submodel, execute_pipeline):
     return submodel.annotate
 
 
-def evaluate(corpus, args):
+def evaluate(training_corpus, test_corpus, args):
     evaluator = args.evaluator
 
     submodels = _select_annotator_submodels(args)
@@ -187,16 +188,28 @@ def evaluate(corpus, args):
     for submodel_name, submodel in submodels.items():
         print("Executing :", submodel_name)
 
-        submodel.pipeline.execute(corpus, train=True, only_features=execute_only_features)
+        submodel.pipeline.execute(training_corpus, train=True, only_features=execute_only_features)
         execute_only_features = True
         selected_features = unpickle_beautified_file(submodel.selected_features_file)
         submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
-        submodel.model.write_vector_instances(corpus, submodel.pipeline.feature_set)
+        submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
 
         annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
 
-        evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
-        rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+        if not args.test_corpus:
+            evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
+            rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+        else:
+            submodel.pipeline.execute(test_corpus, train=True, only_features=False)
+            selected_features = unpickle_beautified_file(submodel.selected_features_file)
+            submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
+            submodel.model.write_vector_instances(test_corpus, submodel.pipeline.feature_set)
+
+            annotator = annotator_gen_fun(training_corpus)
+            annotator(test_corpus)
+
+            for rel in args.test_corpus.predicted_relations():
+                print(rel)
 
     return rel_evaluation
 
@@ -204,14 +217,17 @@ def evaluate(corpus, args):
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
 
-    corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
+    training_corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
+    test_corpus = None
+    if args.test_corpus:
+        test_corpus = read_corpus(args.test_corpus, corpus_percentage=1.0, predict_entities=args.predict_entities)
 
-    print_run_args(args, corpus)
+    print_run_args(args, training_corpus)
     print()
-    result = evaluate(corpus, args)
+    result = evaluate(training_corpus, test_corpus, args)
     print()
-    print_run_args(args, corpus)
-    print_corpus_pipeline_dependent_stats(corpus)
+    print_run_args(args, training_corpus)
+    print_corpus_pipeline_dependent_stats(training_corpus)
     print()
 
     return result
