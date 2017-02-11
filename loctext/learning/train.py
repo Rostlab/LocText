@@ -216,10 +216,10 @@ def evaluate(training_corpus, test_corpus, args):
                 doc_rels = set()
 
                 for rel in doc.map_relations(use_predicted=True, relation_type=REL_PRO_LOC_ID, entity_map_fun=evaluator.entity_map_fun).keys():
-                    micro_counter.update(rel)
+                    micro_counter.update([rel])
 
                     if rel not in doc_rels:
-                        macro_counter.update(rel)
+                        macro_counter.update([rel])
                         doc_rels.update({rel})
 
             for rel, count in macro_counter.items():
