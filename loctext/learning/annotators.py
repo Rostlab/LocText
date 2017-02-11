@@ -66,7 +66,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
 
         if not model_params.get("tol"):
             # As of 2017-Feb-7, default in SVC is 1e-3: http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
-            model_params["tol"] = 1e-8
+            model_params["tol"] = 1e-5
 
         if not model_params.get("random_state"):
             # TODO set with this
