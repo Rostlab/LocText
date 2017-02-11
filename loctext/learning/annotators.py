@@ -334,6 +334,10 @@ class StringTagger(Tagger):
             # We found that for e.g. "membrane proteins" the tagger outputted a repeated normalization id: "GO:0098796"
             # see: time http -v POST http://localhost:5000/annotate text="membrane proteins" output=tagger-raw
             # Therefore we make a set to remove repetitions
+
+            # Also beware, although no repetitions involved, the tagger may tag a cellular component to multiple GOs
+            # Example: "protoplasts", normalized to GO:0005622" and "GO:0044464"
+
             norms = set(norms)
             norms = ",".join(norms)
 
