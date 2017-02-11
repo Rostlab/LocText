@@ -30,6 +30,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             selected_features_file=None,
             feature_generators=None,
             pipeline=None,
+            use_predicted_entities=False,
             execute_pipeline=True,
             model=None,
             **model_params):
@@ -37,7 +38,12 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
         super().__init__(entity1_class, entity2_class, rel_type)
 
         self.sentence_distance = sentence_distance
-        edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=self.sentence_distance)
+        edge_generator = SentenceDistanceEdgeGenerator(
+            entity1_class, entity2_class, rel_type,
+            distance=self.sentence_distance,
+            use_gold=not use_predicted_entities,
+            use_pred=use_predicted_entities,
+        )
 
         self.selected_features_file = selected_features_file
 

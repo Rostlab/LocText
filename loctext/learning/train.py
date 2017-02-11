@@ -1,4 +1,3 @@
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
@@ -7,6 +6,8 @@ from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
 from collections import OrderedDict
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
+from loctext.learning.annotators import StringTagger
 
 def parse_arguments(argv=[]):
     import argparse
@@ -19,6 +20,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
+    parser.add_argument('--predict_entities', default=False, type=bool, choices=[True, False])
 
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
@@ -117,6 +119,7 @@ def _select_annotator_submodels(args):
                 selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/0_LinearSVC-1486292275.065055-NAMES.log",
                 # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
                 feature_generators=indirect_feature_generators,
+                use_predicted_entities=args.predict_entities,
                 execute_pipeline=False,
                 model=None,
                 classification_threshold=args.svm_threshold_ss_model,
@@ -134,6 +137,7 @@ def _select_annotator_submodels(args):
                 sentence_distance=1,
                 selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/1_LinearSVC-1486481526.730234-NAMES.log",
                 feature_generators=indirect_feature_generators,
+                use_predicted_entities=args.predict_entities,
                 execute_pipeline=False,
                 model=None,
                 classification_threshold=args.svm_threshold_ss_model,
@@ -194,6 +198,9 @@ def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
 
     corpus = read_corpus(args.corpus, args.corpus_percentage)
+    if args.predict_entities:
+        STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
+        STRING_TAGGER.annotate(corpus)
 
     print_run_args(args, corpus)
     print()
