@@ -25,7 +25,7 @@ def relation_accept_uniprot_go(gold, pred):
     assert p_loc_key == GO_NORM_ID
 
     uniprot_accept = _uniprot_ids_accept_multiple(g_n_7, p_n_7)
-    go_accept = _go_ids_accept(g_n_8, p_n_8)
+    go_accept = _go_ids_accept_single(g_n_8, p_n_8)
     combined = {uniprot_accept, go_accept}
 
     if combined == {True}:
@@ -53,7 +53,7 @@ def _verify_in_ontology(term):
         raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
 
 
-def _go_ids_accept(gold, pred):
+def _go_ids_accept_single(gold, pred):
     """
     3 outcomes:
 
@@ -76,17 +76,17 @@ def _go_ids_accept(gold, pred):
     if len(pred_parents) == 0:  # pred is root from the start
         return None
 
-    gold_is_parent_of_pred = _go_ids_accept_recursive(gold, pred, pred_parents)
+    gold_is_parent_of_pred = _go_ids_accept_single_recursive(gold, pred, pred_parents)
     if gold_is_parent_of_pred:
         return True
-    pred_is_parent_of_gold = _go_ids_accept_recursive(pred, gold, gold_parents)
+    pred_is_parent_of_gold = _go_ids_accept_single_recursive(pred, gold, gold_parents)
     if pred_is_parent_of_gold:
         return None
     else:
         return False
 
 
-def _go_ids_accept_recursive(a, b, b_parents):
+def _go_ids_accept_single_recursive(a, b, b_parents):
     """
     2 outcomes:
 
@@ -97,4 +97,4 @@ def _go_ids_accept_recursive(a, b, b_parents):
     if a == b:
         return True
 
-    return any(_go_ids_accept_recursive(a, pp, GO_TREE.get(pp).parents) for pp in b_parents if pp in GO_TREE)
+    return any(_go_ids_accept_single_recursive(a, pp, GO_TREE.get(pp).parents) for pp in b_parents if pp in GO_TREE)
