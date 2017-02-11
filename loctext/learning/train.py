@@ -13,7 +13,7 @@ def parse_arguments(argv=[]):
 
     parser = argparse.ArgumentParser(description='dooh')
 
-    parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1"])
+    parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
@@ -90,49 +90,48 @@ def _select_annotator_submodels(args):
 
     }.get(args.feature_generators)
 
-    submodels = OrderedDict()  # TODO Order kinda matters...
-    submodels_names = set(args.model.split(","))
+    submodels = OrderedDict()  # Order may matter
+    submodels_names = args.model.split(",")
 
-    if "D0" in submodels_names:
+    for name in submodels_names:
         # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
 
-        submodels["D0"] = LocTextDXModelRelationExtractor(
-            pro_id, loc_id, rel_id,
-            sentence_distance=0,
-            selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/0_LinearSVC-1486292275.065055-NAMES.log",
-            # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
-            feature_generators=indirect_feature_generators,
-            execute_pipeline=False,
-            model=None,
-            classification_threshold=args.svm_threshold_ss_model,
-            use_tree_kernel=args.use_tk,
-            preprocess=True,
-            #
-            class_weight=None,
-            kernel='linear',
-            C=1,
-        )
+        if "D0" == name:
+            submodels[name] = LocTextDXModelRelationExtractor(
+                pro_id, loc_id, rel_id,
+                sentence_distance=0,
+                selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/0_LinearSVC-1486292275.065055-NAMES.log",
+                # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
+                feature_generators=indirect_feature_generators,
+                execute_pipeline=False,
+                model=None,
+                classification_threshold=args.svm_threshold_ss_model,
+                use_tree_kernel=args.use_tk,
+                preprocess=True,
+                #
+                class_weight=None,
+                kernel='linear',
+                C=1,
+            )
 
-    if "D1" in submodels_names:
+        if "D1" == name:
+            submodels[name] = LocTextDXModelRelationExtractor(
+                pro_id, loc_id, rel_id,
+                sentence_distance=1,
+                selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/1_LinearSVC-1486481526.730234-NAMES.log",
+                feature_generators=indirect_feature_generators,
+                execute_pipeline=False,
+                model=None,
+                classification_threshold=args.svm_threshold_ss_model,
+                use_tree_kernel=args.use_tk,
+                preprocess=True,
+                #
+                class_weight=None,
+                kernel='linear',
+                C=1,
+            )
 
-        submodels["D1"] = LocTextDXModelRelationExtractor(
-            pro_id, loc_id, rel_id,
-            sentence_distance=1,
-            selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/1_LinearSVC-1486481526.730234-NAMES.log",
-            feature_generators=indirect_feature_generators,
-            execute_pipeline=False,
-            model=None,
-            classification_threshold=args.svm_threshold_ss_model,
-            use_tree_kernel=args.use_tk,
-            preprocess=True,
-            #
-            class_weight=None,
-            kernel='linear',
-            C=1,
-        )
-
-
-    assert submodels, "No submodel!"
+    assert submodels, "No model given!"
 
     return submodels
 
