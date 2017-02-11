@@ -331,6 +331,10 @@ class StringTagger(Tagger):
         if not norms:
             norms = None
         else:
+            # We found that for e.g. "membrane proteins" the tagger outputted a repeated normalization id: "GO:0098796"
+            # see: time http -v POST http://localhost:5000/annotate text="membrane proteins" output=tagger-raw
+            # Therefore we make a set to remove repetitions
+            norms = set(norms)
             norms = ",".join(norms)
 
         if n_class_id:
