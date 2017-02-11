@@ -41,7 +41,7 @@ def my_cv_generator(groups, num_instances=None):
         yield tr, ev
 
 
-def get_model_and_data(sentence_distance=0):
+def get_model_and_data(sentence_distance=0, use_pred):
     corpus = read_corpus("LocText")
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
     annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, preprocess=True, kernel='linear', C=1)
