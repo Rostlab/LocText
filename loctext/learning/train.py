@@ -215,19 +215,29 @@ def evaluate(training_corpus, test_corpus, args):
             for docid, doc in test_corpus.documents.items():
                 doc_rels = set()
 
-                for rel in doc.map_relations(use_predicted=True, relation_type=REL_PRO_LOC_ID, entity_map_fun=evaluator.entity_map_fun).keys():
-                    micro_counter.update([rel])
+                for rel in doc.predicted_relations():
+                    e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
+                    e2s = filter(None, rel.entity2.normalisation_dict.get(GO_NORM_ID, "").split(","))
+                    if (rel.entity2.class_id <= rel.entity1.class_id):
+                        pairs = zip(e2s, e1s)
+                    else:
+                        pairs = zip(e1s, e2s)
 
-                    if rel not in doc_rels:
-                        macro_counter.update([rel])
-                        doc_rels.update({rel})
+                    for e1, e2 in pairs:
+                        rel_key = e1 + "|" + e2
 
-            for rel, count in macro_counter.items():
+                        micro_counter.update([rel_key])
+
+                        if rel_key not in doc_rels:
+                            macro_counter.update([rel_key])
+                            doc_rels.update({rel_key})
+
+            for rel, count in macro_counter.most_common():
                 print("MACRO", rel, count)
 
             print()
 
-            for rel, count in micro_counter.items():
+            for rel, count in micro_counter.most_common():
                 print("MICRO", rel, count)
 
             rel_evaluation = macro_counter, micro_counter
