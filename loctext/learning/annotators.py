@@ -228,7 +228,31 @@ class StringTagger(Tagger):
         """
         for docid, document in dataset.documents.items():
             if self.send_whole_once:
-                raise NotImplementedError
+                document_text = document.get_text(separation=" ")
+                tagger_annotations = self.get_string_tagger_json_response(document_text)
+
+                index = 0
+                part_length = 0
+                extra_offset = 0
+                num_of_tagger_entities = len(tagger_annotations)
+
+                for partid, part in document.parts.items():
+                    part_length += len(part.text) + 1  # 1 more due to the space separation
+                    text = part.text
+
+                    # For each part, insert the corresponding entities.
+                    # Observation: Entities are in sequence, ex: If 1st entity belong to second part, then
+                    #              2nd entity will not belong to first part and will belong to second or later parts.
+                    while index < num_of_tagger_entities:
+                        entity = tagger_annotations[index]
+                        if entity['start'] < part_length:
+                            pred_entity = self.create_nalaf_entity(entity, text, offset_adjustment=(- extra_offset))
+                            part.predicted_annotations.append(pred_entity)
+                            index += 1
+                        else:
+                            extra_offset = part_length
+                            break
+
             else:
                 for partid, part in document.parts.items():
                     text = part.text
@@ -270,12 +294,11 @@ class StringTagger(Tagger):
         return urllib.request.urlopen(host).getcode() == 200
 
 
-    def create_nalaf_entity(self, tagger_entity, original_text):
+    def create_nalaf_entity(self, tagger_entity, original_text, offset_adjustment=0):
 
-        offset = tagger_entity["start"]
-        end = tagger_entity["end"]
+        offset = tagger_entity["start"] + offset_adjustment
+        end = tagger_entity["end"] + offset_adjustment
         entity_text = original_text[offset:end]
-        is_protein = False
 
         e_class_id = n_class_id = None
         norms = []
