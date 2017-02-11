@@ -9,6 +9,7 @@ from collections import OrderedDict
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from loctext.learning.annotators import StringTagger
 from collections import Counter
+from nalaf.utils.download import DownloadArticle
 
 def parse_arguments(argv=[]):
     import argparse
@@ -209,12 +210,12 @@ def evaluate(training_corpus, test_corpus, args):
             annotator = annotator_gen_fun(training_corpus)
             annotator(test_corpus)
 
-            macro_counter, micro_counter = Counter()
+            macro_counter = micro_counter = Counter()
 
             for docid, doc in test_corpus.documents.items():
                 doc_rels = set()
 
-                for rel in doc.map_relations(use_predicted=True, relation_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN).keys():
+                for rel in doc.map_relations(use_predicted=True, relation_type=REL_PRO_LOC_ID, entity_map_fun=evaluator.entity_map_fun).keys():
                     micro_counter.update(rel)
 
                     if rel not in doc_rels:
@@ -271,6 +272,21 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
     elif corpus_name == "LocText_v0":  # Original as annotated from tagtog, without normalizations at all
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_master_json/pool/')
+
+    elif corpus_name == "SwissProt":
+        corpus = Dataset()
+
+        pmids_file_path = os.path.join(repo_path(["resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"]))
+
+        with DownloadArticle() as PMID_DL:
+            with open(pmids_file_path) as f:
+                for pmid in f:
+                    pmid = pmid.strip()
+
+                    for _, doc in PMID_DL.download([pmid]):
+                        corpus.documents[pmid] = doc
+
+        return corpus
 
     else:
         raise AssertionError(("Corpus not recognized: ", corpus_name))
