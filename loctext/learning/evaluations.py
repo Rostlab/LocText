@@ -37,14 +37,22 @@ def relation_accept_uniprot_go(gold, pred):
 
 
 def _uniprot_ids_accept_multiple(gold, pred):
+    """
+    If all golds are UNKNOWN normalization, return None (reject) else accept if any pair match is equals
+    """
 
     if gold == pred:
         return True
 
-    if gold.startswith("UNKNOWN:"):  # see (nalaf) evaluators::_normalized_first
+    golds = gold.split(',')
+
+    # see (nalaf) evaluators::_normalized_first
+    golds = [gold for gold in golds if not gold.startswith("UNKNOWN:")]
+
+    if not golds:
         return None
 
-    return any(g == p for (g, p) in product(gold.split(','), pred.split(',')))
+    return any(g == p for (g, p) in product(golds, pred.split(',')))
 
 
 def _go_ids_accept_multiple(gold, pred):
@@ -52,18 +60,19 @@ def _go_ids_accept_multiple(gold, pred):
     Apply essentially same behavior as for multiple unitprot_ids:
     accept if any is true, otherwise None if any is None, or otherwise False
     """
-    one_is_None = False
-    golds = gold.split(',')
-    preds = pred.split(',')
+    if gold == pred:
+        return True
 
-    for (g, p) in product(golds, preds):
+    one_is_None = False
+
+    for (g, p) in product(gold.split(','), pred.split(',')):
         decision = _go_ids_accept_single(g, p)
         if decision is True:
             return True
         elif decision is None:
             one_is_None = True
 
-    if one_is_None:
+    if one_is_None is None:
         return None
     else:
         return False
