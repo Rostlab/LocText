@@ -11,8 +11,8 @@ import csv
 
 
 locText_json_files_path = './LocText_anndoc_original_without_normalizations/LocText_master_json/pool'
-pubMed_tsv_file_path = './interFile_modified.tsv'
-output_json_files_path = './LocText_annjson_with_normalizations'
+pubMed_tsv_file_path = './interFile_modified_by_Tanya.tsv'
+output_json_files_path = './LocText_annjson_with_normalizations_latest_5_feb_2017'
 
 """
 Finds the annotated file and uses the information in interFile_modified.tsv file and
@@ -61,11 +61,17 @@ for file_name in os.listdir(locText_json_files_path):
 
                 # For each entity, add corresponding normalization information from segregated row
                 for entity in locText_data['entities']:
-                    text = entity['offsets'][0]['text']
-                    start_index = entity['offsets'][0]['start']
+                    original_ent_text = entity['offsets'][0]['text']
+                    original_start_offset = entity['offsets'][0]['start']
 
                     for row in segregated_rows:
-                        if str(row[1]) == str(text) and str(row[-2]) == str(start_index):
+                        pubMed_id, ent_text, ent_type, norm_text, part_name, start_offset, end_offset = row
+                        start_offset = int(start_offset)
+                        end_offset = int(end_offset)
+
+                        if str(ent_text) == str(original_ent_text) and str(start_offset) == str(original_start_offset):
+                            assert((end_offset - start_offset) == len(original_ent_text) == len(ent_text))
+
                             obj_type = ""
                             obj_id = ""
                             confidence = entity['confidence']

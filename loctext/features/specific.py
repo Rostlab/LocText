@@ -1,6 +1,164 @@
 from nalaf.features.relations import EdgeFeatureGenerator
 from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, GO_NORM_ID, UNIPROT_NORM_ID, repo_path
+from nalaf.features.stemming import ENGLISH_STEMMER
+import pickle
+
+
+class IsSpecificProteinType(EdgeFeatureGenerator):
+
+    def __init__(
+        self,
+        c_protein_class=PRO_ID,
+        c_set_protein_markers=None,
+        #
+        f_is_marker=None,
+        f_is_enzyme=None,
+        f_is_receptor=None,
+        f_is_transporter=None,
+    ):
+
+        self.c_protein_class = c_protein_class
+
+        if c_set_protein_markers is not None:
+            self.c_set_protein_markers = self.c_set_protein_markers
+        else:
+            self.c_set_protein_markers = \
+                {"GFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2"}
+
+        self.f_is_marker = f_is_marker
+        self.f_is_enzyme = f_is_enzyme
+        self.f_is_receptor = f_is_receptor
+        self.f_is_transporter = f_is_transporter
+
+    def generate(self, corpus, f_set, is_train):
+        for entity in corpus.entities():
+            if entity.class_id == self.c_protein_class:
+                entity.features["is_marker"] = entity.text in self.c_set_protein_markers
+                entity.features["is_enzyme"] = any(t.word.endswith("ase") for t in entity.tokens)
+                entity.features["is_receptor"] = any("recept" in t.word.lower() for t in entity.tokens)
+                entity.features["is_transporter"] = any("transport" in t.word.lower() for t in entity.tokens)
+
+        for edge in corpus.edges():
+            sentence = edge.get_combined_sentence()
+
+            protein = edge.entity1 if edge.entity1.class_id == self.c_protein_class else edge.entity2
+
+            # Could also check for its synonym, yet that gave worse results so far
+
+            if protein.features["is_marker"]:
+                self.add(f_set, is_train, edge, 'f_is_marker')
+
+            if protein.features["is_enzyme"]:
+                self.add(f_set, is_train, edge, 'f_is_enzyme')
+
+            if protein.features["is_receptor"]:
+                self.add(f_set, is_train, edge, 'f_is_receptor')
+
+            if protein.features["is_transporter"]:
+                self.add(f_set, is_train, edge, 'f_is_transporter')
+
+
+
+class LocalizationRelationsRatios(EdgeFeatureGenerator):
+
+    def __init__(
+        self,
+        c_localization_enty_class=LOC_ID,
+        c_localization_norm_class=GO_NORM_ID,
+        c_protein_enty_class=PRO_ID,
+        c_protein_norm_class=UNIPROT_NORM_ID,
+        #
+        # ...constants...
+        #
+        f_corpus_unnormalized_total_background_loc_rels_ratios=None,
+        f_corpus_normalized_total_background_loc_rels_ratios=None,
+        #
+        f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,
+        f_SwissProt_normalized_total_background_loc_rels_ratios=None,
+        #
+        #
+        f_SwissProt_normalized_exists_relation=None,
+    ):
+
+        self.c_localization_enty_class = c_localization_enty_class
+        self.c_localization_norm_class = c_localization_norm_class
+        self.c_protein_enty_class = c_protein_enty_class
+        self.c_protein_norm_class = c_protein_norm_class
+
+        #
+
+        path = repo_path(["resources", "features", "corpus_unnormalized_total_background_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_corpus_unnormalized_total_background_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "corpus_normalized_total_background_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_corpus_normalized_total_background_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_SwissProt_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "SwissProt_normalized_total_background_loc_rels_ratios.pickle"])
+        with open(path, "rb") as f:
+            self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
+
+        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])  # TODO should not be called ratios, misleading
+        with open(path, "rb") as f:
+            self.c_SwissProt_relations = pickle.load(f)
+
+        #
+
+        self.f_corpus_unnormalized_total_background_loc_rels_ratios = f_corpus_unnormalized_total_background_loc_rels_ratios
+        self.f_corpus_normalized_total_background_loc_rels_ratios = f_corpus_normalized_total_background_loc_rels_ratios
+        #
+        self.f_SwissProt_normalized_total_absolute_loc_rels_ratios = f_SwissProt_normalized_total_absolute_loc_rels_ratios
+        self.f_SwissProt_normalized_total_background_loc_rels_ratios = f_SwissProt_normalized_total_background_loc_rels_ratios
+
+        #
+        #
+
+        self.f_SwissProt_normalized_exists_relation = f_SwissProt_normalized_exists_relation
+
+
+    def generate(self, corpus, f_set, is_train):
+        for edge in corpus.edges():
+            sentence = edge.get_combined_sentence()
+
+            protein, localization = edge.entity1, edge.entity2
+            if protein.class_id == self.c_localization_enty_class:
+                protein, localization = localization, protein
+
+            def add_f_ratio(f_key, ratio):
+                ratio += 0.1  # Avoid absolute 0 weights
+                self.add_with_value(f_set, is_train, edge, f_key, ratio)
+
+            loc_keyed_text = ENGLISH_STEMMER.stem(localization.text)
+            loc_norm = localization.normalisation_dict.get(self.c_localization_norm_class, None)
+
+            ratio = self.c_corpus_unnormalized_total_background_loc_rels_ratios.get(loc_keyed_text, 0)
+            add_f_ratio("f_corpus_unnormalized_total_background_loc_rels_ratios", ratio)
+
+            ratio = self.c_corpus_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
+            add_f_ratio("f_corpus_normalized_total_background_loc_rels_ratios", ratio)
+
+            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(loc_norm, 0)
+            add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratios", ratio)
+
+            ratio = self.c_SwissProt_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
+            add_f_ratio("f_SwissProt_normalized_total_background_loc_rels_ratios", ratio)
+
+            pro_norm_ids_str = protein.normalisation_dict.get(self.c_protein_norm_class, None)
+            if not pro_norm_ids_str:  # catches None or empty strings
+                pro_norm_ids = []
+            else:
+                for pro_norm_id in pro_norm_ids_str.split(","):
+                    go_id_rels = self.c_SwissProt_relations.get(pro_norm_id, set())
+
+                    if loc_norm in go_id_rels:
+                        self.add(f_set, is_train, edge, "f_SwissProt_normalized_exists_relation")
 
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):
