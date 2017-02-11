@@ -44,10 +44,7 @@ def my_cv_generator(groups, num_instances=None):
 
 
 def get_model_and_data(sentence_distance=0, use_pred=False):
-    corpus = read_corpus("LocText")
-    if use_pred:
-        STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
-        STRING_TAGGER.annotate(corpus)
+    corpus = read_corpus("LocText", predict_entities=use_pred)
 
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
     annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)

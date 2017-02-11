@@ -1,7 +1,7 @@
 # Be able to call directly such as `python test_annotators.py`
 from build.lib.nalaf.learning.taggers import StubSamePartRelationExtractor
 
-from loctext.learning.annotators import StringTagger, LocTextAnnotator
+from loctext.learning.annotators import LocTextAnnotator
 
 try:
     from .context import loctext
@@ -53,8 +53,6 @@ elif EVALUATION_LEVEL == 4:
     RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
 EVALUATOR = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
-
-STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
 
 
 # -----------------------------------------------------------------------------------
@@ -174,12 +172,11 @@ def test_LocText_D0_D1(corpus_percentage):
 # "Full" as in the full pipeline: first ner, then re
 def test_baseline_full(corpus_percentage):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.3447
+        EXPECTED_F = 0.3811
     else:
         EXPECTED_F = None
 
-    corpus = read_corpus("LocText", corpus_percentage)
-    STRING_TAGGER.annotate(corpus)
+    corpus = read_corpus("LocText", corpus_percentage, predict_entities=True)
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, use_gold=False, use_pred=True).annotate)
 
@@ -211,9 +208,7 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=Fa
 
     assert corpus_percentage in [TEST_MIN_CORPUS_PERCENTAGE, 1.0], "corpus_percentage must == {} or 1.0. You gave: {}".format(str(TEST_MIN_CORPUS_PERCENTAGE), str(corpus_percentage))
 
-    corpus = read_corpus("LocText", corpus_percentage)
-    if predict_entities:
-        STRING_TAGGER.annotate(corpus)
+    corpus = read_corpus("LocText", corpus_percentage, predict_entities)
 
     rel_evaluation = evaluate_with_argv(['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL)])
 

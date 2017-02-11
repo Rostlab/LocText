@@ -204,10 +204,7 @@ def evaluate(corpus, args):
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
 
-    corpus = read_corpus(args.corpus, args.corpus_percentage)
-    if args.predict_entities:
-        STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
-        STRING_TAGGER.annotate(corpus)
+    corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
 
     print_run_args(args, corpus)
     print()
@@ -220,7 +217,7 @@ def evaluate_with_argv(argv=[]):
     return result
 
 
-def read_corpus(corpus_name, corpus_percentage=1.0):
+def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
     import os
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
@@ -259,6 +256,10 @@ def read_corpus(corpus_name, corpus_percentage=1.0):
 
     if (corpus_percentage < 1.0):
         corpus, _ = corpus.percentage_split(corpus_percentage)
+
+    if predict_entities:
+        STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
+        STRING_TAGGER.annotate(corpus)
 
     return corpus
 
