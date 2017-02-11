@@ -12,11 +12,11 @@ in_path = "resources/features/human_localization_all_PMIDs_only__2016-11-20.tsv"
 with DownloadArticle() as PMID_DL:
 
     with open(in_path) as f:
-        for pmid in f:
+        for index, pmid in enumerate(f):
             pmid = pmid.strip()
 
             for dl_pmid, doc in PMID_DL.download([pmid]):
-                print(dl_pmid)
+                print(index, dl_pmid)
 
             if call_online_string_tagger:
                 url = "http://compartments.jensenlab.org/document/{}/annotations".format(pmid)

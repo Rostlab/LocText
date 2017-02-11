@@ -113,11 +113,16 @@ def _select_annotator_submodels(args):
         # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
 
         if "D0" == name:
+            if args.predict_entities:
+                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC-1486839732.581865-NAMES.log"
+            else:
+                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_False_LinearSVC-1486292275.065055-NAMES.log"
+                # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
+
             submodels[name] = LocTextDXModelRelationExtractor(
                 pro_id, loc_id, rel_id,
                 sentence_distance=0,
-                selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/0_LinearSVC-1486292275.065055-NAMES.log",
-                # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
+                selected_features_file=selected_features_file,
                 feature_generators=indirect_feature_generators,
                 use_predicted_entities=args.predict_entities,
                 execute_pipeline=False,
@@ -132,10 +137,12 @@ def _select_annotator_submodels(args):
             )
 
         if "D1" == name:
+            selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/1_False_LinearSVC-1486481526.730234-NAMES.log"
+
             submodels[name] = LocTextDXModelRelationExtractor(
                 pro_id, loc_id, rel_id,
                 sentence_distance=1,
-                selected_features_file="/Users/juanmirocks/Work/hck/LocText/tmp/1_LinearSVC-1486481526.730234-NAMES.log",
+                selected_features_file=selected_features_file,
                 feature_generators=indirect_feature_generators,
                 use_predicted_entities=args.predict_entities,
                 execute_pipeline=False,

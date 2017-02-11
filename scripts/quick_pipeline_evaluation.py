@@ -19,9 +19,10 @@ from sklearn.model_selection import cross_val_score
 import time
 from sklearn.pipeline import Pipeline
 
-sentence_distance = 1
+sentence_distance = 0
+use_pred = True
 
-annotator, X, y, groups = get_model_and_data(sentence_distance)
+annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
 
 print("Shape X, before: ", X.shape)
 
@@ -48,9 +49,11 @@ for fsel_name, feature_selection in feature_selections:
     print(fsel_name, " --- ", X_new.shape)
     print()
 
+    file_prefix = "_".join([str(sentence_distance), str(use_pred), fsel_name])
+
     selected_feature_keys = feature_selection.get_support(indices=True)
     keys, names, fig_file = \
-        print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=str(sentence_distance) + "_" + fsel_name)
+        print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=file_prefix)
     print(keys, names)
 
     print()
