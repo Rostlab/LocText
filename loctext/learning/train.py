@@ -208,7 +208,7 @@ def evaluate(training_corpus, test_corpus, args):
             annotator = annotator_gen_fun(training_corpus)
             annotator(test_corpus)
 
-            for rel in args.test_corpus.predicted_relations():
+            for rel in test_corpus.predicted_relations():
                 print(rel)
 
     return rel_evaluation
