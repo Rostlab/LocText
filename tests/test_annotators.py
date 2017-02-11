@@ -38,7 +38,7 @@ elif EVALUATION_LEVEL == 3:
             LOC_ID: GO_NORM_ID,
             ORG_ID: TAXONOMY_NORM_ID,
         },
-        penalize_unknown_normalizations="softest"
+        penalize_unknown_normalizations="soft"
     )
     RELATION_ACCEPT_FUN = str.__eq__
 elif EVALUATION_LEVEL == 4:
@@ -48,7 +48,7 @@ elif EVALUATION_LEVEL == 4:
             LOC_ID: GO_NORM_ID,
             ORG_ID: TAXONOMY_NORM_ID,
         },
-        penalize_unknown_normalizations="softest"
+        penalize_unknown_normalizations="soft"
     )
     RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 

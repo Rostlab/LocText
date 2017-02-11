@@ -52,7 +52,7 @@ def parse_arguments(argv=[]):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="softest"
+            penalize_unknown_normalizations="soft"
         )
         RELATION_ACCEPT_FUN = str.__eq__
     elif args.evaluation_level == 4:
@@ -62,7 +62,7 @@ def parse_arguments(argv=[]):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="softest"
+            penalize_unknown_normalizations="soft"
         )
         RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
