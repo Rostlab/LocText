@@ -25,7 +25,7 @@ def relation_accept_uniprot_go(gold, pred):
     assert p_loc_key == GO_NORM_ID
 
     uniprot_accept = _uniprot_ids_accept_multiple(g_n_7, p_n_7)
-    go_accept = _go_ids_accept_single(g_n_8, p_n_8)
+    go_accept = _go_ids_accept_multiple(g_n_8, p_n_8)
     combined = {uniprot_accept, go_accept}
 
     if combined == {True}:
@@ -45,6 +45,28 @@ def _uniprot_ids_accept_multiple(gold, pred):
         return None
 
     return any(g == p for (g, p) in product(gold.split(','), pred.split(',')))
+
+
+def _go_ids_accept_multiple(gold, pred):
+    """
+    Apply essentially same behavior as for multiple unitprot_ids:
+    accept if any is true, otherwise None if any is None, or otherwise False
+    """
+    one_is_None = False
+    golds = gold.split(',')
+    preds = pred.split(',')
+
+    for (g, p) in product(golds, preds):
+        decision = _go_ids_accept_single(g, p)
+        if decision is True:
+            return True
+        elif decision is None:
+            one_is_None = True
+
+    if one_is_None:
+        return None
+    else:
+        return False
 
 
 def _verify_in_ontology(term):
