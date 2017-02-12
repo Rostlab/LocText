@@ -24,7 +24,7 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
-    parser.add_argument('--test_corpus', required=False, choices=["SwissProt", "LocText"])
+    parser.add_argument('--test_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
     parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
     parser.add_argument('--predict_entities', default=False, type=bool, choices=[True, False])
@@ -306,11 +306,16 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_master_json/pool/')
 
-    elif corpus_name == "SwissProt":
+    elif corpus_name in ["SwissProt", "NewDiscoveries"]:
+
+        if corpus_name == "SwissProt":
+            pmids_file_path = os.path.join(repo_path(["resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"]))
+
+        elif corpus_name == "NewDiscoveries":
+            pmids_file_path = os.path.join(repo_path(["tmp", "pubmed_result.txt"]))
+
         dir_html = None
         corpus = Dataset()
-
-        pmids_file_path = os.path.join(repo_path(["resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"]))
 
         with DownloadArticle() as PMID_DL:
             with open(pmids_file_path) as f:
