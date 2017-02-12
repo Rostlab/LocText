@@ -285,6 +285,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_master_json/pool/')
 
     elif corpus_name == "SwissProt":
+        dir_html = None
         corpus = Dataset()
 
         pmids_file_path = os.path.join(repo_path(["resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"]))
@@ -297,25 +298,24 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
                     for _, doc in PMID_DL.download([pmid]):
                         corpus.documents[pmid] = doc
 
-        return corpus
-
     else:
         raise AssertionError(("Corpus not recognized: ", corpus_name))
 
-    corpus = HTMLReader(dir_html).read()
+    if dir_html is not None:
+        corpus = HTMLReader(dir_html).read()
 
-    if corpus_name.startswith("LocText"):
-        # Remove PMCs, full-text
-        del corpus.documents["PMC3596250"]
-        del corpus.documents["PMC2192646"]
-        del corpus.documents["PMC2483532"]
-        del corpus.documents["PMC2847216"]
+        if corpus_name.startswith("LocText"):
+            # Remove PMCs, full-text
+            del corpus.documents["PMC3596250"]
+            del corpus.documents["PMC2192646"]
+            del corpus.documents["PMC2483532"]
+            del corpus.documents["PMC2847216"]
 
-    AnnJsonAnnotationReader(
-        dir_annjson,
-        read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
-        read_relations=True,
-        delete_incomplete_docs=False).annotate(corpus)
+        AnnJsonAnnotationReader(
+            dir_annjson,
+            read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
+            read_relations=True,
+            delete_incomplete_docs=False).annotate(corpus)
 
     if (corpus_percentage < 1.0):
         corpus, _ = corpus.percentage_split(corpus_percentage)
