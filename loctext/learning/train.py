@@ -203,7 +203,7 @@ def evaluate(training_corpus, test_corpus, args):
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
             rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
         else:
-            submodel.pipeline.execute(test_corpus, train=True, only_features=False)
+            submodel.pipeline.execute(test_corpus, train=False, only_features=False)
             selected_features = unpickle_beautified_file(submodel.selected_features_file)
             submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
             submodel.model.write_vector_instances(test_corpus, submodel.pipeline.feature_set)
@@ -252,7 +252,7 @@ def evaluate_with_argv(argv=[]):
     training_corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
     test_corpus = None
     if args.test_corpus:
-        test_corpus = read_corpus(args.test_corpus, corpus_percentage=1.0, predict_entities=args.predict_entities)
+        test_corpus = read_corpus(args.test_corpus, args.corpus_percentage, args.predict_entities)
 
     print_run_args(args, training_corpus)
     print()
