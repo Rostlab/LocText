@@ -6,11 +6,13 @@ from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
 from collections import OrderedDict
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path
 from loctext.learning.annotators import StringTagger
 from collections import Counter
 from nalaf.utils.download import DownloadArticle
 from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
+from loctext.util import simple_parse_GO
+import pickle
 
 def parse_arguments(argv=[]):
     import argparse
@@ -211,10 +213,15 @@ def evaluate(training_corpus, test_corpus, args):
             annotator = annotator_gen_fun(training_corpus)
             annotator(test_corpus)
 
-            macro_counter = micro_counter = Counter()
+            macro_counter = Counter()
+            micro_counter = {}
+
+            with open(repo_path(["resources", "features", "SwissProt_relations.pickle"]), "rb") as f:
+                SWISSPROT_RELATIONS = pickle.load(f)
+
+            GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
 
             for docid, doc in test_corpus.documents.items():
-                doc_rels = set()
 
                 for rel in doc.predicted_relations():
                     e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
@@ -225,21 +232,26 @@ def evaluate(training_corpus, test_corpus, args):
                         pairs = zip(e1s, e2s)
 
                     for e1, e2 in pairs:
-                        rel_key = e1 + "|" + e2
+                        rel_key = (e1, e2)
 
-                        micro_counter.update([rel_key])
+                        rel_key_docid_counters = micro_counter.get(rel_key, Counter())
 
-                        if rel_key not in doc_rels:
-                            macro_counter.update([rel_key])
-                            doc_rels.update({rel_key})
+                        if docid not in rel_key_docid_counters:  # this rel_key was not in this counter before
+                            macro_counter.update({rel_key})
 
-            for rel, count in macro_counter.most_common():
-                print("MACRO", rel, count)
+                        rel_key_docid_counters.update({docid})
+                        micro_counter[rel_key] = rel_key_docid_counters
 
-            print()
+            max_num_columns = len(micro_counter[macro_counter.most_common(1)[0][0]]) + 6
+            header = [""] * max_num_columns
+            header = ["# Type", "UniProt AC", "LOC GO", "LOC NAME", "in SwissProt", "Num Docs Found"] + ((max_num_columns - 6) * ["PMID"])
+            print("\t".join(header))
 
-            for rel, count in micro_counter.most_common():
-                print("MICRO", rel, count)
+            for rel_key, count in macro_counter.most_common():
+                u_ac, go = rel_key
+                cols = ["RELATION", u_ac, go, GO_TREE[go].name, str(go in SWISSPROT_RELATIONS.get(u_ac, set())), str(count)]
+                cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
+                print("\t".join(cols))
 
             rel_evaluation = macro_counter, micro_counter
 
@@ -252,7 +264,7 @@ def evaluate_with_argv(argv=[]):
     training_corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
     test_corpus = None
     if args.test_corpus:
-        test_corpus = read_corpus(args.test_corpus, args.corpus_percentage, args.predict_entities)
+        test_corpus = read_corpus(args.test_corpus, 0.1, args.predict_entities)
 
     print_run_args(args, training_corpus)
     print()

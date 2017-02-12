@@ -108,7 +108,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         with open(path, "rb") as f:
             self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])  # TODO should not be called ratios, misleading
+        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])
         with open(path, "rb") as f:
             self.c_SwissProt_relations = pickle.load(f)
 
