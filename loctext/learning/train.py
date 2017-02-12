@@ -10,6 +10,7 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID
 from loctext.learning.annotators import StringTagger
 from collections import Counter
 from nalaf.utils.download import DownloadArticle
+from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 
 def parse_arguments(argv=[]):
     import argparse
