@@ -1,7 +1,7 @@
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import relation_accept_uniprot_go
+from loctext.learning.evaluations import relation_accept_uniprot_go, _go_ids_accept_single
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -12,6 +12,7 @@ from collections import Counter
 from nalaf.utils.download import DownloadArticle
 from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 from loctext.util import simple_parse_GO
+
 import pickle
 
 def parse_arguments(argv=[]):
@@ -242,18 +243,27 @@ def evaluate(training_corpus, test_corpus, args):
                         rel_key_docid_counters.update({docid})
                         micro_counter[rel_key] = rel_key_docid_counters
 
-            max_num_columns = len(micro_counter[macro_counter.most_common(1)[0][0]]) + 6
-            header = [""] * max_num_columns
-            header = ["# Type", "UniProt AC", "LOC GO", "LOC NAME", "in SwissProt", "Num Docs Found"] + ((max_num_columns - 6) * ["PMID"])
-            print("\t".join(header))
+            with open(args.test_corpus + "_" + "relations.tsv", "w") as f:
 
-            for rel_key, count in macro_counter.most_common():
-                u_ac, go = rel_key
-                cols = ["RELATION", u_ac, go, GO_TREE[go].name, str(go in SWISSPROT_RELATIONS.get(u_ac, set())), str(count)]
-                cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
-                print("\t".join(cols))
+                header = ["# Type", "UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "Child SwissProt", "Confirmed", "Num Docs"]
+                max_num_docs = len(micro_counter[macro_counter.most_common(1)[0][0]])
+                header = header + (["PMID"] * max_num_docs)
+                f.write("\t".join(header) + "\n")
 
-            rel_evaluation = macro_counter, micro_counter
+                for rel_key, count in macro_counter.most_common():
+                    u_ac, go = rel_key
+                    name = GO_TREE.get(go, ("", "", ""))[0]
+                    inSwissProt = str(go in SWISSPROT_RELATIONS.get(u_ac, set()))
+                    try:
+                        childSwissProt = str(any(_go_ids_accept_single(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
+                    except KeyError:
+                        childSwissProt = str(False)
+
+                    cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
+                    cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
+                    f.write("\t".join(cols) + "\n")
+
+            rel_evaluation = macro_counter.most_common(100)
 
     return rel_evaluation
 
@@ -264,7 +274,7 @@ def evaluate_with_argv(argv=[]):
     training_corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
     test_corpus = None
     if args.test_corpus:
-        test_corpus = read_corpus(args.test_corpus, 0.1, args.predict_entities)
+        test_corpus = read_corpus(args.test_corpus, args.corpus_percentage, args.predict_entities)
 
     print_run_args(args, training_corpus)
     print()
