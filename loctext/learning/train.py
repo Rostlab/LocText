@@ -352,7 +352,11 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
         corpus, _ = corpus.percentage_split(corpus_percentage)
 
     if predict_entities:
-        STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
+        # only human if dir_html is None == no LocText corpus, otherwise tag for the organisms that are in LocText
+        tagger_entity_types = "-22,-3,9606,3702,4932" if dir_html else "-22,-3,9606"
+        print(tagger_entity_types)
+
+        STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, tagger_entity_types=tagger_entity_types, send_whole_once=True)
         STRING_TAGGER.annotate(corpus)
 
     return corpus
