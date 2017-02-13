@@ -323,7 +323,11 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
                     pmid = pmid.strip()
 
                     for _, doc in PMID_DL.download([pmid]):
-                        corpus.documents[pmid] = doc
+                        try:
+                            doc.get_text()  # some empty docs?
+                            corpus.documents[pmid] = doc
+                        except:
+                            pass
 
     else:
         raise AssertionError(("Corpus not recognized: ", corpus_name))
