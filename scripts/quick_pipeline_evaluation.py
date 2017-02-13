@@ -1,3 +1,5 @@
+import sys
+
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import SelectFromModel
@@ -19,8 +21,12 @@ from sklearn.model_selection import cross_val_score
 import time
 from sklearn.pipeline import Pipeline
 
-sentence_distance = 0
-use_pred = True
+sentence_distance = int(sys.argv[1])
+use_pred = sys.argv[2].lower() == "true"
+
+print(sentence_distance, use_pred)
+
+# ----------------------------------------------------------------------------------------------------
 
 annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
 
