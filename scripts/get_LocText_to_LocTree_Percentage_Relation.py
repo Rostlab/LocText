@@ -62,8 +62,8 @@ if __name__ == "__main__":
     print("LocText predicted RELATION ['in SwissProt' set to False], but present in SwissProt: ", positiveRecords)
     print("Total predicted RELATION ['in SwissProt' set to False]: ", totalRecords)
     print("Percentage predicts of LocText to LocTree: ", positiveRecords/totalRecords*100)
-    print("positive_relations (present in SwissProt): ", len(positive_relations))
-    print("negative_relations (absent in SwissProt): ", len(negative_relations))
+    print("Positive_relations (present in SwissProt): ", len(positive_relations))
+    print("Total_relations: ", len(negative_relations) + len(positive_relations))
     print("***************************************************************************************************")
 
     with open(output_file_path + "/" + output_file_name, "w") as output_file:
