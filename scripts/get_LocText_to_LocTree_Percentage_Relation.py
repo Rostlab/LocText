@@ -31,8 +31,6 @@ def get_loctext_relation_records(loctree_relations, file_path=loctext_records_fi
         next(f)
         positive_relations = {}
         negative_relations = {}
-        positives = 0
-        negatives = 0
         # A record from LocText is shown below with column numbers
         #     0        1        2           3         4       5    6    7       8
         # RELATION	Q9H869	GO:0005737	cytoplasm	True	True		8	27979971
@@ -44,26 +42,25 @@ def get_loctext_relation_records(loctree_relations, file_path=loctext_records_fi
                 loctext_go_id = record[2]
                 go_terms = loctree_relations.get(loctext_uniprot_id, {})
                 if loctext_go_id in go_terms:
-                    positive_relations[loctext_uniprot_id] = loctext_go_id
-                    positives += 1
+                    positive_relations[loctext_uniprot_id + "|" + loctext_go_id] = loctext_go_id
                 else:
-                    negative_relations[loctext_uniprot_id] = loctext_go_id
-                    negatives += 1
+                    negative_relations[loctext_uniprot_id + "|" + loctext_go_id] = loctext_go_id
 
-        return positive_relations, negative_relations, positives, negatives+positives
+        return positive_relations, negative_relations
 
 
 if __name__ == "__main__":
 
     loctree_relations = get_loctree_relation_records()
-    positive_relations, negative_relations, positiveRecords, totalRecords = get_loctext_relation_records(loctree_relations)
+    positive_relations, negative_relations = get_loctext_relation_records(loctree_relations)
+
+    positive_records = len(positive_relations)
+    total_records = len(positive_relations) + len(negative_relations)
 
     print("***************************************************************************************************")
-    print("LocText predicted RELATION ['in SwissProt' set to False], but present in SwissProt: ", positiveRecords)
-    print("Total predicted RELATION ['in SwissProt' set to False]: ", totalRecords)
-    print("Percentage predicts of LocText to LocTree: ", positiveRecords/totalRecords*100)
-    print("Positive_relations (present in SwissProt): ", len(positive_relations))
-    print("Total_relations: ", len(negative_relations) + len(positive_relations))
+    print("LocText predicted RELATION ['in SwissProt' set to False], but present in SwissProt: ", positive_records)
+    print("Total predicted RELATION ['in SwissProt' set to False]: ", total_records)
+    print("Percentage predicts of LocText to LocTree: ", positive_records/total_records*100)
     print("***************************************************************************************************")
 
     with open(output_file_path + "/" + output_file_name, "w") as output_file:
