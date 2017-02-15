@@ -90,6 +90,13 @@ def _verify_in_ontology(term):
         raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
 
 
+def are_go_parent_and_child(parent, child):
+    """
+    True if parent is indeed a parent in the localization GO of the child. False otherwise.
+    """
+    return _go_ids_accept_single(parent, child) is True
+
+
 def _go_ids_accept_single(gold, pred):
     """
     3 outcomes:
