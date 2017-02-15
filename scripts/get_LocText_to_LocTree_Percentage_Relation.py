@@ -1,14 +1,13 @@
 import re
 import json
+import sys
 
-loctree_records_file_path = "../resources/features/9606_Homo_sapiens_LocTree_relations.tsv"
-loctext_records_file_path = "../resources/features/9606_NewDiscoveries_relations.tsv"
 output_file_path = "../resources/features/"
 output_file_name = "9606_positive_relations.json"
 regex_go_id = re.compile('GO:[0-9]+')
 
 
-def get_loctree_relation_records(file_path=loctree_records_file_path):
+def get_loctree_relation_records(file_path):
     with open(file_path) as f:
         next(f)
         relations = {}
@@ -26,7 +25,7 @@ def get_loctree_relation_records(file_path=loctree_records_file_path):
         return relations
 
 
-def get_loctext_relation_records(loctree_relations, file_path=loctext_records_file_path):
+def get_loctext_relation_records(loctree_relations, file_path):
     with open(file_path) as f:
         next(f)
         positive_relations = {}
@@ -51,14 +50,17 @@ def get_loctext_relation_records(loctree_relations, file_path=loctext_records_fi
 
 if __name__ == "__main__":
 
-    loctree_relations = get_loctree_relation_records()
-    positive_relations, negative_relations = get_loctext_relation_records(loctree_relations)
+    loctree_records_file_path = sys.argv[1]
+    loctext_records_file_path = sys.argv[2]
+
+    loctree_relations = get_loctree_relation_records(loctree_records_file_path)
+    positive_relations, negative_relations = get_loctext_relation_records(loctree_relations, loctext_records_file_path)
 
     positive_records = len(positive_relations)
     total_records = len(positive_relations) + len(negative_relations)
 
     print("***************************************************************************************************")
-    print("LocText predicted RELATION ['in SwissProt' set to False], but present in SwissProt: ", positive_records)
+    print("LocText predicted RELATION ['in SwissProt' set to False], but present in LocTree: ", positive_records)
     print("Total predicted RELATION ['in SwissProt' set to False]: ", total_records)
     print("Percentage predicts of LocText to LocTree: ", positive_records/total_records*100)
     print("***************************************************************************************************")
