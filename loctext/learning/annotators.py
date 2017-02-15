@@ -30,6 +30,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             selected_features_file=None,
             feature_generators=None,
             pipeline=None,
+            use_predicted_entities=False,
             execute_pipeline=True,
             model=None,
             **model_params):
@@ -37,7 +38,12 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
         super().__init__(entity1_class, entity2_class, rel_type)
 
         self.sentence_distance = sentence_distance
-        edge_generator = SentenceDistanceEdgeGenerator(entity1_class, entity2_class, rel_type, distance=self.sentence_distance)
+        edge_generator = SentenceDistanceEdgeGenerator(
+            entity1_class, entity2_class, rel_type,
+            distance=self.sentence_distance,
+            use_gold=not use_predicted_entities,
+            use_pred=use_predicted_entities,
+        )
 
         self.selected_features_file = selected_features_file
 
@@ -60,7 +66,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
 
         if not model_params.get("tol"):
             # As of 2017-Feb-7, default in SVC is 1e-3: http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
-            model_params["tol"] = 1e-8
+            model_params["tol"] = 1e-5
 
         if not model_params.get("random_state"):
             # TODO set with this
@@ -208,7 +214,9 @@ class StringTagger(Tagger):
         taxonomy_norm_id,
         # Default: explicitly put all organisms in to force try to normalize all their proteins,
         # not only when their [organism] names appear together with a protein name
-        tagger_entity_types="-22,-3,9606,10090,3702,4932,4896,511145,6239,7227,7955",
+        # "-22,-3,9606,3702,4932,10090,4896,511145,6239,7227,7955",
+        # Rather, put those organisms we know we collected documents from
+        tagger_entity_types="-22,-3,9606,3702,4932",
         send_whole_once=True,
         host='http://127.0.0.1:5000'
     ):
@@ -278,8 +286,7 @@ class StringTagger(Tagger):
             json_response = requests.post(entry_point, json=dict(text=text, ids=entity_types, autodetect=True))
             response_status = json_response.status_code
             assert response_status == 200
-            response = json_response.json()
-            return response
+            return json_response.json()
 
         except Exception as e:
             server_running = self.is_server_running()
@@ -331,6 +338,14 @@ class StringTagger(Tagger):
         if not norms:
             norms = None
         else:
+            # We found that for e.g. "membrane proteins" the tagger outputted a repeated normalization id: "GO:0098796"
+            # see: time http -v POST http://localhost:5000/annotate text="membrane proteins" output=tagger-raw
+            # Therefore we make a set to remove repetitions
+
+            # Also beware, although no repetitions involved, the tagger may tag a cellular component to multiple GOs
+            # Example: "protoplasts", normalized to GO:0005622" and "GO:0044464"
+
+            norms = set(norms)
             norms = ",".join(norms)
 
         if n_class_id:
@@ -354,7 +369,7 @@ class LocTextAnnotator(Tagger, RelationExtractor):
 
         self.ner = StringTagger(**ner_kw_args)
         # TODO
-        self.re = StubRelationExtractorFull(**re_kw_args)
+        self.re = None
 
     def annotate(self, dataset):
         self.ner.annotate(dataset)

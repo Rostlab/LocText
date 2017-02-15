@@ -32,8 +32,11 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
         self.f_is_receptor = f_is_receptor
         self.f_is_transporter = f_is_transporter
 
-    def generate(self, corpus, f_set, is_train):
-        for entity in corpus.entities():
+    def generate(self, corpus, f_set, is_train, use_gold, use_pred):
+        assert not (use_gold and use_pred), "No support for both"
+        entities = corpus.entities() if use_gold else corpus.predicted_entities()
+
+        for entity in entities:
             if entity.class_id == self.c_protein_class:
                 entity.features["is_marker"] = entity.text in self.c_set_protein_markers
                 entity.features["is_enzyme"] = any(t.word.endswith("ase") for t in entity.tokens)
@@ -105,7 +108,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         with open(path, "rb") as f:
             self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])  # TODO should not be called ratios, misleading
+        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])
         with open(path, "rb") as f:
             self.c_SwissProt_relations = pickle.load(f)
 
@@ -123,7 +126,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         self.f_SwissProt_normalized_exists_relation = f_SwissProt_normalized_exists_relation
 
 
-    def generate(self, corpus, f_set, is_train):
+    def generate(self, corpus, f_set, is_train, use_gold, use_pred):
         for edge in corpus.edges():
             sentence = edge.get_combined_sentence()
 

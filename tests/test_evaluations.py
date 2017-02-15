@@ -50,9 +50,10 @@ def test_relation_accept_uniprot_go_basic_ne():
             "r_5|n_7|xxx|n_8|yyy",
             "r_5|n_7|xxx|n_8|yyy_DIFERENT")
 
-    assert not accept_prediction(
-        "r_5|n_7|xxx|n_8|yyy",
-        "r_5|n_7|xxx_DIFFERENT|n_8|yyy_DIFERENT")
+    with raises(KeyError):
+        assert not accept_prediction(
+            "r_5|n_7|xxx|n_8|yyy",
+            "r_5|n_7|xxx_DIFFERENT|n_8|yyy_DIFERENT")
 
 
 def test_relation_accept_uniprot_rel_type_is_not_compared():

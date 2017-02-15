@@ -4,7 +4,7 @@ try:
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
     pass
 
-from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf.learning.taggers import StubSamePartRelationExtractor, StubRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv
@@ -45,25 +45,39 @@ def test_count_relations_dists_without_repetitions():
 
 def test_count_relations_dists_normalizations_without_repetitions():
     _test(
-        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first'],
+        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="softest"
+        ),
         None,  # meaning: str.__eq__
         #
         0.81,
         #
-        Counter({'D0': 215, 'D1': 54, 'D2': 31, 'D3': 12, 'D5': 9, 'D6': 6, 'D9': 2, 'D4': 2}),
-        Counter({'D0': 0.649546827794562, 'D1': 0.16314199395770393, 'D2': 0.09365558912386707, 'D3': 0.03625377643504532, 'D5': 0.027190332326283987, 'D6': 0.01812688821752266, 'D9': 0.006042296072507553, 'D4': 0.006042296072507553})
+        Counter({'D0': 210, 'D1': 50, 'D2': 31, 'D3': 12, 'D5': 9, 'D6': 6, 'D9': 2, 'D4': 1}),
+        Counter({'D0': 0.6542056074766355, 'D1': 0.1557632398753894, 'D2': 0.09657320872274143, 'D3': 0.037383177570093455, 'D5': 0.028037383177570093, 'D6': 0.018691588785046728, 'D9': 0.006230529595015576, 'D4': 0.003115264797507788})
     )
 
 
 def test_count_relations_dists_normalizations_without_repetitions_considering_hierarchy():
     _test(
-        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_first'],
+        DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="softest’"
+        ),
         relation_accept_uniprot_go,
         #
         0.83,
         #
-        Counter({'D0': 179, 'D1': 46, 'D2': 21, 'D3': 10, 'D5': 7, 'D6': 5, 'D9': 2, 'D4': 2}),
-        Counter({'D0': 0.6580882352941176, 'D1': 0.16911764705882354, 'D2': 0.07720588235294118, 'D3': 0.03676470588235294, 'D5': 0.025735294117647058, 'D6': 0.01838235294117647, 'D9': 0.007352941176470588, 'D4': 0.007352941176470588})
+        Counter({'D0': 169, 'D1': 41, 'D2': 21, 'D3': 9, 'D5': 7, 'D6': 5, 'D9': 2, 'D4': 1}),
+        Counter({'D0': 0.6627450980392157, 'D1': 0.1607843137254902, 'D2': 0.08235294117647059, 'D3': 0.03529411764705882, 'D5': 0.027450980392156862, 'D6': 0.0196078431372549, 'D9': 0.00784313725490196, 'D4': 0.00392156862745098})
     )
 
 
@@ -80,7 +94,7 @@ def _test(entity_map_fun, relation_accept_fun, expected_sum_perct_d0_d1, expecte
 
     print()
     print("# Documents", len(corpus))
-    print("# Relations", sum(counter_nums.values()))
+    print("# Uniq Rels", sum(counter_nums.values()))
     print("  ", counter_nums)
     print("  ", counter_percts)
 

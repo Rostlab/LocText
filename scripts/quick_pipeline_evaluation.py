@@ -1,3 +1,5 @@
+import sys
+
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import SelectFromModel
@@ -19,9 +21,14 @@ from sklearn.model_selection import cross_val_score
 import time
 from sklearn.pipeline import Pipeline
 
-sentence_distance = 1
+sentence_distance = int(sys.argv[1])
+use_pred = sys.argv[2].lower() == "true"
 
-annotator, X, y, groups = get_model_and_data(sentence_distance)
+print(sentence_distance, use_pred)
+
+# ----------------------------------------------------------------------------------------------------
+
+annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
 
 print("Shape X, before: ", X.shape)
 
@@ -48,9 +55,11 @@ for fsel_name, feature_selection in feature_selections:
     print(fsel_name, " --- ", X_new.shape)
     print()
 
+    file_prefix = "_".join([str(sentence_distance), str(use_pred), fsel_name])
+
     selected_feature_keys = feature_selection.get_support(indices=True)
     keys, names, fig_file = \
-        print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=str(sentence_distance) + "_" + fsel_name)
+        print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=file_prefix)
     print(keys, names)
 
     print()

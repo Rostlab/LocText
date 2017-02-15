@@ -15,7 +15,8 @@ from nalaf.structures.data import Dataset
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
 from loctext.learning.train import read_corpus
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, repo_path
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
+from loctext.learning.annotators import StringTagger
 from loctext.learning.annotators import LocTextDXModelRelationExtractor
 from loctext.util import *
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -23,6 +24,7 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics import euclidean_distances
 from sklearn.preprocessing import FunctionTransformer, maxabs_scale
+
 
 
 def my_cv_generator(groups, num_instances=None):
@@ -41,10 +43,11 @@ def my_cv_generator(groups, num_instances=None):
         yield tr, ev
 
 
-def get_model_and_data(sentence_distance=0):
-    corpus = read_corpus("LocText")
+def get_model_and_data(sentence_distance=0, use_pred=False):
+    corpus = read_corpus("LocText", predict_entities=use_pred)
+
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
-    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, preprocess=True, kernel='linear', C=1)
+    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
     annotator.pipeline.execute(corpus, train=True)
     X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
 

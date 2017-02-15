@@ -18,7 +18,7 @@ import sys
 
 def test_same_stats():
 
-    original = read_corpus("LocText_original", corpus_percentage=1.0)
+    original = read_corpus("LocText_v0", corpus_percentage=1.0)
     newone = read_corpus("LocText", corpus_percentage=1.0)
 
     # Verification
