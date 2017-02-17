@@ -92,7 +92,7 @@ def _verify_in_ontology(term):
 
 def are_go_parent_and_child(parent, child):
     """
-    True if parent is indeed a parent in the localization GO of the child. False otherwise.
+    True if terms are equal or parent is indeed a parent in the localization GO of the child. False otherwise.
     """
     return _go_ids_accept_single(parent, child) is True
 
@@ -101,7 +101,7 @@ def _go_ids_accept_single(gold, pred):
     """
     3 outcomes:
 
-    * gold is parent (direct or indirect) of pred --> accept (True)
+    * gold is equal or parent (direct or indirect) of pred --> accept (True)
     * pred is parent (direct or indirect) of gold --> ignore (None)
     * else: no relationship whatsoever --> reject (False)
     """
