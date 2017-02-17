@@ -338,39 +338,39 @@ class StringTagger(Tagger):
 
         e_class_id = n_class_id = None
         norms = []
-        protein_organisms = set()
+        organisms_proteins = {}
 
         for norm in tagger_entity["ids"]:
             # assumption: the e_class_id and n_class_id once set will not change
 
+            norm_id = norm["id"]
+
             if norm["type"] == "-3":
                 e_class_id = self.organism_id
                 n_class_id = self.taxonomy_norm_id
-                norms.append(norm["id"])
+                norms.append(norm_id)
 
             elif norm["type"] == "-22":
                 try:
-                    if any(are_go_parent_and_child(accepted_parent, norm["id"]) for accepted_parent in self.filter_go_localizations):
+                    if any(are_go_parent_and_child(accepted_parent, norm_id) for accepted_parent in self.filter_go_localizations):
                         e_class_id = self.localization_id
                         n_class_id = self.go_norm_id
-                        norms.append(norm["id"])
+                        norms.append(norm_id)
+                    else:
+                        pass  # reject
 
                 except KeyError as e:
                     pass  # reject
 
             elif norm["type"].startswith("uniprot_ac:"):
                 organism = int(norm["type"].split(":")[1])
+                prots = organisms_proteins.get(organism, set())
+                prots.update({norm_id})
+                organisms_proteins[organism] = prots
 
-                if organism not in protein_organisms:
-                    protein_organisms.update({organism})
-
-                    e_class_id = self.protein_id
-                    n_class_id = self.uniprot_norm_id
-                    norms.append(norm["id"])
-
-                else:
-                    # Quick-simple way to reject ambiguous entities --> if multiple proteins for the same organism are returned --> reject
-                    return None
+                e_class_id = self.protein_id
+                n_class_id = self.uniprot_norm_id
+                norms.append(norm_id)
 
             elif norm["type"].startswith("string_id:"):
                 # Set e_class_id not to reject; this happens in the few cases the string id cannot be normalized to uniprot
@@ -380,10 +380,17 @@ class StringTagger(Tagger):
             return None  # reject
 
         else:
+            norms = set(norms)  # convert to set first just in case the original tagger returns repeated ids (happened)
+
+            # Remove ambiguous ids; heuristic: different normalizations for a same organism are considered ambiguous
+            for organism, proteins in organisms_proteins.items():
+                if len(proteins) > 1:
+                    for ambiguous_protein in proteins:
+                        norms.remove(ambiguous_protein)
+
             if not norms:
                 norms = None
             else:
-                norms = set(norms)  # convert to set first just in case the original tagger returns repeated ids (happened)
                 norms = ",".join(norms)
 
             if n_class_id:
