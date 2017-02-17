@@ -26,6 +26,16 @@ from sklearn.metrics import euclidean_distances
 from sklearn.preprocessing import FunctionTransformer, maxabs_scale
 
 
+def get_model_and_data(sentence_distance, use_pred):
+    corpus = read_corpus("LocText", predict_entities=use_pred)
+
+    # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
+    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
+    annotator.pipeline.execute(corpus, train=True)
+    X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
+
+    return (annotator, X, y, groups)
+
 
 def my_cv_generator(groups, num_instances=None):
     if num_instances is not None:
@@ -41,17 +51,6 @@ def my_cv_generator(groups, num_instances=None):
     for training_docs_keys, evaluation_doc_keys in Dataset._cv_kfold_splits_doc_keys_sets(groups.keys(), k, validation_set=True):
         tr, ev = map_indexes(training_docs_keys), map_indexes(evaluation_doc_keys)
         yield tr, ev
-
-
-def get_model_and_data(sentence_distance=0, use_pred=False):
-    corpus = read_corpus("LocText", predict_entities=use_pred)
-
-    # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
-    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
-    annotator.pipeline.execute(corpus, train=True)
-    X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
-
-    return (annotator, X, y, groups)
 
 
 def plot_recursive_features(scoring_name, scores, save_to=None, show=False):
