@@ -21,29 +21,29 @@ Lars = [
 ]
 
 Tanya = [
-    "GO:0016021",
-    "GO:0009507",
-    "GO:0009535",
-    "GO:0005737",
-    "GO:0005783",
-    "GO:0005789",
-    "GO:0005576",
-    "GO:0005794",
-    "GO:0000139",
-    "GO:0005743",
-    "GO:0005739",
-    "GO:0031965",
-    "GO:0005634",
-    "GO:0005778",
-    "GO:0005777",
-    "GO:0005886",
-    "GO:0009536",
-    "GO:0005774",
-    "GO:0005773",
+    # "GO:0016021",  # integral to membrane
+    "GO:0009507",  # chloroplast
+    "GO:0009535",  # chloroplast thylakoid membrane
+    # "GO:0005737",  # cytoplasm
+    "GO:0005783",  # endoplasmic reticulum
+    "GO:0005789",  # endoplasmic reticulum membrane
+    "GO:0005576",  # extracellular region
+    "GO:0005794",  # Golgi apparatus
+    "GO:0000139",  # Golgi membrane
+    "GO:0005743",  # mitochondrial inner membrane
+    "GO:0005739",  # mitochondrion
+    "GO:0031965",  # nuclear membrane
+    "GO:0005634",  # nucleus
+    "GO:0005778",  # peroxisomal membrane
+    "GO:0005777",  # peroxisome
+    "GO:0005886",  # plasma membrane
+    "GO:0009536",  # plastid
+    "GO:0005774",  # vacuolar membrane
+    "GO:0005773",  # vacuole
 ]
 
 Juanmi = [
-    "GO:0016020"
+    # "GO:0016020"  # membrane
 ]
 
 whole_set = set(Lars + Tanya + Juanmi)
@@ -53,12 +53,7 @@ for item in whole_set:
     if not any(are_go_parent_and_child(x, item) for x in whole_set if x != item):
         final_set.update({item})
 
-subcellular_components_top_parents = {
-    'GO:0016020',  # membrane -- http://amigo.geneontology.org/amigo/term/GO:0016020
-    'GO:0005576',  # extracellular region
-    'GO:0005737',  # cytoplasm
-    'GO:0005856',  # cytoskeleton
-    'GO:0005634',  # nucleus
-}
-
-print(final_set)
+print("{")
+for index, item in enumerate(final_set):
+    print("    {},  # {}: {}".format(item, index+1, GO_TREE[item].name))
+print("}")
