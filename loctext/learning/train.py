@@ -1,7 +1,7 @@
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import relation_accept_uniprot_go, _go_ids_accept_single
+from loctext.learning.evaluations import relation_accept_uniprot_go, are_go_parent_and_child, get_localization_name
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -220,8 +220,6 @@ def evaluate(training_corpus, test_corpus, args):
             with open(repo_path(["resources", "features", "SwissProt_relations.pickle"]), "rb") as f:
                 SWISSPROT_RELATIONS = pickle.load(f)
 
-            GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
-
             for docid, doc in test_corpus.documents.items():
 
                 for rel in doc.predicted_relations():
@@ -252,10 +250,10 @@ def evaluate(training_corpus, test_corpus, args):
 
                 for rel_key, count in macro_counter.most_common():
                     u_ac, go = rel_key
-                    name = GO_TREE.get(go, ("", "", ""))[0]
+                    name = get_localization_name(go)
                     inSwissProt = str(go in SWISSPROT_RELATIONS.get(u_ac, set()))
                     try:
-                        childSwissProt = str(any(_go_ids_accept_single(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
+                        childSwissProt = str(any(are_go_parent_and_child(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
                     except KeyError:
                         childSwissProt = str(False)
 
