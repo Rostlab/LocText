@@ -49,6 +49,31 @@ Juanmi = [
     "GO:0005618",  # cell wall
 ]
 
+# -------
+
+LocText_Extra = [
+    "GO:0005929",  # cilium
+    "GO:0000781",  # chromosome, telomeric region
+    "GO:0005933",  # cellular bud
+    "GO:0000777",  # condensed chromosome kinetochore
+    "GO:0042470",  # melanosome
+    "GO:0005694",  # chromosome
+    "GO:0005737",  # cytoplasm
+    "GO:0016021",  # integral component of membrane
+    "GO:0042995",  # cell projection
+    "GO:0045121",  # membrane raft
+    "GO:0009986",  # cell surface
+    "GO:0033107",  # CVT vesicle
+    "GO:0000775",  # chromosome, centromeric region
+    "GO:0005811",  # lipid particle
+    "GO:0016020",  # membrane
+    "GO:0030136",  # clathrin-coated vesicle
+    "GO:0045202",  # synapse
+    "GO:0071944",  # cell periphery
+]
+
+# -------
+
 difficult_cases = [
     "GO:0071159",
     "GO:1990204",
@@ -60,12 +85,16 @@ difficult_cases = [
 
 # -------
 
-whole_set = set(Lars + Tanya + Juanmi)
+whole_set = set(Lars + Tanya + Juanmi + LocText_Extra)
 final_set = set()
 
 for item in whole_set:
     if not any(are_go_parent_and_child(x, item) for x in whole_set if x != item):
         final_set.update({item})
+
+# -------
+
+print()
 
 for difficult in difficult_cases:
     try:
@@ -74,6 +103,8 @@ for difficult in difficult_cases:
         print("Difficult:", difficult)
 
 # -------
+
+print()
 
 print("{")
 for index, item in enumerate(final_set):

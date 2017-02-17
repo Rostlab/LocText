@@ -16,7 +16,7 @@ from nalaf.learning.taggers import Tagger
 from nalaf.structures.data import Entity
 import requests
 import urllib.request
-from loctext.learning.evaluations import are_go_parent_and_child
+from loctext.learning.evaluations import are_go_parent_and_child, get_localization_name
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path
 
 
@@ -236,20 +236,19 @@ class StringTagger(Tagger):
 
         if filter_go_localizations is None:
             self.filter_go_localizations = {
-                'GO:0005634',  # 1: nucleus
-                'GO:0005739',  # 2: mitochondrion
-                'GO:0009536',  # 3: plastid
-                'GO:0005773',  # 4: vacuole
-                'GO:0005829',  # 5: cytosol
-                'GO:0005794',  # 6: Golgi apparatus
-                'GO:0005777',  # 7: peroxisome
-                'GO:0005783',  # 8: endoplasmic reticulum
-                'GO:0005768',  # 9: endosome
-                'GO:0009579',  # 10: thylakoid
-                'GO:0005886',  # 11: plasma membrane
-                'GO:0005856',  # 12: cytoskeleton
-                'GO:0005576',  # 13: extracellular region
-                'GO:0005618',  # 14: cell wall
+                'GO:0009579',  # 1: thylakoid
+                'GO:0005737',  # 2: cytoplasm
+                'GO:0005811',  # 3: lipid particle
+                'GO:0016020',  # 4: membrane
+                'GO:0045202',  # 5: synapse
+                'GO:0005856',  # 6: cytoskeleton
+                'GO:0005694',  # 7: chromosome
+                'GO:0005933',  # 8: cellular bud
+                'GO:0005576',  # 9: extracellular region
+                'GO:0005634',  # 10: nucleus
+                'GO:0071944',  # 11: cell periphery
+                'GO:0009986',  # 12: cell surface
+                'GO:0042995',  # 13: cell projection
             }
         else:
             self.filter_go_localizations = set(filter_go_localizations)
@@ -357,9 +356,11 @@ class StringTagger(Tagger):
                         n_class_id = self.go_norm_id
                         norms.append(norm_id)
                     else:
+                        # print("REJECT", norm_id, get_localization_name(norm_id))
                         pass  # reject
 
                 except KeyError as e:
+                    # print("REJECT", norm_id, get_localization_name(norm_id))
                     pass  # reject
 
             elif norm["type"].startswith("uniprot_ac:"):
