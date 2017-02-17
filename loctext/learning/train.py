@@ -121,7 +121,9 @@ def _select_annotator_submodels(args):
 
         if "D0" == name:
             if args.predict_entities:
-                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC-1487323888.335256-NAMES.log"
+                # selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC-1487323888.335256-NAMES.log"
+                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC-1487338575.949552-NAMES.log"
+
             else:
                 selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_False_LinearSVC-1486292275.065055-NAMES.log"
                 # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
