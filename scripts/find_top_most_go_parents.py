@@ -5,19 +5,19 @@ from loctext.learning.evaluations import are_go_parent_and_child
 GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
 
 Lars = [
-    "GO:0005576",
-    "GO:0005634",
-    "GO:0005739",
-    "GO:0005764",
-    "GO:0005768",
-    "GO:0005773",
-    "GO:0005777",
-    "GO:0005783",
-    "GO:0005794",
-    "GO:0005829",
-    "GO:0005856",
-    "GO:0005886",
-    "GO:0009507"
+    "GO:0005576",  # extracellular
+    "GO:0005634",  # nucleus
+    "GO:0005739",  # mitochondrion
+    "GO:0005764",  # lysosome
+    "GO:0005768",  # endosome
+    "GO:0005773",  # vacuole
+    "GO:0005777",  # peroxisome
+    "GO:0005783",  # endoplasmic reticulum
+    "GO:0005794",  # golgi apparatus
+    "GO:0005829",  # cytosol
+    "GO:0005856",  # cytoskeleton
+    "GO:0005886",  # plasma membrane
+    "GO:0009507",  # chloroplast
 ]
 
 Tanya = [
