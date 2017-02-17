@@ -46,12 +46,31 @@ Juanmi = [
     # "GO:0016020"  # membrane
 ]
 
+difficult_cases = [
+    "GO:0071159",
+    "GO:1990204",
+    "GO:0071141",
+    "GO:0034703",
+    "GO:0005942",
+    "GO:0016021",
+]
+
+# -------
+
 whole_set = set(Lars + Tanya + Juanmi)
 final_set = set()
 
 for item in whole_set:
     if not any(are_go_parent_and_child(x, item) for x in whole_set if x != item):
         final_set.update({item})
+
+for difficult in difficult_cases:
+    try:
+        assert not any(are_go_parent_and_child(x, difficult) for x in final_set)
+    except:
+        print("Difficult:", difficult)
+
+# -------
 
 print("{")
 for index, item in enumerate(final_set):
