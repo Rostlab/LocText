@@ -310,7 +310,7 @@ class StringTagger(Tagger):
 
         try:
             entity_types = self.tagger_entity_types
-            json_response = requests.post(entry_point, json=dict(text=text, ids=entity_types, autodetect=True))
+            json_response = requests.post(entry_point, json=dict(text=text, ids=entity_types, autodetect=True, output="simple"))
             response_status = json_response.status_code
             assert response_status == 200
             return json_response.json()
@@ -338,6 +338,7 @@ class StringTagger(Tagger):
 
         e_class_id = n_class_id = None
         norms = []
+        protein_organisms = set()
 
         for norm in tagger_entity["ids"]:
             # assumption: the e_class_id and n_class_id once set will not change
@@ -358,11 +359,21 @@ class StringTagger(Tagger):
                     pass  # reject
 
             elif norm["type"].startswith("uniprot_ac:"):
-                e_class_id = self.protein_id
-                n_class_id = self.uniprot_norm_id
-                norms.append(norm["id"])
+                organism = int(norm["type"].split(":")[1])
+
+                if organism not in protein_organisms:
+                    protein_organisms.update({organism})
+
+                    e_class_id = self.protein_id
+                    n_class_id = self.uniprot_norm_id
+                    norms.append(norm["id"])
+
+                else:
+                    # Quick-simple way to reject ambiguous entities --> if multiple proteins for the same organism are returned --> reject
+                    return None
 
             elif norm["type"].startswith("string_id:"):
+                # Set e_class_id not to reject; this happens in the few cases the string id cannot be normalized to uniprot
                 e_class_id = self.protein_id
 
         if not e_class_id:
@@ -372,14 +383,7 @@ class StringTagger(Tagger):
             if not norms:
                 norms = None
             else:
-                # We found that for e.g. "membrane proteins" the tagger outputted a repeated normalization id: "GO:0098796"
-                # see: time http -v POST http://localhost:5000/annotate text="membrane proteins" output=tagger-raw
-                # Therefore we make a set to remove repetitions
-
-                # Also beware, although no repetitions involved, the tagger may tag a cellular component to multiple GOs
-                # Example: "protoplasts", normalized to "GO:0005622" and "GO:0044464"
-
-                norms = set(norms)
+                norms = set(norms)  # convert to set first just in case the original tagger returns repeated ids (happened)
                 norms = ",".join(norms)
 
             if n_class_id:
