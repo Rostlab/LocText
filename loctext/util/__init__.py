@@ -61,11 +61,10 @@ def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_d
 
         return file_name
 
-    keys_file = _pickle_beautified_file("KEYS", selected_feat_keys)
     names_file = _pickle_beautified_file("NAMES", selected_feat_names)
     fig_file = all_filenames_prefix + "FIGURE.pdf"
 
-    return (keys_file, names_file, fig_file)
+    return (names_file, fig_file)
 
 
 def unpickle_beautified_file(file_path, k_best=None):

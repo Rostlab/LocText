@@ -58,9 +58,11 @@ for fsel_name, feature_selection in feature_selections:
     file_prefix = "_".join([str(sentence_distance), str(use_pred), fsel_name])
 
     selected_feature_keys = feature_selection.get_support(indices=True)
-    keys, names, fig_file = \
+
+    names, fig_file = \
         print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=file_prefix)
-    print(keys, names)
+
+    print(names)
 
     print()
 

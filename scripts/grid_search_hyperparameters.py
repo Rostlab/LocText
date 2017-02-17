@@ -17,6 +17,7 @@ from sklearn.svm import LinearSVC
 print(__doc__)
 
 SCORING_NAMES = [
+    'precision',
     'f1',
 ]
 
@@ -82,10 +83,11 @@ pipeline = Pipeline([
 feat_sel = SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-50))
 X_new = feat_sel.fit_transform(X, y)
 selected_feature_keys = feat_sel.get_support(indices=True)
-keys, names, fig_file = \
+
+names, fig_file = \
     print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix='LinearSVC_random_state_2727_tol_1e-50')
+
 print()
-print(keys)
 print(names)
 print()
 
