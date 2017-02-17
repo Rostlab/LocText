@@ -52,15 +52,12 @@ def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_d
                     format_str = '    "{}",  # {}'.format(feat, index)
                 _print(format_str)
 
-            _print("# Selected Feature *{}*".format(name))
-            _print()
             _print("[")
 
             for index, feat in enumerate(feats):
                 _print_feat(feat, index)
 
             _print("]")
-            _print()
 
         return file_name
 
