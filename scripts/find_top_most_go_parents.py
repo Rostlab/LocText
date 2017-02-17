@@ -1,6 +1,6 @@
-from loctext.util import simple_parse_GO
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path
 from loctext.learning.evaluations import are_go_parent_and_child
+from loctext.util import simple_parse_GO
 
 GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
 
@@ -44,6 +44,9 @@ Tanya = [
 
 Juanmi = [
     # "GO:0016020"  # membrane
+    "GO:0009579",  # thylakoid  https://en.wikipedia.org/wiki/Thylakoid
+    # "GO:0005840",  # ribosome
+    "GO:0005618",  # cell wall
 ]
 
 difficult_cases = [

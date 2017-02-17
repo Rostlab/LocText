@@ -16,7 +16,8 @@ from nalaf.learning.taggers import Tagger
 from nalaf.structures.data import Entity
 import requests
 import urllib.request
-from collections import OrderedDict
+from loctext.learning.evaluations import are_go_parent_and_child
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path
 
 
 class LocTextDXModelRelationExtractor(RelationExtractor):
@@ -235,18 +236,20 @@ class StringTagger(Tagger):
 
         if filter_go_localizations is None:
             self.filter_go_localizations = {
-                'GO:0005886',  # 1: plasma membrane
-                'GO:0005777',  # 2: peroxisome
-                'GO:0005576',  # 3: extracellular region
-                'GO:0005634',  # 4: nucleus
-                'GO:0005739',  # 5: mitochondrion
-                'GO:0005856',  # 6: cytoskeleton
-                'GO:0005768',  # 7: endosome
-                'GO:0005829',  # 8: cytosol
-                'GO:0005794',  # 9: Golgi apparatus
-                'GO:0005773',  # 10: vacuole
-                'GO:0009536',  # 11: plastid
-                'GO:0005783',  # 12: endoplasmic reticulum
+                'GO:0005634',  # 1: nucleus
+                'GO:0005739',  # 2: mitochondrion
+                'GO:0009536',  # 3: plastid
+                'GO:0005773',  # 4: vacuole
+                'GO:0005829',  # 5: cytosol
+                'GO:0005794',  # 6: Golgi apparatus
+                'GO:0005777',  # 7: peroxisome
+                'GO:0005783',  # 8: endoplasmic reticulum
+                'GO:0005768',  # 9: endosome
+                'GO:0009579',  # 10: thylakoid
+                'GO:0005886',  # 11: plasma membrane
+                'GO:0005856',  # 12: cytoskeleton
+                'GO:0005576',  # 13: extracellular region
+                'GO:0005618',  # 14: cell wall
             }
         else:
             self.filter_go_localizations = set(filter_go_localizations)
@@ -278,9 +281,12 @@ class StringTagger(Tagger):
                     while index < num_of_tagger_entities:
                         entity = tagger_annotations[index]
                         if entity['start'] < part_length:
-                            pred_entity = self.create_nalaf_entity(entity, text, offset_adjustment=(- extra_offset))
-                            part.predicted_annotations.append(pred_entity)
                             index += 1
+
+                            pred_entity = self.create_nalaf_entity(entity, text, offset_adjustment=(- extra_offset))
+                            if pred_entity is not None:
+                                part.predicted_annotations.append(pred_entity)
+
                         else:
                             extra_offset = part_length
                             break
@@ -292,7 +298,8 @@ class StringTagger(Tagger):
 
                     for entity in tagger_annotations:
                         pred_entity = self.create_nalaf_entity(entity, text)
-                        part.predicted_annotations.append(pred_entity)
+                        if pred_entity is not None:
+                            part.predicted_annotations.append(pred_entity)
 
         dataset.validate_entity_offsets()
 
@@ -341,9 +348,14 @@ class StringTagger(Tagger):
                 norms.append(norm["id"])
 
             elif norm["type"] == "-22":
-                e_class_id = self.localization_id
-                n_class_id = self.go_norm_id
-                norms.append(norm["id"])
+                try:
+                    if any(are_go_parent_and_child(accepted_parent, norm["id"]) for accepted_parent in self.filter_go_localizations):
+                        e_class_id = self.localization_id
+                        n_class_id = self.go_norm_id
+                        norms.append(norm["id"])
+
+                except KeyError as e:
+                    pass  # reject
 
             elif norm["type"].startswith("uniprot_ac:"):
                 e_class_id = self.protein_id
@@ -353,29 +365,31 @@ class StringTagger(Tagger):
             elif norm["type"].startswith("string_id:"):
                 e_class_id = self.protein_id
 
-        assert e_class_id is not None, tagger_entity
+        if not e_class_id:
+            return None  # reject
 
-        if not norms:
-            norms = None
         else:
-            # We found that for e.g. "membrane proteins" the tagger outputted a repeated normalization id: "GO:0098796"
-            # see: time http -v POST http://localhost:5000/annotate text="membrane proteins" output=tagger-raw
-            # Therefore we make a set to remove repetitions
+            if not norms:
+                norms = None
+            else:
+                # We found that for e.g. "membrane proteins" the tagger outputted a repeated normalization id: "GO:0098796"
+                # see: time http -v POST http://localhost:5000/annotate text="membrane proteins" output=tagger-raw
+                # Therefore we make a set to remove repetitions
 
-            # Also beware, although no repetitions involved, the tagger may tag a cellular component to multiple GOs
-            # Example: "protoplasts", normalized to GO:0005622" and "GO:0044464"
+                # Also beware, although no repetitions involved, the tagger may tag a cellular component to multiple GOs
+                # Example: "protoplasts", normalized to "GO:0005622" and "GO:0044464"
 
-            norms = set(norms)
-            norms = ",".join(norms)
+                norms = set(norms)
+                norms = ",".join(norms)
 
-        if n_class_id:
-            norms_dic = {n_class_id: norms}
-        else:
-            norms_dic = None
+            if n_class_id:
+                norms_dic = {n_class_id: norms}
+            else:
+                norms_dic = None
 
-        pred_entity = Entity(class_id=e_class_id, offset=offset, text=entity_text, norm=norms_dic)
+            pred_entity = Entity(class_id=e_class_id, offset=offset, text=entity_text, norm=norms_dic)
 
-        return pred_entity
+            return pred_entity
 
 
 # usage of LoctextAnnotator:
