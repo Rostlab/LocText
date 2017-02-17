@@ -81,9 +81,10 @@ def simple_parse(go_file='', args=None, print_out=False, create_dictionary=True)
                     if go_id in may_not_be_in_hierarchy:
                         may_not_be_in_hierarchy.remove(go_id)
 
-                    term = dictionary.get(go_id, GOTerm(name=None, parents=[], children=[]))
-                    term = term._replace(name=name.strip())
-                    dictionary[go_id] = term
+                    if create_dictionary:
+                        term = dictionary.get(go_id, GOTerm(name=None, parents=[], children=[]))
+                        term = term._replace(name=name.strip())
+                        dictionary[go_id] = term
                 else:
                     state = 'ignore_term'
 
