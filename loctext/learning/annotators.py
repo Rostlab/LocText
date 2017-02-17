@@ -218,6 +218,7 @@ class StringTagger(Tagger):
         # Rather, put those organisms we know we collected documents from
         tagger_entity_types="-22,-3,9606,3702,4932",
         send_whole_once=True,
+        filter_go_localizations=None,
         host='http://127.0.0.1:5000'
     ):
 
@@ -231,6 +232,25 @@ class StringTagger(Tagger):
         self.taxonomy_norm_id = taxonomy_norm_id
         self.tagger_entity_types = tagger_entity_types
         self.send_whole_once = send_whole_once
+
+        if filter_go_localizations is None:
+            self.filter_go_localizations = {
+                'GO:0005886',  # 1: plasma membrane
+                'GO:0005777',  # 2: peroxisome
+                'GO:0005576',  # 3: extracellular region
+                'GO:0005634',  # 4: nucleus
+                'GO:0005739',  # 5: mitochondrion
+                'GO:0005856',  # 6: cytoskeleton
+                'GO:0005768',  # 7: endosome
+                'GO:0005829',  # 8: cytosol
+                'GO:0005794',  # 9: Golgi apparatus
+                'GO:0005773',  # 10: vacuole
+                'GO:0009536',  # 11: plastid
+                'GO:0005783',  # 12: endoplasmic reticulum
+            }
+        else:
+            self.filter_go_localizations = set(filter_go_localizations)
+
         self.host = host
 
 

@@ -74,5 +74,5 @@ for difficult in difficult_cases:
 
 print("{")
 for index, item in enumerate(final_set):
-    print("    {},  # {}: {}".format(item, index+1, GO_TREE[item].name))
+    print("    '{}',  # {}: {}".format(item, index+1, GO_TREE[item].name))
 print("}")
