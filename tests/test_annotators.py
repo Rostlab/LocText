@@ -172,9 +172,9 @@ def test_LocText_D0_D1(corpus_percentage):
 # "Full" as in the full pipeline: first ner, then re
 def test_baseline_full(corpus_percentage):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.3811
+        EXPECTED_F = 0.4306
     else:
-        EXPECTED_F = None
+        EXPECTED_F = 0.3629
 
     corpus = read_corpus("LocText", corpus_percentage, predict_entities=True)
 
@@ -210,7 +210,7 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=Fa
 
     corpus = read_corpus("LocText", corpus_percentage, predict_entities)
 
-    rel_evaluation = evaluate_with_argv(['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL)])
+    rel_evaluation = evaluate_with_argv(['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL), '--predict_entities', 'true'])
 
     print("LocText " + model, rel_evaluation)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
