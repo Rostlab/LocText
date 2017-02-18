@@ -199,6 +199,13 @@ def train(training_set, args, submodel, execute_pipeline):
 
     submodel.model.train(training_set)
 
+    with open("pio.bin", "wb") as f:
+        pickle.dump(submodel.model, f)
+
+    with open("pio.bin", "rb") as f:
+        copy = pickle.load(f)
+        # submodel.model = copy
+
     return submodel.annotate
 
 
