@@ -24,7 +24,7 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
-    parser.add_argument('--test_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
+    parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
     parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
     parser.add_argument('--predict_entities', default=False, type=bool, choices=[True, False])
@@ -202,7 +202,7 @@ def train(training_set, args, submodel, execute_pipeline):
     return submodel.annotate
 
 
-def evaluate(training_corpus, test_corpus, args):
+def evaluate(training_corpus, eval_corpus, args):
     evaluator = args.evaluator
 
     submodels = _select_annotator_submodels(args)
@@ -219,17 +219,17 @@ def evaluate(training_corpus, test_corpus, args):
 
         annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
 
-        if not args.test_corpus:
+        if not args.eval_corpus:
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
             rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
         else:
-            submodel.pipeline.execute(test_corpus, train=False, only_features=False)
+            submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
             selected_features = unpickle_beautified_file(submodel.selected_features_file)
             submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
-            submodel.model.write_vector_instances(test_corpus, submodel.pipeline.feature_set)
+            submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
 
             annotator = annotator_gen_fun(training_corpus)
-            annotator(test_corpus)
+            annotator(eval_corpus)
 
             macro_counter = Counter()
             micro_counter = {}
@@ -237,7 +237,7 @@ def evaluate(training_corpus, test_corpus, args):
             with open(repo_path(["resources", "features", "SwissProt_relations.pickle"]), "rb") as f:
                 SWISSPROT_RELATIONS = pickle.load(f)
 
-            for docid, doc in test_corpus.documents.items():
+            for docid, doc in eval_corpus.documents.items():
 
                 for rel in doc.predicted_relations():
                     e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
@@ -258,7 +258,7 @@ def evaluate(training_corpus, test_corpus, args):
                         rel_key_docid_counters.update({docid})
                         micro_counter[rel_key] = rel_key_docid_counters
 
-            with open(args.test_corpus + "_" + "relations.tsv", "w") as f:
+            with open(args.eval_corpus + "_" + "relations.tsv", "w") as f:
 
                 header = ["# Type", "UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "Child SwissProt", "Confirmed", "Num Docs"]
                 max_num_docs = len(micro_counter[macro_counter.most_common(1)[0][0]])
@@ -287,13 +287,13 @@ def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
 
     training_corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
-    test_corpus = None
-    if args.test_corpus:
-        test_corpus = read_corpus(args.test_corpus, args.corpus_percentage, args.predict_entities)
+    eval_corpus = None
+    if args.eval_corpus:
+        eval_corpus = read_corpus(args.eval_corpus, args.corpus_percentage, args.predict_entities)
 
     print_run_args(args, training_corpus)
     print()
-    result = evaluate(training_corpus, test_corpus, args)
+    result = evaluate(training_corpus, eval_corpus, args)
     print()
     print_run_args(args, training_corpus)
     print_corpus_pipeline_dependent_stats(training_corpus)
