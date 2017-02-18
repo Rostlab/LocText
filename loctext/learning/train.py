@@ -124,26 +124,42 @@ def _select_annotator_submodels(args):
                 # selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC-1487323888.335256-NAMES.log"
                 selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC-1487338575.949552-NAMES.log"
 
+                submodels[name] = LocTextDXModelRelationExtractor(
+                    pro_id, loc_id, rel_id,
+                    sentence_distance=0,
+                    selected_features_file=selected_features_file,
+                    feature_generators=indirect_feature_generators,
+                    use_predicted_entities=args.predict_entities,
+                    execute_pipeline=False,
+                    model=None,
+                    classification_threshold=args.svm_threshold_ss_model,
+                    use_tree_kernel=args.use_tk,
+                    preprocess=True,
+                    #
+                    class_weight=None,
+                    kernel='linear',
+                    C=1,
+                )
+
             else:
                 selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_False_LinearSVC-1486292275.065055-NAMES.log"
-                # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
 
-            submodels[name] = LocTextDXModelRelationExtractor(
-                pro_id, loc_id, rel_id,
-                sentence_distance=0,
-                selected_features_file=selected_features_file,
-                feature_generators=indirect_feature_generators,
-                use_predicted_entities=args.predict_entities,
-                execute_pipeline=False,
-                model=None,
-                classification_threshold=args.svm_threshold_ss_model,
-                use_tree_kernel=args.use_tk,
-                preprocess=True,
-                #
-                class_weight=None,
-                kernel='linear',
-                C=1,
-            )
+                submodels[name] = LocTextDXModelRelationExtractor(
+                    pro_id, loc_id, rel_id,
+                    sentence_distance=0,
+                    selected_features_file=selected_features_file,
+                    feature_generators=indirect_feature_generators,
+                    use_predicted_entities=args.predict_entities,
+                    execute_pipeline=False,
+                    model=None,
+                    classification_threshold=args.svm_threshold_ss_model,
+                    use_tree_kernel=args.use_tk,
+                    preprocess=True,
+                    #
+                    class_weight=None,
+                    kernel='linear',
+                    C=1,
+                )
 
         if "D1" == name:
             selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/1_False_LinearSVC-1486481526.730234-NAMES.log"
