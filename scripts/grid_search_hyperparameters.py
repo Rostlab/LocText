@@ -33,39 +33,26 @@ SCORING_NAMES = [
 ]
 
 FEATURE_SELECTIONS = [
-    ("LinearSVC", SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5)))
+    ("LinearSVC_C=4.0", SelectFromModel(LinearSVC(C=4.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    ("LinearSVC_C=2.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    ("LinearSVC_C=1.0", SelectFromModel(LinearSVC(C=1.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
 ]
 
 PIPELINE = Pipeline([
-    # ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5)))
+    # ("feat_sel", SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5))),
     ('classify', SVC(kernel="linear"))
 ])
 
 SEARCH_SPACE = [
-    # {
-    #     # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
-    #     # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-    #     # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-    #     # 'feat_sel__estimator__tol': [1e-50],
-    #     # 'feat_sel__estimator__max_iter': [1000, 10000],
-    #     #
-    #     'classify': [SVC()],
-    #     'classify__kernel': ['rbf'],
-    #     'classify__class_weight': [None, 'balanced'],
-    #     'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
-    #     'classify__gamma': [2**log2 for log2 in list(range(3, -15, -2))],
-    # },
+    {
+        'classify': [SVC()],
+        'classify__kernel': ['rbf'],
+        'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}],
+        'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
+        'classify__gamma': [2**log2 for log2 in list(range(3, -15, -2))],
+    },
 
     {
-        # 'feat_sel': [SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False))],
-        # 'feat_sel__estimator__penalty': ['l1'],
-        # 'feat_sel__estimator__dual': [False],
-        # 'feat_sel__estimator__C': [1],
-        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-        # 'feat_sel__estimator__tol': [1e-50],
-        # 'feat_sel__estimator__max_iter': [1000, 10000],
-        #
         'classify': [SVC()],
         'classify__kernel': ['linear'],
         'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}],
@@ -73,19 +60,13 @@ SEARCH_SPACE = [
     },
 
     {
-        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
-        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-        # 'feat_sel__estimator__tol': [1e-50],
-        # 'feat_sel__estimator__max_iter': [1000, 10000],
-        #
         # see: http://scikit-learn.org/stable/auto_examples/model_selection/randomized_search.html
-        # 'classify': [RandomForestClassifier()],
-        # 'classify__max_features': [None, 'sqrt', 'log2'],
-        # 'classify__max_depth': [None, 3, 5, 10, 20],
-        # 'classify__bootstrap': [True, False],
-        # 'classify__n_jobs': [-1],
-        # 'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'classify': [RandomForestClassifier()],
+        'classify__max_features': [None, 'sqrt', 'log2'],
+        'classify__max_depth': [None, 3, 5, 10, 20],
+        'classify__bootstrap': [True, False],
+        'classify__n_jobs': [-1],
+        'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
     },
 ]
 
@@ -94,13 +75,12 @@ SEARCH_SPACE = [
 for fsel_name, feature_selection in FEATURE_SELECTIONS:
 
     X_new = feature_selection.fit_transform(X, y)
-    selected_feature_keys = feature_selection.get_support(indices=True)
 
     for scoring_name in SCORING_NAMES:
         print()
         print("----------------------------------------------------------------------------------------------------")
         print()
-        print("# Tuning hyper-parameters for *** {} ***".format(scoring_name))
+        print("# Tuning hyper-parameters for *** {} *** with {}".format(scoring_name, fsel_name))
         print()
 
         grid = GridSearchCV(
@@ -117,7 +97,7 @@ for fsel_name, feature_selection in FEATURE_SELECTIONS:
         grid.fit(X_new, y)
 
         print()
-        print("Best parameters found for *** {} ***".format(scoring_name))
+        print("Best parameters found for *** {} *** with {}".format(scoring_name, fsel_name))
         print()
         print(grid.best_params_)
         print()
@@ -129,7 +109,7 @@ for fsel_name, feature_selection in FEATURE_SELECTIONS:
 
         desc_sorted_best_indices = sorted(range(len(means)), key=lambda k: (means[k] - stds[k]), reverse=True)
 
-        for index in desc_sorted_best_indices:
+        for index in desc_sorted_best_indices[:20]:
             mean = means[index]
             std = stds[index]
             params = grid.cv_results_['params'][index]
@@ -141,6 +121,7 @@ for fsel_name, feature_selection in FEATURE_SELECTIONS:
 
     print()
 
+    selected_feature_keys = feature_selection.get_support(indices=True)
     fsel_names, _ = print_selected_features(
         selected_feature_keys,
         annotator.pipeline.feature_set,
