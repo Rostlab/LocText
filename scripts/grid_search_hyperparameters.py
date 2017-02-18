@@ -49,7 +49,7 @@ SEARCH_SPACE = [
         'classify__kernel': ['rbf'],
         'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}],
         'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
-        'classify__gamma': [2**log2 for log2 in list(range(3, -15, -2))],
+        'classify__gamma': ['auto'] + [2**log2 for log2 in list(range(3, -15, -2))],
     },
 
     {
