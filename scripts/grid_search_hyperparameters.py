@@ -21,6 +21,8 @@ print(__doc__)
 sentence_distance = int(sys.argv[1])
 use_pred = sys.argv[2].lower() == "true"
 
+annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
+
 print(sentence_distance, use_pred)
 
 # ----------------------------------------------------------------------------------------------------
@@ -30,24 +32,29 @@ SCORING_NAMES = [
     'f1',
 ]
 
-# ----------------------------------------------------------------------------------------------------
+FEATURE_SELECTIONS = [
+    ("LinearSVC", SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5)))
+]
 
-# TODO put threshold
+PIPELINE = Pipeline([
+    # ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5)))
+    ('classify', SVC(kernel="linear"))
+])
 
 SEARCH_SPACE = [
-    {
-        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
-        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-        # 'feat_sel__estimator__tol': [1e-50],
-        # 'feat_sel__estimator__max_iter': [1000, 10000],
-        #
-        'classify': [SVC()],
-        'classify__kernel': ['rbf'],
-        'classify__class_weight': [None, 'balanced'],
-        'classify__C': [2**log2 for log2 in list(range(-7, 15, 1))],
-        'classify__gamma': [2**log2 for log2 in list(range(3, -15, -2))],
-    },
+    # {
+    #     # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
+    #     # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+    #     # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+    #     # 'feat_sel__estimator__tol': [1e-50],
+    #     # 'feat_sel__estimator__max_iter': [1000, 10000],
+    #     #
+    #     'classify': [SVC()],
+    #     'classify__kernel': ['rbf'],
+    #     'classify__class_weight': [None, 'balanced'],
+    #     'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
+    #     'classify__gamma': [2**log2 for log2 in list(range(3, -15, -2))],
+    # },
 
     {
         # 'feat_sel': [SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False))],
@@ -61,8 +68,8 @@ SEARCH_SPACE = [
         #
         'classify': [SVC()],
         'classify__kernel': ['linear'],
-        'classify__class_weight': [None, 'balanced'],
-        'classify__C': [2**log2 for log2 in list(range(-7, 15, 1))],
+        'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}],
+        'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
     },
 
     {
@@ -82,65 +89,58 @@ SEARCH_SPACE = [
     },
 ]
 
-#####
+# ----------------------------------------------------------------------------------------------------
 
-annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
+for fsel_name, feature_selection in FEATURE_SELECTIONS:
 
-pipeline = Pipeline([
-    # ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5)))
-    ('classify', SVC(kernel="linear"))
-])
+    X_new = feature_selection.fit_transform(X, y)
+    selected_feature_keys = feature_selection.get_support(indices=True)
 
-feat_sel = SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5))
-X_new = feat_sel.fit_transform(X, y)
-selected_feature_keys = feat_sel.get_support(indices=True)
+    for scoring_name in SCORING_NAMES:
+        print()
+        print("----------------------------------------------------------------------------------------------------")
+        print()
+        print("# Tuning hyper-parameters for *** {} ***".format(scoring_name))
+        print()
 
-file_prefix = "_".join([str(sentence_distance), str(use_pred), "LinearSVC"])
+        grid = GridSearchCV(
+            estimator=PIPELINE,
+            param_grid=SEARCH_SPACE,
+            verbose=True,
+            cv=my_cv_generator(groups, len(y)),
+            scoring=scoring_name,
+            refit=False,
+            iid=False,
+            n_jobs=-1,
+        )
 
-names, fig_file = \
-    print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=file_prefix)
+        grid.fit(X_new, y)
 
-print()
-print(names)
-print()
+        print()
+        print("Best parameters found for *** {} ***".format(scoring_name))
+        print()
+        print(grid.best_params_)
+        print()
+        print("Grid scores:")
+        print()
 
-for scoring_name in SCORING_NAMES:
-    print()
-    print()
-    print("# Tuning hyper-parameters for *** {} ***".format(scoring_name))
-    print()
+        means = grid.cv_results_['mean_test_score']
+        stds = grid.cv_results_['std_test_score']
 
-    grid = GridSearchCV(
-        estimator=pipeline,
-        param_grid=SEARCH_SPACE,
-        verbose=True,
-        cv=my_cv_generator(groups, len(y)),
-        scoring=scoring_name,
-        refit=True,
-        iid=False,
-        n_jobs=-1,
-    )
+        desc_sorted_best_indices = sorted(range(len(means)), key=lambda k: (means[k] - stds[k]), reverse=True)
 
-    grid.fit(X_new, y)
+        for index in desc_sorted_best_indices:
+            mean = means[index]
+            std = stds[index]
+            params = grid.cv_results_['params'][index]
 
-    print("Best parameters set found on development set:")
-    print()
-    print(grid.best_params_)
-    print()
-    print("Grid scores on development set:")
-    print()
+            print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+            print()
 
-    means = grid.cv_results_['mean_test_score']
-    stds = grid.cv_results_['std_test_score']
-
-    desc_sorted_best_indices = sorted(range(len(means)), key=lambda k: (means[k] - stds[k]), reverse=True)
-
-    for index in desc_sorted_best_indices:
-        mean = means[index]
-        std = stds[index]
-        params = grid.cv_results_['params'][index]
-
-        print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
         print()
 
     print()
+
+    file_prefix = "_".join([str(sentence_distance), str(use_pred), fsel_name])
+    names, fig_file = \
+        print_selected_features(selected_feature_keys, annotator.PIPELINE.feature_set, file_prefix=file_prefix)
