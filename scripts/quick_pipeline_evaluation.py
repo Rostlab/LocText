@@ -21,6 +21,7 @@ from sklearn.model_selection import cross_val_score
 import time
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA, TruncatedSVD
+from sklearn.linear_model import RandomizedLogisticRegression
 
 sentence_distance = int(sys.argv[1])
 use_pred = sys.argv[2].lower() == "true"
@@ -35,7 +36,12 @@ X = X.toarray()
 print("Shape X, before: ", X.shape)
 
 feature_selections = [
-    ("LinearSVC", SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-50))),
+    ("LinearSVC_C=1", SelectFromModel(LinearSVC(C=1, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    ("LinearSVC_C=0.5", SelectFromModel(LinearSVC(C=0.5, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    ("LinearSVC_C=0.25", SelectFromModel(LinearSVC(C=0.25, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+
+    ("RandomizedLogisticRegression_C=1", SelectFromModel(RandomizedLogisticRegression(C=1))),
+    ("RandomizedLogisticRegression_C=0.5", SelectFromModel(RandomizedLogisticRegression(C=0.5))),
 
     # ("PCA_2", PCA(2)),
     # ("PCA_10", PCA(2)),
