@@ -33,7 +33,6 @@ SCORING_NAMES = [
 ]
 
 FEATURE_SELECTIONS = [
-    # ("LinearSVC_C=4.0", SelectFromModel(LinearSVC(C=4.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
     ("LinearSVC_C=2.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
     ("LinearSVC_C=1.0", SelectFromModel(LinearSVC(C=1.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
 ]
@@ -44,12 +43,12 @@ PIPELINE = Pipeline([
 ])
 
 SEARCH_SPACE = [
-    {
-        'classify': [SVC(kernel='rbf')],
-        'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}, {+1: 1.5}, {+1: 2.0}],
-        'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
-        'classify__gamma': ['auto'] + [2**log2 for log2 in list(range(3, -15, -2))],
-    },
+    # {
+    #     'classify': [SVC(kernel='rbf')],
+    #     'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}, {+1: 1.5}, {+1: 2.0}],
+    #     'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
+    #     'classify__gamma': ['auto'] + [2**log2 for log2 in list(range(2, -12, -1))],
+    # },
 
     {
         'classify': [SVC(kernel='linear')],
@@ -58,15 +57,15 @@ SEARCH_SPACE = [
         'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
     },
 
-    {
-        # see: http://scikit-learn.org/stable/auto_examples/model_selection/randomized_search.html
-        'classify': [RandomForestClassifier(n_jobs=-1)],
-        'classify__n_estimators': [10, 50, 100],
-        'classify__max_features': [None, 'sqrt', 'log2'],
-        'classify__max_depth': [None, 3, 5, 10, 20],
-        'classify__bootstrap': [True, False],
-        'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}, {+1: 1.5}, {+1: 2.0}],
-    },
+    # {
+    #     # see: http://scikit-learn.org/stable/auto_examples/model_selection/randomized_search.html
+    #     'classify': [RandomForestClassifier(n_jobs=-1)],
+    #     'classify__n_estimators': [10, 50, 100],
+    #     'classify__max_features': [None, 'sqrt', 'log2'],
+    #     'classify__max_depth': [None, 3, 5, 10, 20],
+    #     'classify__bootstrap': [True, False],
+    #     'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}, {+1: 1.5}, {+1: 2.0}],
+    # },
 ]
 
 # ----------------------------------------------------------------------------------------------------
