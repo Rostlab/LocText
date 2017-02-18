@@ -33,6 +33,7 @@ SCORING_NAMES = [
 ]
 
 FEATURE_SELECTIONS = [
+    # ("LinearSVC_C=4.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
     ("LinearSVC_C=2.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
     ("LinearSVC_C=1.0", SelectFromModel(LinearSVC(C=1.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
 ]
@@ -43,17 +44,17 @@ PIPELINE = Pipeline([
 ])
 
 SEARCH_SPACE = [
-    # {
-    #     'classify': [SVC(kernel='rbf')],
-    #     'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}, {+1: 1.5}, {+1: 2.0}],
-    #     'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
-    #     'classify__gamma': ['auto'] + [2**log2 for log2 in list(range(2, -12, -1))],
-    # },
+    {
+        'classify': [SVC(kernel='rbf')],
+        'classify__class_weight': [None, 'balanced'],
+        'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
+        'classify__gamma': ['auto'] + [2**log2 for log2 in list(range(-3, -12, -1))],
+    },
 
     {
         'classify': [SVC(kernel='linear')],
         'classify__kernel': ['linear'],
-        'classify__class_weight': [None, 'balanced', {-1: 1.5}, {-1: 2.0}, {+1: 1.5}, {+1: 2.0}],
+        'classify__class_weight': [None, 'balanced'],
         'classify__C': [2**log2 for log2 in list(range(-3, 10, 1))],
     },
 
