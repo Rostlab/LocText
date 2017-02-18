@@ -22,7 +22,7 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
 
-    parser.add_argument('--corpus', default="LocText", choices=["LocText"])
+    parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
     parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
@@ -293,7 +293,7 @@ def evaluate(training_corpus, eval_corpus, args):
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
 
-    training_corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
+    training_corpus = read_corpus(args.training_corpus, args.corpus_percentage, args.predict_entities)
     eval_corpus = None
     if args.eval_corpus:
         eval_corpus = read_corpus(args.eval_corpus, args.corpus_percentage, args.predict_entities)
