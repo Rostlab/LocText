@@ -35,16 +35,16 @@ def parse_arguments(argv=[]):
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
     parser.add_argument('--use_tk', default=False, action='store_true')
 
-    parser.add_argument('--minority_class_ss_model', type=int, default=+1, choices=[-1, +1])
-    parser.add_argument('--majority_class_undersampling_ss_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-    parser.add_argument('--svm_hyperparameter_c_ss_model', action="store", default=0.0080)
-    parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
-
-    # TODO clean and review how to set parameters for all different sentece models
-    parser.add_argument('--minority_class_ds_model', type=int, default=+1, choices=[-1, +1])
-    parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.07, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-    parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
-    parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
+    # # TODO clean and review how to set parameters for all different sentece models
+    # parser.add_argument('--minority_class_ss_model', type=int, default=+1, choices=[-1, +1])
+    # parser.add_argument('--majority_class_undersampling_ss_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    # parser.add_argument('--svm_hyperparameter_c_ss_model', action="store", default=0.0080)
+    # parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
+    #
+    # parser.add_argument('--minority_class_ds_model', type=int, default=+1, choices=[-1, +1])
+    # parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.07, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    # parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
+    # parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
     args = parser.parse_args(argv)
 
@@ -91,8 +91,8 @@ def parse_arguments(argv=[]):
             except Exception as e:
                 raise Exception("The argument {} must be of type {}".format(argument, str(expected_type)))
 
-    args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
-    args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
+    # args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
+    # args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
 
     return args
 
@@ -131,7 +131,7 @@ def _select_annotator_submodels(args):
                     use_predicted_entities=args.predict_entities,
                     execute_pipeline=False,
                     model=None,
-                    classification_threshold=args.svm_threshold_ss_model,
+                    classification_threshold=0.0,  # args.svm_threshold_ss_model,
                     use_tree_kernel=args.use_tk,
                     preprocess=True,
                     #
@@ -151,7 +151,7 @@ def _select_annotator_submodels(args):
                     use_predicted_entities=args.predict_entities,
                     execute_pipeline=False,
                     model=None,
-                    classification_threshold=args.svm_threshold_ss_model,
+                    classification_threshold=0.0,  # args.svm_threshold_ss_model,
                     use_tree_kernel=args.use_tk,
                     preprocess=True,
                     #
@@ -171,7 +171,7 @@ def _select_annotator_submodels(args):
                 use_predicted_entities=args.predict_entities,
                 execute_pipeline=False,
                 model=None,
-                classification_threshold=args.svm_threshold_ss_model,
+                classification_threshold=0.0,  # args.svm_threshold_ss_model,
                 use_tree_kernel=args.use_tk,
                 preprocess=True,
                 #
