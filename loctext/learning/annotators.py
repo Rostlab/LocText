@@ -74,7 +74,6 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             model_params["random_state"] = 2727
             pass
 
-        # TODO this would require setting the default model_path
         self.model = model if model else SklSVM(**model_params)
 
 
