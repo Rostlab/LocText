@@ -34,8 +34,8 @@ SCORING_NAMES = [
 
 FEATURE_SELECTIONS = [
     # ("LinearSVC_C=4.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
-    ("LinearSVC_C=2.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
-    ("LinearSVC_C=1.0", SelectFromModel(LinearSVC(C=1.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    ("LinearSVC_C=2.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, tol=1e-5))),
+    ("LinearSVC_C=1.0", SelectFromModel(LinearSVC(C=1.0, penalty="l1", dual=False, tol=1e-5))),
 ]
 
 PIPELINE = Pipeline([
