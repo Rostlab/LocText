@@ -35,15 +35,15 @@ print("Shape X, before: ", X.shape)
 feature_selections = [
     ("LinearSVC", SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-50))),
     # ("LogisticRegression", SelectFromModel(LogisticRegression(penalty="l1"))),
-    #("RandomForestClassifier_20", SelectFromModel(RandomForestClassifier(n_estimators=20, max_depth=3))),
-    #("RandomForestClassifier_100", SelectFromModel(RandomForestClassifier(n_estimators=100, max_depth=3))),
+    # ("RandomForestClassifier_20", SelectFromModel(RandomForestClassifier(n_estimators=20, max_depth=3))),
+    # ("RandomForestClassifier_100", SelectFromModel(RandomForestClassifier(n_estimators=100, max_depth=3))),
 ]
 
 estimators = [
     ("SVC_linear", SVC(kernel='linear')),
     # ("SVC_rbf", SVC(kernel='rbf')),
-    #("RandomForestClassifier_20", RandomForestClassifier(n_estimators=20, max_depth=3)),
-    #("RandomForestClassifier_100", RandomForestClassifier(n_estimators=100, max_depth=3)),
+    # ("RandomForestClassifier_20", RandomForestClassifier(n_estimators=20, max_depth=3)),
+    # ("RandomForestClassifier_100", RandomForestClassifier(n_estimators=100, max_depth=3)),
 ]
 
 for fsel_name, feature_selection in feature_selections:

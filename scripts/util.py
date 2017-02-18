@@ -7,6 +7,7 @@ from sklearn.datasets import make_classification
 from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import mutual_info_classif
+from sklearn.metrics import fbeta_score, make_scorer
 import numpy as np
 import scipy
 import time
@@ -24,6 +25,10 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics import euclidean_distances
 from sklearn.preprocessing import FunctionTransformer, maxabs_scale
+
+
+F05_SCORER = make_scorer(fbeta_score, beta=0.5)  # Assigns double the weight to *precision*
+F025_SCORER = make_scorer(fbeta_score, beta=0.25)  # Assigns quadruple the weight to *precision*
 
 
 def get_model_and_data(sentence_distance, use_pred):

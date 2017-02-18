@@ -26,7 +26,7 @@ print(sentence_distance, use_pred)
 # ----------------------------------------------------------------------------------------------------
 
 SCORING_NAMES = [
-    'precision',
+    F05_SCORER,
     'f1',
 ]
 
@@ -44,7 +44,7 @@ SEARCH_SPACE = [
         #
         'classify': [SVC()],
         'classify__kernel': ['rbf'],
-        'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'classify__class_weight': [None, 'balanced'],
         'classify__C': [2**log2 for log2 in list(range(-7, 15, 1))],
         'classify__gamma': [2**log2 for log2 in list(range(3, -15, -2))],
     },
@@ -61,7 +61,7 @@ SEARCH_SPACE = [
         #
         'classify': [SVC()],
         'classify__kernel': ['linear'],
-        'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        'classify__class_weight': [None, 'balanced'],
         'classify__C': [2**log2 for log2 in list(range(-7, 15, 1))],
     },
 
