@@ -141,6 +141,9 @@ for fsel_name, feature_selection in FEATURE_SELECTIONS:
 
     print()
 
-    file_prefix = "_".join([str(sentence_distance), str(use_pred), fsel_name])
-    names, fig_file = \
-        print_selected_features(selected_feature_keys, annotator.PIPELINE.feature_set, file_prefix=file_prefix)
+    fsel_names, _ = print_selected_features(
+        selected_feature_keys,
+        annotator.pipeline.feature_set,
+        file_prefix=("_".join([str(sentence_distance), str(use_pred), fsel_name]))
+    )
+    print(fsel_names)
