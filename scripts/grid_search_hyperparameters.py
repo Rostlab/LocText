@@ -1,3 +1,5 @@
+import sys
+
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 
@@ -16,21 +18,30 @@ from sklearn.svm import LinearSVC
 
 print(__doc__)
 
+sentence_distance = int(sys.argv[1])
+use_pred = sys.argv[2].lower() == "true"
+
+print(sentence_distance, use_pred)
+
+# ----------------------------------------------------------------------------------------------------
+
 SCORING_NAMES = [
     'precision',
     'f1',
 ]
 
+# ----------------------------------------------------------------------------------------------------
+
 # TODO put threshold
 
 SEARCH_SPACE = [
     {
-    #     # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
-    #     # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
-    #     # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
-    #     # 'feat_sel__estimator__tol': [1e-50],
-    #     # 'feat_sel__estimator__max_iter': [1000, 10000],
-    #     #
+        # 'feat_sel__estimator__C': [2**log2 for log2 in list(range(-3, 2, 1))],
+        # 'feat_sel__estimator__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
+        # 'feat_sel__estimator__random_state': [None, 2727, 1, 5, 10],
+        # 'feat_sel__estimator__tol': [1e-50],
+        # 'feat_sel__estimator__max_iter': [1000, 10000],
+        #
         'classify': [SVC()],
         'classify__kernel': ['rbf'],
         'classify__class_weight': [None, 'balanced', {-1: 2}, {+1: 2}],
@@ -73,19 +84,21 @@ SEARCH_SPACE = [
 
 #####
 
-annotator, X, y, groups = get_model_and_data()
+annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
 
 pipeline = Pipeline([
-    # ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False))),
+    # ('feat_sel', SelectFromModel(estimator=LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5)))
     ('classify', SVC(kernel="linear"))
 ])
 
-feat_sel = SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-50))
+feat_sel = SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-5))
 X_new = feat_sel.fit_transform(X, y)
 selected_feature_keys = feat_sel.get_support(indices=True)
 
+file_prefix = "_".join([str(sentence_distance), str(use_pred), "LinearSVC"])
+
 names, fig_file = \
-    print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix='LinearSVC_random_state_2727_tol_1e-50')
+    print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=file_prefix)
 
 print()
 print(names)
