@@ -21,6 +21,7 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
+    parser.add_argument('--predict_entities', default="False", choices=["True", "true", "False", "false"])
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
 
     parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
@@ -29,11 +30,8 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4])
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
-    parser.add_argument('--predict_entities', default="False", choices=["True", "true", "False", "false"])
-    parser.add_argument('--use_test_set', default=False, action='store_true')
+    parser.add_argument('--cv_with_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
-
-    parser.add_argument('--use_tk', default=False, action='store_true')
 
     # # TODO clean and review how to set parameters for all different sentece models
     # parser.add_argument('--minority_class_ss_model', type=int, default=+1, choices=[-1, +1])
@@ -101,16 +99,15 @@ def evaluate_with_argv(argv=[]):
 
 
 def evaluate(args, training_corpus, eval_corpus):
-    evaluator = args.evaluator
 
     submodels = _select_annotator_submodels(args)
-    execute_only_features = False
+    are_features_already_extracted = False
 
     for submodel_name, submodel in submodels.items():
         print_debug("Training:", submodel_name)
 
-        submodel.pipeline.execute(training_corpus, train=True, only_features=execute_only_features)
-        execute_only_features = True
+        submodel.pipeline.execute(training_corpus, train=True, only_features=are_features_already_extracted)
+        are_features_already_extracted = True
         selected_features = unpickle_beautified_file(submodel.selected_features_file)
         submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
         submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
@@ -118,7 +115,7 @@ def evaluate(args, training_corpus, eval_corpus):
         annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
 
         if not args.eval_corpus:
-            evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
+            evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
             rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
         else:
             submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
@@ -180,8 +177,7 @@ def _select_annotator_submodels(args):
                     use_predicted_entities=args.predict_entities,
                     execute_pipeline=False,
                     model=None,
-                    classification_threshold=0.0,
-                    use_tree_kernel=args.use_tk,
+                    #
                     preprocess=True,
                     #
                     class_weight=None,
@@ -200,8 +196,7 @@ def _select_annotator_submodels(args):
                     use_predicted_entities=args.predict_entities,
                     execute_pipeline=False,
                     model=None,
-                    classification_threshold=0.0,
-                    use_tree_kernel=args.use_tk,
+                    #
                     preprocess=True,
                     #
                     class_weight=None,
@@ -220,8 +215,7 @@ def _select_annotator_submodels(args):
                 use_predicted_entities=args.predict_entities,
                 execute_pipeline=False,
                 model=None,
-                classification_threshold=0.0,
-                use_tree_kernel=args.use_tk,
+                #
                 preprocess=True,
                 #
                 class_weight=None,
