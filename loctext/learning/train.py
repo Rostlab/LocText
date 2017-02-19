@@ -109,11 +109,10 @@ def evaluate(args, training_corpus, eval_corpus):
     for submodel_name, submodel in submodels.items():
         print_debug("Training:", submodel_name)
 
-        submodel.pipeline.execute(training_corpus, train=True, only_features=are_features_already_extracted)
-        are_features_already_extracted = True
-        selected_features = unpickle_beautified_file(submodel.selected_features_file)
-        submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
-        submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
+        if not args.load_model:
+            submodel.pipeline.execute(training_corpus, train=False, only_features=are_features_already_extracted)
+            submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
+            are_features_already_extracted = True
 
         annotator_gen_fun = (lambda training_set: train(args, submodel_name, training_set, submodel, execute_pipeline=False))
 
@@ -126,8 +125,6 @@ def evaluate(args, training_corpus, eval_corpus):
             trained_annotator = annotator_gen_fun(training_corpus)
 
             submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
-            selected_features = unpickle_beautified_file(submodel.selected_features_file)
-            submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
             submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
 
             trained_annotator(eval_corpus)

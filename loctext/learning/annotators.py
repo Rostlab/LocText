@@ -17,7 +17,8 @@ from nalaf.structures.data import Entity
 import requests
 import urllib.request
 from loctext.learning.evaluations import are_go_parent_and_child, get_localization_name
-from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path, unpickle_beautified_file
+from nalaf.structures.data import FeatureDictionary
 
 
 class LocTextDXModelRelationExtractor(RelationExtractor):
@@ -46,8 +47,17 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             use_pred=use_predicted_entities,
         )
 
-        self.feature_set = None
-        self.selected_features_file = selected_features_file
+        if selected_features_file:
+            self.feature_set = FeatureDictionary()
+
+            selected_features = unpickle_beautified_file(selected_features_file)
+
+            # sort to make the order of feature insertion deterministic
+            for selected in sorted(selected_features):
+                self.feature_set[selected] = len(self.feature_set)
+
+        else:
+            self.feature_set = None
 
         if pipeline:
             feature_generators = pipeline.feature_generators
