@@ -13,6 +13,7 @@ from collections import Counter
 from nalaf.utils.download import DownloadArticle
 from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 from loctext.util import simple_parse_GO
+import time
 
 
 def parse_arguments(argv=[]):
@@ -21,8 +22,10 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
-    parser.add_argument('--predict_entities', default="False", choices=["True", "true", "False", "false"])
+    parser.add_argument('--predict_entities', default=False, choices=["True", "true", "False", "false"])
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
+    parser.add_argument('--save_model', default=None, help="Dir. path to save the trained model to")
+    parser.add_argument('--load_model', default=None, help="File path to load a trained model from")
 
     parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
@@ -47,7 +50,7 @@ def parse_arguments(argv=[]):
     # ----------------------------------------------------------------------------------------------------
 
     def arg_bool(arg_value):
-        FALSE = ['false', 'f', '0', 'n', 'no', 'none']
+        FALSE = [False, 'false', 'f', '0', 'n', 'no', 'none']
         return False if arg_value.lower() in FALSE else True
 
     def set_None_or_typed_argument(argument, expected_type):
@@ -112,40 +115,49 @@ def evaluate(args, training_corpus, eval_corpus):
         submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
         submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
 
-        annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
+        if not args.load_model:
+            # Train anew
+            annotator_gen_fun = (lambda training_set: train(submodel_name, training_set, args, submodel, execute_pipeline=False))
 
         if not eval_corpus:
+            # Do cross validation
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
             rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+
         else:
+            # Run the trained model against the evaluation corpus
+            trained_annotator = annotator_gen_fun(training_corpus)
+
             submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
             selected_features = unpickle_beautified_file(submodel.selected_features_file)
             submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
             submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
 
-            annotator = annotator_gen_fun(training_corpus)
-            annotator(eval_corpus)
+            trained_annotator(eval_corpus)
 
             if next(eval_corpus.relations(), None):
+                # The corpus has annotated relationships, therefore run a normal performance evaluation
                 rel_evaluation = args.evaluator.evaluate(eval_corpus)
             else:
+                # Else, write in a file the extracted relationships
                 rel_evaluation = write_external_evaluation_results(eval_corpus)
 
     return rel_evaluation
 
 
-def train(training_set, args, submodel, execute_pipeline):
+def train(submodel_name, training_set, args, submodel, execute_pipeline):
     if execute_pipeline:
         submodel.pipeline.execute(training_set, train=True)
 
     submodel.model.train(training_set)
 
-    with open("pio.bin", "wb") as f:
-        pickle.dump(submodel.model, f)
+    if args.save_model:
+        timestamp = time.time()
+        model_filename = "{}_{}.bin".format(submodel_name, timestamp)
+        model_path = os.path.join(args.save_model, model_filename)
 
-    with open("pio.bin", "rb") as f:
-        copy = pickle.load(f)
-        # submodel.model = copy
+        with open(model_path, "wb") as f:
+            pickle.dump(submodel.model, f)
 
     return submodel.annotate
 
@@ -165,6 +177,17 @@ def _select_annotator_submodels(args):
     submodels = OrderedDict()  # Order may matter
     submodels_names = args.model.split(",")
 
+    binary_model = None
+
+    if args.load_model:
+        if len(submodel_names) > 1:
+            raise NotImplementedError("No current support for loading multple trained models")
+        else:
+            with open(args.load_model, "rb") as f:
+                binary_model = pickle.load(f)
+
+    execute_pipeline = False  # not binary_model -- decide later
+
     for name in submodels_names:
         # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = ...
 
@@ -178,8 +201,8 @@ def _select_annotator_submodels(args):
                     selected_features_file=selected_features_file,
                     feature_generators=indirect_feature_generators,
                     use_predicted_entities=args.predict_entities,
-                    execute_pipeline=False,
-                    model=None,
+                    execute_pipeline=execute_pipeline,
+                    model=binary_model,
                     #
                     preprocess=True,
                     #
@@ -197,8 +220,8 @@ def _select_annotator_submodels(args):
                     selected_features_file=selected_features_file,
                     feature_generators=indirect_feature_generators,
                     use_predicted_entities=args.predict_entities,
-                    execute_pipeline=False,
-                    model=None,
+                    execute_pipeline=execute_pipeline,
+                    model=binary_model,
                     #
                     preprocess=True,
                     #
@@ -216,8 +239,8 @@ def _select_annotator_submodels(args):
                 selected_features_file=selected_features_file,
                 feature_generators=indirect_feature_generators,
                 use_predicted_entities=args.predict_entities,
-                execute_pipeline=False,
-                model=None,
+                execute_pipeline=execute_pipeline,
+                model=binary_model,
                 #
                 preprocess=True,
                 #
