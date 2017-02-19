@@ -26,7 +26,7 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
-    parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+    parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
 
     parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4])
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
