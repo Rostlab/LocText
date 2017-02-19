@@ -29,7 +29,7 @@ def parse_arguments(argv=[]):
 
     parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4])
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
-    parser.add_argument('--predict_entities', default="False", choices=["True", "False"])
+    parser.add_argument('--predict_entities', default="False", choices=["True", "true", "False", "false"])
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
 
