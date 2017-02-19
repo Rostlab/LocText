@@ -114,9 +114,9 @@ def evaluate(args, training_corpus, eval_corpus):
 
         annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
 
-        if not args.eval_corpus:
+        if not eval_corpus:
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
-            rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+            rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
         else:
             submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
             selected_features = unpickle_beautified_file(submodel.selected_features_file)
@@ -126,7 +126,10 @@ def evaluate(args, training_corpus, eval_corpus):
             annotator = annotator_gen_fun(training_corpus)
             annotator(eval_corpus)
 
-            write_external_evaluation_results(eval_corpus)
+            if next(eval_corpus.relations(), None):
+                rel_evaluation = args.evaluator.evaluate(eval_corpus)
+            else:
+                rel_evaluation = write_external_evaluation_results(eval_corpus)
 
     return rel_evaluation
 
@@ -421,13 +424,13 @@ def print_run_args(args, training_corpus, eval_corpus):
     for key, value in sorted((vars(args)).items()):
         print("\t{} = {}".format(key, value))
 
+    print()
     print_corpus_hard_core_stats("Training", training_corpus)
     print_corpus_hard_core_stats("Evaluation", eval_corpus)
 
 
 def print_corpus_hard_core_stats(name, corpus):
     if corpus:
-        print()
         print(name + " corpus stats:")
         print("\t#documents: {}".format(len(corpus)))
         print("\t#relations: {}".format(len(list(corpus.relations()))))
