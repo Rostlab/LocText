@@ -92,23 +92,23 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
         #
 
-        path = repo_path(["resources", "features", "corpus_unnormalized_total_background_loc_rels_ratios.pickle"])
+        path = repo_path("resources", "features", "corpus_unnormalized_total_background_loc_rels_ratios.pickle")
         with open(path, "rb") as f:
             self.c_corpus_unnormalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "corpus_normalized_total_background_loc_rels_ratios.pickle"])
+        path = repo_path("resources", "features", "corpus_normalized_total_background_loc_rels_ratios.pickle")
         with open(path, "rb") as f:
             self.c_corpus_normalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle"])
+        path = repo_path("resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle")
         with open(path, "rb") as f:
             self.c_SwissProt_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "SwissProt_normalized_total_background_loc_rels_ratios.pickle"])
+        path = repo_path("resources", "features", "SwissProt_normalized_total_background_loc_rels_ratios.pickle")
         with open(path, "rb") as f:
             self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path(["resources", "features", "SwissProt_relations.pickle"])
+        path = repo_path("resources", "features", "SwissProt_relations.pickle")
         with open(path, "rb") as f:
             self.c_SwissProt_relations = pickle.load(f)
 

@@ -166,7 +166,7 @@ def _select_annotator_submodels(args):
     submodels_names = args.model.split(",")
 
     for name in submodels_names:
-        # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
+        # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = ...
 
         if "D0" == name:
             if args.predict_entities:
@@ -180,7 +180,7 @@ def _select_annotator_submodels(args):
                     use_predicted_entities=args.predict_entities,
                     execute_pipeline=False,
                     model=None,
-                    classification_threshold=0.0,  # args.svm_threshold_ss_model,
+                    classification_threshold=0.0,
                     use_tree_kernel=args.use_tk,
                     preprocess=True,
                     #
@@ -200,7 +200,7 @@ def _select_annotator_submodels(args):
                     use_predicted_entities=args.predict_entities,
                     execute_pipeline=False,
                     model=None,
-                    classification_threshold=0.0,  # args.svm_threshold_ss_model,
+                    classification_threshold=0.0,
                     use_tree_kernel=args.use_tk,
                     preprocess=True,
                     #
@@ -220,7 +220,7 @@ def _select_annotator_submodels(args):
                 use_predicted_entities=args.predict_entities,
                 execute_pipeline=False,
                 model=None,
-                classification_threshold=0.0,  # args.svm_threshold_ss_model,
+                classification_threshold=0.0,
                 use_tree_kernel=args.use_tk,
                 preprocess=True,
                 #
@@ -239,7 +239,7 @@ def write_external_evaluation_results(eval_corpus):
     macro_counter = Counter()
     micro_counter = {}
 
-    with open(repo_path(["resources", "features", "SwissProt_relations.pickle"]), "rb") as f:
+    with open(repo_path("resources", "features", "SwissProt_relations.pickle"), "rb") as f:
         SWISSPROT_RELATIONS = pickle.load(f)
 
     for docid, doc in eval_corpus.documents.items():
@@ -293,7 +293,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
 
-    __corpora_dir = repo_path(["resources", "corpora"])
+    __corpora_dir = repo_path("resources", "corpora")
 
     if corpus_name in ["LocText", "LocText_v2"]:  # With reviewed normalizations (8 new protein normalizations made by Tanya; no other modifications)
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
@@ -310,10 +310,10 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
     elif corpus_name in ["SwissProt", "NewDiscoveries"]:
 
         if corpus_name == "SwissProt":
-            pmids_file_path = os.path.join(repo_path(["resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"]))
+            pmids_file_path = os.path.join(repo_path("resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"))
 
         elif corpus_name == "NewDiscoveries":
-            pmids_file_path = os.path.join(repo_path(["tmp", "pubmed_result.txt"]))
+            pmids_file_path = os.path.join(repo_path("resources", "evaluation", "pubmed_result.txt"))
 
         dir_html = None
         corpus = Dataset()
@@ -325,7 +325,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
 
                     for _, doc in PMID_DL.download([pmid]):
                         try:
-                            doc.get_text()  # some empty docs?
+                            doc.get_text()  # Had problems with few documents and needs investigation; empty docs?
                             corpus.documents[pmid] = doc
                         except:
                             pass

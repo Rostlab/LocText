@@ -9,13 +9,11 @@ UNIPROT_NORM_ID = 'n_7'
 GO_NORM_ID = 'n_8'
 TAXONOMY_NORM_ID = 'n_9'
 
-repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
-def repo_path(listOrString):
-    if type(listOrString) is str:
-        listOrString = [listOrString]
 
-    return os.path.join(repo_root, *listOrString)
+def repo_path(*args):
+    return os.path.join(REPO_ROOT, *args)
 
 
 def reversed_feature_set_map(feature_set):
