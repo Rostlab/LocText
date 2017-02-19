@@ -115,9 +115,7 @@ def evaluate(args, training_corpus, eval_corpus):
         submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
         submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
 
-        if not args.load_model:
-            # Train anew
-            annotator_gen_fun = (lambda training_set: train(submodel_name, training_set, args, submodel, execute_pipeline=False))
+        annotator_gen_fun = (lambda training_set: train(args, submodel_name, training_set, submodel, execute_pipeline=False))
 
         if not eval_corpus:
             # Do cross validation
@@ -125,7 +123,6 @@ def evaluate(args, training_corpus, eval_corpus):
             rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
         else:
-            # Run the trained model against the evaluation corpus
             trained_annotator = annotator_gen_fun(training_corpus)
 
             submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
@@ -145,11 +142,13 @@ def evaluate(args, training_corpus, eval_corpus):
     return rel_evaluation
 
 
-def train(submodel_name, training_set, args, submodel, execute_pipeline):
+def train(args, submodel_name, training_set, submodel, execute_pipeline):
     if execute_pipeline:
         submodel.pipeline.execute(training_set, train=True)
 
-    submodel.model.train(training_set)
+    if not args.load_model:
+        # Train if not loaded model
+        submodel.model.train(training_set)
 
     if args.save_model:
         timestamp = time.time()
@@ -158,6 +157,7 @@ def train(submodel_name, training_set, args, submodel, execute_pipeline):
 
         with open(model_path, "wb") as f:
             pickle.dump(submodel.model, f)
+            print("Model saved to: ", model_path)
 
     return submodel.annotate
 
@@ -180,7 +180,7 @@ def _select_annotator_submodels(args):
     binary_model = None
 
     if args.load_model:
-        if len(submodel_names) > 1:
+        if len(submodels_names) > 1:
             raise NotImplementedError("No current support for loading multple trained models")
         else:
             with open(args.load_model, "rb") as f:
