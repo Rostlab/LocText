@@ -22,10 +22,12 @@ import matplotlib.pyplot as plt
 
 print(__doc__)
 
+
 corpus = read_corpus("LocText")
 locTextModel = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
 locTextModel.pipeline.execute(corpus, train=True)
 X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feature_set)
+
 
 def pca_plot():
     X_copy = X.toarray()

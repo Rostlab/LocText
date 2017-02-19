@@ -84,23 +84,23 @@ def parse_arguments(argv=[]):
 def evaluate_with_argv(argv=[]):
     args = parse_arguments(argv)
 
-    training_corpus = read_corpus(args.training_corpus, args.corpus_percentage, args.predict_entities)
+    training_corpus = None
     eval_corpus = None
-    if args.eval_corpus:
-        eval_corpus = read_corpus(args.eval_corpus, args.corpus_percentage, args.predict_entities)
 
-    print_run_args(args, training_corpus)
-    print()
-    result = evaluate(training_corpus, eval_corpus, args)
-    print()
-    print_run_args(args, training_corpus)
-    print_corpus_pipeline_dependent_stats(training_corpus)
-    print()
+    if args.training_corpus:
+        training_corpus, eval_corpus = read_corpus(args.training_corpus, args.corpus_percentage, args.predict_entities, return_eval_corpus=True)
+
+    if args.eval_corpus:
+        eval_corpus = read_corpus(args.eval_corpus, args.corpus_percentage, args.predict_entities, return_eval_corpus=False)
+
+    print_run_args(args, training_corpus, eval_corpus)
+    result = evaluate(args, training_corpus, eval_corpus)
+    print_run_args(args, training_corpus, eval_corpus)
 
     return result
 
 
-def evaluate(training_corpus, eval_corpus, args):
+def evaluate(args, training_corpus, eval_corpus):
     evaluator = args.evaluator
 
     submodels = _select_annotator_submodels(args)
@@ -351,6 +351,8 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
                 read_relations=True,
                 delete_incomplete_docs=False).annotate(corpus)
 
+    eval_corpus = None
+
     if (corpus_percentage < 1.0):
         corpus, eval_corpus = corpus.percentage_split(corpus_percentage)
 
@@ -361,11 +363,11 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
         STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, tagger_entity_types=tagger_entity_types, send_whole_once=True)
 
         STRING_TAGGER.annotate(corpus)
-        if return_eval_corpus:
+        if return_eval_corpus and eval_corpus:
             STRING_TAGGER.annotate(eval_corpus)
 
-    if return_eval_corpus and corpus_percentage < 1.0:
-        (corpus, eval_corpus)
+    if return_eval_corpus:
+        return (corpus, eval_corpus)
 
     else:
         return corpus
@@ -419,25 +421,27 @@ def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations):
     return evaluator
 
 
-def print_run_args(args, corpus):
-    print("Train Arguments: ")
+def print_run_args(args, training_corpus, eval_corpus):
+    print()
+    print("Run Arguments: ")
     for key, value in sorted((vars(args)).items()):
         print("\t{} = {}".format(key, value))
 
-    print_corpus_hard_core_stats(corpus)
+    print_corpus_hard_core_stats("Training", training_corpus)
+    print_corpus_hard_core_stats("Evaluation", eval_corpus)
 
 
-def print_corpus_hard_core_stats(corpus):
-    print()
-    print("Corpus stats:")
-    print("\t#documents: {}".format(len(corpus)))
-    print("\t#relations: {}".format(len(list(corpus.relations()))))
+def print_corpus_hard_core_stats(name, corpus):
+    if corpus:
+        print()
+        print(name + " corpus stats:")
+        print("\t#documents: {}".format(len(corpus)))
+        print("\t#relations: {}".format(len(list(corpus.relations()))))
+        print_corpus_pipeline_dependent_stats(corpus)
+        print()
 
 
 def print_corpus_pipeline_dependent_stats(corpus):
-
-    # Assumes the sentences and edges have been generated (through relations_pipeline)
-
     T = 0
     P = 0
     N = 0
@@ -449,14 +453,12 @@ def print_corpus_pipeline_dependent_stats(corpus):
         else:
             N += 1
 
-    # Totals for whole corpus (test data too) and with SentenceDistanceEdgeGenerator (only same sentences)
-    # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
-    # abstract + fulltext -- #docs: 104, P=614 vs N=1480
-
-    print("\t#sentences: {}".format(len(list(corpus.sentences()))))
-    print("\t#instances (edges): {} -- #P={} vs. #N={}".format(T, P, N))
-    print("\t#plausible relations from edges: {}".format(len(list(corpus.plausible_relations_from_generated_edges()))))
-    print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
+    if T > 0:
+        # Assumes the sentences and edges have been generated (through relations_pipeline)
+        print("\t#sentences: {}".format(len(list(corpus.sentences()))))
+        print("\t#instances (edges): {} -- #P={} vs. #N={}".format(T, P, N))
+        print("\t#plausible relations from edges: {}".format(len(list(corpus.plausible_relations_from_generated_edges()))))
+        print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
 
     return (P, N)
 
