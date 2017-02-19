@@ -65,7 +65,7 @@ def parse_arguments(argv=[]):
 
     args = parser.parse_args(argv)
 
-    args.evaluator = get_evaluator(args.evaluation_level)
+    args.evaluator = get_evaluator(args.evaluation_level, args.evaluate_only_on_edges_plausible_relations)
     args.predict_entities = arg_bool(args.predict_entities)
 
     # args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
@@ -364,7 +364,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
     return corpus
 
 
-def get_evaluator(evaluation_level):
+def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations):
     normalization_penalization = "soft"
 
     if evaluation_level == 1:
@@ -406,7 +406,7 @@ def get_evaluator(evaluation_level):
         rel_type=REL_PRO_LOC_ID,
         entity_map_fun=ENTITY_MAP_FUN,
         relation_accept_fun=RELATION_ACCEPT_FUN,
-        evaluate_only_on_edges_plausible_relations=args.evaluate_only_on_edges_plausible_relations,
+        evaluate_only_on_edges_plausible_relations=evaluate_only_on_edges_plausible_relations,
     )
 
     return evaluator
