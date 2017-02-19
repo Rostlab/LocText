@@ -46,6 +46,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             use_pred=use_predicted_entities,
         )
 
+        self.feature_set = None
         self.selected_features_file = selected_features_file
 
         if pipeline:
@@ -56,7 +57,13 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             feature_generators = self.feature_generators()
 
         self.pipeline = pipeline if pipeline \
-            else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, tokenizer=TmVarTokenizer(), edge_generator=edge_generator, feature_generators=feature_generators)
+            else RelationExtractionPipeline(
+                entity1_class, entity2_class, rel_type,
+                tokenizer=TmVarTokenizer(),
+                edge_generator=edge_generator,
+                feature_set=self.feature_set,
+                feature_generators=feature_generators
+        )
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
