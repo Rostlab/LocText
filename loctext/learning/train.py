@@ -170,7 +170,7 @@ def _select_annotator_submodels(args):
 
         if "D0" == name:
             if args.predict_entities:
-                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC_C=2.0-1487413027.853745-NAMES.log"
+                selected_features_file = repo_path("resources", "features", "selected", "0_True_LinearSVC_C=2.0-1487413027.853745-NAMES.py")
 
                 submodels[name] = LocTextDXModelRelationExtractor(
                     pro_id, loc_id, rel_id,
@@ -190,7 +190,7 @@ def _select_annotator_submodels(args):
                 )
 
             else:
-                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_False_LinearSVC-1486292275.065055-NAMES.log"
+                selected_features_file = repo_path("resources", "features", "selected", "0_False_LinearSVC-1486292275.065055-NAMES.py")
 
                 submodels[name] = LocTextDXModelRelationExtractor(
                     pro_id, loc_id, rel_id,
@@ -210,7 +210,7 @@ def _select_annotator_submodels(args):
                 )
 
         if "D1" == name:
-            selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/1_False_LinearSVC-1486481526.730234-NAMES.log"
+            selected_features_file = repo_path("resources", "features", "selected", "1_False_LinearSVC-1486481526.730234-NAMES.py")
 
             submodels[name] = LocTextDXModelRelationExtractor(
                 pro_id, loc_id, rel_id,
