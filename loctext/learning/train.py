@@ -1,3 +1,4 @@
+import pickle
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
@@ -13,7 +14,6 @@ from nalaf.utils.download import DownloadArticle
 from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 from loctext.util import simple_parse_GO
 
-import pickle
 
 def parse_arguments(argv=[]):
     import argparse
@@ -49,7 +49,7 @@ def parse_arguments(argv=[]):
     # ----------------------------------------------------------------------------------------------------
 
     def arg_bool(arg_value):
-        FALSE = ['false', 'f', '0', 'no', 'none']
+        FALSE = ['false', 'f', '0', 'n', 'no', 'none']
         return False if arg_value.lower() in FALSE else True
 
     def set_None_or_typed_argument(argument, expected_type):
@@ -60,6 +60,13 @@ def parse_arguments(argv=[]):
                 return expected_type(argument)
             except Exception as e:
                 raise Exception("The argument {} must be of type {}".format(argument, str(expected_type)))
+
+    def _select_submodel_params(annotator, args):
+
+        if isinstance(annotator, LocTextDXModelRelationExtractor):
+            return (args.minority_class_ss_model, args.majority_class_undersampling_ss_model, args.svm_hyperparameter_c_ss_model)
+
+        raise AssertionError()
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -72,6 +79,75 @@ def parse_arguments(argv=[]):
     # args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
 
     return args
+
+
+def evaluate_with_argv(argv=[]):
+    args = parse_arguments(argv)
+
+    training_corpus = read_corpus(args.training_corpus, args.corpus_percentage, args.predict_entities)
+    eval_corpus = None
+    if args.eval_corpus:
+        eval_corpus = read_corpus(args.eval_corpus, args.corpus_percentage, args.predict_entities)
+
+    print_run_args(args, training_corpus)
+    print()
+    result = evaluate(training_corpus, eval_corpus, args)
+    print()
+    print_run_args(args, training_corpus)
+    print_corpus_pipeline_dependent_stats(training_corpus)
+    print()
+
+    return result
+
+
+def evaluate(training_corpus, eval_corpus, args):
+    evaluator = args.evaluator
+
+    submodels = _select_annotator_submodels(args)
+    execute_only_features = False
+
+    for submodel_name, submodel in submodels.items():
+        print_debug("Training:", submodel_name)
+
+        submodel.pipeline.execute(training_corpus, train=True, only_features=execute_only_features)
+        execute_only_features = True
+        selected_features = unpickle_beautified_file(submodel.selected_features_file)
+        submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
+        submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
+
+        annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
+
+        if not args.eval_corpus:
+            evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
+            rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+        else:
+            submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
+            selected_features = unpickle_beautified_file(submodel.selected_features_file)
+            submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
+            submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
+
+            annotator = annotator_gen_fun(training_corpus)
+            annotator(eval_corpus)
+
+            write_external_evaluation_results(eval_corpus)
+
+    return rel_evaluation
+
+
+def train(training_set, args, submodel, execute_pipeline):
+    if execute_pipeline:
+        submodel.pipeline.execute(training_set, train=True)
+
+    submodel.model.train(training_set)
+
+    with open("pio.bin", "wb") as f:
+        pickle.dump(submodel.model, f)
+
+    with open("pio.bin", "rb") as f:
+        copy = pickle.load(f)
+        # submodel.model = copy
+
+    return submodel.annotate
 
 
 def _select_annotator_submodels(args):
@@ -158,30 +234,6 @@ def _select_annotator_submodels(args):
     return submodels
 
 
-def _select_submodel_params(annotator, args):
-
-    if isinstance(annotator, LocTextDXModelRelationExtractor):
-        return (args.minority_class_ss_model, args.majority_class_undersampling_ss_model, args.svm_hyperparameter_c_ss_model)
-
-    raise AssertionError()
-
-
-def train(training_set, args, submodel, execute_pipeline):
-    if execute_pipeline:
-        submodel.pipeline.execute(training_set, train=True)
-
-    submodel.model.train(training_set)
-
-    with open("pio.bin", "wb") as f:
-        pickle.dump(submodel.model, f)
-
-    with open("pio.bin", "rb") as f:
-        copy = pickle.load(f)
-        # submodel.model = copy
-
-    return submodel.annotate
-
-
 def write_external_evaluation_results(eval_corpus):
 
     macro_counter = Counter()
@@ -236,60 +288,7 @@ def write_external_evaluation_results(eval_corpus):
     return rel_evaluation
 
 
-def evaluate(training_corpus, eval_corpus, args):
-    evaluator = args.evaluator
-
-    submodels = _select_annotator_submodels(args)
-    execute_only_features = False
-
-    for submodel_name, submodel in submodels.items():
-        print_debug("Training:", submodel_name)
-
-        submodel.pipeline.execute(training_corpus, train=True, only_features=execute_only_features)
-        execute_only_features = True
-        selected_features = unpickle_beautified_file(submodel.selected_features_file)
-        submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
-        submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
-
-        annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
-
-        if not args.eval_corpus:
-            evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
-            rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-        else:
-            submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
-            selected_features = unpickle_beautified_file(submodel.selected_features_file)
-            submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
-            submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
-
-            annotator = annotator_gen_fun(training_corpus)
-            annotator(eval_corpus)
-
-            write_external_evaluation_results(eval_corpus)
-
-    return rel_evaluation
-
-
-def evaluate_with_argv(argv=[]):
-    args = parse_arguments(argv)
-
-    training_corpus = read_corpus(args.training_corpus, args.corpus_percentage, args.predict_entities)
-    eval_corpus = None
-    if args.eval_corpus:
-        eval_corpus = read_corpus(args.eval_corpus, args.corpus_percentage, args.predict_entities)
-
-    print_run_args(args, training_corpus)
-    print()
-    result = evaluate(training_corpus, eval_corpus, args)
-    print()
-    print_run_args(args, training_corpus)
-    print_corpus_pipeline_dependent_stats(training_corpus)
-    print()
-
-    return result
-
-
-def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
+def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, return_eval_corpus=False):
     import os
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
@@ -344,24 +343,32 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
             del corpus.documents["PMC2483532"]
             del corpus.documents["PMC2847216"]
 
-        AnnJsonAnnotationReader(
-            dir_annjson,
-            read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
-            read_relations=True,
-            delete_incomplete_docs=False).annotate(corpus)
+        if dir_annjson is not None:
+
+            AnnJsonAnnotationReader(
+                dir_annjson,
+                read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
+                read_relations=True,
+                delete_incomplete_docs=False).annotate(corpus)
 
     if (corpus_percentage < 1.0):
-        corpus, _ = corpus.percentage_split(corpus_percentage)
+        corpus, eval_corpus = corpus.percentage_split(corpus_percentage)
 
     if predict_entities:
         # only human if dir_html is None == no LocText corpus, otherwise tag for the organisms that are in LocText
         tagger_entity_types = "-22,-3,9606,3702,4932" if dir_html else "-22,-3,9606"
-        # print(tagger_entity_types)
 
         STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, tagger_entity_types=tagger_entity_types, send_whole_once=True)
-        STRING_TAGGER.annotate(corpus)
 
-    return corpus
+        STRING_TAGGER.annotate(corpus)
+        if return_eval_corpus:
+            STRING_TAGGER.annotate(eval_corpus)
+
+    if return_eval_corpus and corpus_percentage < 1.0:
+        (corpus, eval_corpus)
+
+    else:
+        return corpus
 
 
 def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations):
