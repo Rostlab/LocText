@@ -21,18 +21,18 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
+    parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
 
     parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
-    parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
     parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
-    parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
-    parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
-    parser.add_argument('--predict_entities', default=False, type=bool, choices=[True, False])
+    parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
 
+    parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4])
+    parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
+    parser.add_argument('--predict_entities', default="False", choices=["True", "False"])
     parser.add_argument('--use_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
 
-    parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
     parser.add_argument('--use_tk', default=False, action='store_true')
 
     # # TODO clean and review how to set parameters for all different sentece models
@@ -46,41 +46,11 @@ def parse_arguments(argv=[]):
     # parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
     # parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
-    args = parser.parse_args(argv)
+    # ----------------------------------------------------------------------------------------------------
 
-    if args.evaluation_level == 1:
-        ENTITY_MAP_FUN = Entity.__repr__
-        RELATION_ACCEPT_FUN = str.__eq__
-    elif args.evaluation_level == 2:
-        ENTITY_MAP_FUN = 'lowercased'
-        RELATION_ACCEPT_FUN = str.__eq__
-    elif args.evaluation_level == 3:
-        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
-            {
-                PRO_ID: UNIPROT_NORM_ID,
-                LOC_ID: GO_NORM_ID,
-                ORG_ID: TAXONOMY_NORM_ID,
-            },
-            penalize_unknown_normalizations="soft"
-        )
-        RELATION_ACCEPT_FUN = str.__eq__
-    elif args.evaluation_level == 4:
-        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
-            {
-                PRO_ID: UNIPROT_NORM_ID,
-                LOC_ID: GO_NORM_ID,
-                ORG_ID: TAXONOMY_NORM_ID,
-            },
-            penalize_unknown_normalizations="soft"
-        )
-        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
-
-    args.evaluator = DocumentLevelRelationEvaluator(
-        rel_type=REL_PRO_LOC_ID,
-        entity_map_fun=ENTITY_MAP_FUN,
-        relation_accept_fun=RELATION_ACCEPT_FUN,
-        evaluate_only_on_edges_plausible_relations=args.evaluate_only_on_edges_plausible_relations,
-    )
+    def arg_bool(arg_value):
+        FALSE = ['false', 'f', '0', 'no', 'none']
+        return False if arg_value.lower() in FALSE else True
 
     def set_None_or_typed_argument(argument, expected_type):
         if not argument or argument == 'None':
@@ -91,14 +61,17 @@ def parse_arguments(argv=[]):
             except Exception as e:
                 raise Exception("The argument {} must be of type {}".format(argument, str(expected_type)))
 
+    # ----------------------------------------------------------------------------------------------------
+
+    args = parser.parse_args(argv)
+
+    args.evaluator = get_evaluator(args.evaluation_level)
+    args.predict_entities = arg_bool(args.predict_entities)
+
     # args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
     # args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
 
     return args
-
-
-def parse_arguments_string(arguments=""):
-    return parse_arguments(arguments.split("\s+"))
 
 
 def _select_annotator_submodels(args):
@@ -209,6 +182,60 @@ def train(training_set, args, submodel, execute_pipeline):
     return submodel.annotate
 
 
+def write_external_evaluation_results(eval_corpus):
+
+    macro_counter = Counter()
+    micro_counter = {}
+
+    with open(repo_path(["resources", "features", "SwissProt_relations.pickle"]), "rb") as f:
+        SWISSPROT_RELATIONS = pickle.load(f)
+
+    for docid, doc in eval_corpus.documents.items():
+
+        for rel in doc.predicted_relations():
+            e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
+            e2s = filter(None, rel.entity2.normalisation_dict.get(GO_NORM_ID, "").split(","))
+            if (rel.entity2.class_id <= rel.entity1.class_id):
+                pairs = zip(e2s, e1s)
+            else:
+                pairs = zip(e1s, e2s)
+
+            for e1, e2 in pairs:
+                rel_key = (e1, e2)
+
+                rel_key_docid_counters = micro_counter.get(rel_key, Counter())
+
+                if docid not in rel_key_docid_counters:  # this rel_key was not in this counter before
+                    macro_counter.update({rel_key})
+
+                rel_key_docid_counters.update({docid})
+                micro_counter[rel_key] = rel_key_docid_counters
+
+    with open(args.eval_corpus + "_" + "relations.tsv", "w") as f:
+
+        header = ["# Type", "UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "Child SwissProt", "Confirmed", "Num Docs"]
+        max_num_docs = len(micro_counter[macro_counter.most_common(1)[0][0]])
+        header = header + (["PMID"] * max_num_docs)
+        f.write("\t".join(header) + "\n")
+
+        for rel_key, count in macro_counter.most_common():
+            u_ac, go = rel_key
+            name = get_localization_name(go)
+            inSwissProt = str(go in SWISSPROT_RELATIONS.get(u_ac, set()))
+            try:
+                childSwissProt = str(any(are_go_parent_and_child(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
+            except KeyError:
+                childSwissProt = str(False)
+
+            cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
+            cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
+            f.write("\t".join(cols) + "\n")
+
+    rel_evaluation = macro_counter.most_common(100)
+
+    return rel_evaluation
+
+
 def evaluate(training_corpus, eval_corpus, args):
     evaluator = args.evaluator
 
@@ -216,7 +243,7 @@ def evaluate(training_corpus, eval_corpus, args):
     execute_only_features = False
 
     for submodel_name, submodel in submodels.items():
-        print("Executing :", submodel_name)
+        print_debug("Training:", submodel_name)
 
         submodel.pipeline.execute(training_corpus, train=True, only_features=execute_only_features)
         execute_only_features = True
@@ -238,54 +265,7 @@ def evaluate(training_corpus, eval_corpus, args):
             annotator = annotator_gen_fun(training_corpus)
             annotator(eval_corpus)
 
-            macro_counter = Counter()
-            micro_counter = {}
-
-            with open(repo_path(["resources", "features", "SwissProt_relations.pickle"]), "rb") as f:
-                SWISSPROT_RELATIONS = pickle.load(f)
-
-            for docid, doc in eval_corpus.documents.items():
-
-                for rel in doc.predicted_relations():
-                    e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
-                    e2s = filter(None, rel.entity2.normalisation_dict.get(GO_NORM_ID, "").split(","))
-                    if (rel.entity2.class_id <= rel.entity1.class_id):
-                        pairs = zip(e2s, e1s)
-                    else:
-                        pairs = zip(e1s, e2s)
-
-                    for e1, e2 in pairs:
-                        rel_key = (e1, e2)
-
-                        rel_key_docid_counters = micro_counter.get(rel_key, Counter())
-
-                        if docid not in rel_key_docid_counters:  # this rel_key was not in this counter before
-                            macro_counter.update({rel_key})
-
-                        rel_key_docid_counters.update({docid})
-                        micro_counter[rel_key] = rel_key_docid_counters
-
-            with open(args.eval_corpus + "_" + "relations.tsv", "w") as f:
-
-                header = ["# Type", "UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "Child SwissProt", "Confirmed", "Num Docs"]
-                max_num_docs = len(micro_counter[macro_counter.most_common(1)[0][0]])
-                header = header + (["PMID"] * max_num_docs)
-                f.write("\t".join(header) + "\n")
-
-                for rel_key, count in macro_counter.most_common():
-                    u_ac, go = rel_key
-                    name = get_localization_name(go)
-                    inSwissProt = str(go in SWISSPROT_RELATIONS.get(u_ac, set()))
-                    try:
-                        childSwissProt = str(any(are_go_parent_and_child(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
-                    except KeyError:
-                        childSwissProt = str(False)
-
-                    cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
-                    cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
-                    f.write("\t".join(cols) + "\n")
-
-            rel_evaluation = macro_counter.most_common(100)
+            write_external_evaluation_results(eval_corpus)
 
     return rel_evaluation
 
@@ -382,6 +362,54 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
         STRING_TAGGER.annotate(corpus)
 
     return corpus
+
+
+def get_evaluator(evaluation_level):
+    normalization_penalization = "soft"
+
+    if evaluation_level == 1:
+        ENTITY_MAP_FUN = Entity.__repr__
+        RELATION_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 2:
+        ENTITY_MAP_FUN = 'lowercased'
+        RELATION_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 3:
+        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            # WARN: we should read the class ids from the corpus
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization,
+        )
+        RELATION_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 4:
+        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            # WARN: we should read the class ids from the corpus
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization
+        )
+        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+
+    evaluator = DocumentLevelRelationEvaluator(
+        rel_type=REL_PRO_LOC_ID,
+        entity_map_fun=ENTITY_MAP_FUN,
+        relation_accept_fun=RELATION_ACCEPT_FUN,
+        evaluate_only_on_edges_plausible_relations=args.evaluate_only_on_edges_plausible_relations,
+    )
+
+    else:
+        raise AssertionError(evaluation_level)
+
+    return evaluator
 
 
 def print_run_args(args, corpus):

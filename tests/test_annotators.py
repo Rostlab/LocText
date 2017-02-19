@@ -11,7 +11,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor
-from loctext.learning.train import read_corpus, evaluate_with_argv
+from loctext.learning.train import read_corpus, evaluate_with_argv, get_evaluator
 from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator, CombinatorEdgeGenerator
 import math
@@ -25,34 +25,7 @@ TEST_MIN_CORPUS_PERCENTAGE = 0.4
 
 EVALUATION_LEVEL = 4
 
-if EVALUATION_LEVEL == 1:
-    ENTITY_MAP_FUN = Entity.__repr__
-    RELATION_ACCEPT_FUN = str.__eq__
-elif EVALUATION_LEVEL == 2:
-    ENTITY_MAP_FUN = 'lowercased'
-    RELATION_ACCEPT_FUN = str.__eq__
-elif EVALUATION_LEVEL == 3:
-    ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
-        {
-            PRO_ID: UNIPROT_NORM_ID,
-            LOC_ID: GO_NORM_ID,
-            ORG_ID: TAXONOMY_NORM_ID,
-        },
-        penalize_unknown_normalizations="soft"
-    )
-    RELATION_ACCEPT_FUN = str.__eq__
-elif EVALUATION_LEVEL == 4:
-    ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
-        {
-            PRO_ID: UNIPROT_NORM_ID,
-            LOC_ID: GO_NORM_ID,
-            ORG_ID: TAXONOMY_NORM_ID,
-        },
-        penalize_unknown_normalizations="soft"
-    )
-    RELATION_ACCEPT_FUN = relation_accept_uniprot_go
-
-EVALUATOR = DocumentLevelRelationEvaluator(rel_type=REL_PRO_LOC_ID, entity_map_fun=ENTITY_MAP_FUN, relation_accept_fun=RELATION_ACCEPT_FUN)
+EVALUATOR = get_evaluator(EVALUATION_LEVEL)
 
 
 # -----------------------------------------------------------------------------------
