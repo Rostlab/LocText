@@ -399,15 +399,15 @@ def get_evaluator(evaluation_level):
         )
         RELATION_ACCEPT_FUN = relation_accept_uniprot_go
 
+    else:
+        raise AssertionError(evaluation_level)
+
     evaluator = DocumentLevelRelationEvaluator(
         rel_type=REL_PRO_LOC_ID,
         entity_map_fun=ENTITY_MAP_FUN,
         relation_accept_fun=RELATION_ACCEPT_FUN,
         evaluate_only_on_edges_plausible_relations=args.evaluate_only_on_edges_plausible_relations,
     )
-
-    else:
-        raise AssertionError(evaluation_level)
 
     return evaluator
 
