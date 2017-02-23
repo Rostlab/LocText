@@ -36,7 +36,7 @@ def get_model_and_data(sentence_distance, use_pred):
 
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
     annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
-    annotator.pipeline.execute(corpus, train=True)
+    annotator.pipeline.execute(corpus)
     X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
 
     return (annotator, X, y, groups)

@@ -34,7 +34,7 @@ is_debug_mode = is_verbose_mode = True
 
 corpus = read_corpus("LocText")
 locTextModel = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
-locTextModel.pipeline.execute(corpus, train=True)
+locTextModel.pipeline.execute(corpus)
 X, y, groups = locTextModel.model.write_vector_instances(corpus, locTextModel.pipeline.feature_set)
 
 print("Step 1, # features: ", X.shape[1])

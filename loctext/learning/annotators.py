@@ -48,11 +48,12 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
         )
 
         if selected_features_file:
-            self.feature_set = FeatureDictionary()
+            self.feature_set = FeatureDictionary(is_locked=False)
             selected_features = unpickle_beautified_file(selected_features_file)
             # sort to make the order of feature insertion deterministic
             for selected in sorted(selected_features):
                 self.feature_set[selected] = len(self.feature_set)
+            self.feature_set.is_locked = True
 
         else:
             self.feature_set = None
@@ -94,7 +95,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
 
     def annotate(self, target_corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(target_corpus, train=False)
+            self.pipeline.execute(target_corpus)
 
         self.model.annotate(target_corpus)
 

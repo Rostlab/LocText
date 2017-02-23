@@ -32,7 +32,7 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
         self.f_is_receptor = f_is_receptor
         self.f_is_transporter = f_is_transporter
 
-    def generate(self, corpus, f_set, is_train, use_gold, use_pred):
+    def generate(self, corpus, f_set, use_gold, use_pred):
         assert not (use_gold and use_pred), "No support for both"
         entities = corpus.entities() if use_gold else corpus.predicted_entities()
 
@@ -51,16 +51,16 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
             # Could also check for its synonym, yet that gave worse results so far
 
             if protein.features["is_marker"]:
-                self.add(f_set, is_train, edge, 'f_is_marker')
+                self.add(f_set, edge, 'f_is_marker')
 
             if protein.features["is_enzyme"]:
-                self.add(f_set, is_train, edge, 'f_is_enzyme')
+                self.add(f_set, edge, 'f_is_enzyme')
 
             if protein.features["is_receptor"]:
-                self.add(f_set, is_train, edge, 'f_is_receptor')
+                self.add(f_set, edge, 'f_is_receptor')
 
             if protein.features["is_transporter"]:
-                self.add(f_set, is_train, edge, 'f_is_transporter')
+                self.add(f_set, edge, 'f_is_transporter')
 
 
 
@@ -126,7 +126,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         self.f_SwissProt_normalized_exists_relation = f_SwissProt_normalized_exists_relation
 
 
-    def generate(self, corpus, f_set, is_train, use_gold, use_pred):
+    def generate(self, corpus, f_set, use_gold, use_pred):
         for edge in corpus.edges():
             sentence = edge.get_combined_sentence()
 
@@ -136,7 +136,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
             def add_f_ratio(f_key, ratio):
                 ratio += 0.1  # Avoid absolute 0 weights
-                self.add_with_value(f_set, is_train, edge, f_key, ratio)
+                self.add_with_value(f_set, edge, f_key, ratio)
 
             loc_keyed_text = ENGLISH_STEMMER.stem(localization.text)
             loc_norm = localization.normalisation_dict.get(self.c_localization_norm_class, None)
@@ -161,7 +161,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
                     go_id_rels = self.c_SwissProt_relations.get(pro_norm_id, set())
 
                     if loc_norm in go_id_rels:
-                        self.add(f_set, is_train, edge, "f_SwissProt_normalized_exists_relation")
+                        self.add(f_set, edge, "f_SwissProt_normalized_exists_relation")
 
 
 class ProteinWordFeatureGenerator(EdgeFeatureGenerator):

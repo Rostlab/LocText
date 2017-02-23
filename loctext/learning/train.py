@@ -110,7 +110,7 @@ def evaluate(args, training_corpus, eval_corpus):
         print_debug("Training:", submodel_name)
 
         if not args.load_model:
-            submodel.pipeline.execute(training_corpus, train=False, only_features=are_features_already_extracted)
+            submodel.pipeline.execute(training_corpus, only_features=are_features_already_extracted)
             submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
             are_features_already_extracted = True
 
@@ -124,7 +124,7 @@ def evaluate(args, training_corpus, eval_corpus):
         else:
             trained_annotator = annotator_gen_fun(training_corpus)
 
-            submodel.pipeline.execute(eval_corpus, train=False, only_features=False)
+            submodel.pipeline.execute(eval_corpus, only_features=False)
             submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
 
             trained_annotator(eval_corpus)
@@ -141,7 +141,7 @@ def evaluate(args, training_corpus, eval_corpus):
 
 def train(args, submodel_name, training_set, submodel, execute_pipeline):
     if execute_pipeline:
-        submodel.pipeline.execute(training_set, train=True)
+        submodel.pipeline.execute(training_set)
 
     if not args.load_model:
         # Train if not loaded model

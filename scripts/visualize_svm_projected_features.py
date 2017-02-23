@@ -25,7 +25,7 @@ print(__doc__)
 
 corpus = read_corpus("LocText")
 locTextModel = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID)
-locTextModel.pipeline.execute(corpus, train=True)
+locTextModel.pipeline.execute(corpus)
 X, y = SklSVM._convert_edges_to_SVC_instances(corpus, locTextModel.pipeline.feature_set)
 
 
