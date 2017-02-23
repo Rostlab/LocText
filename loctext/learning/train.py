@@ -149,7 +149,7 @@ def train(args, submodel_name, training_set, submodel, execute_pipeline):
 
     if args.save_model:
         timestamp = time.time()
-        model_filename = "{}_{}.bin".format(submodel_name, timestamp)
+        model_filename = "{}_{}_{}.bin".format(submodel_name, args.predict_entities, timestamp)
         model_path = os.path.join(args.save_model, model_filename)
 
         with open(model_path, "wb") as f:
