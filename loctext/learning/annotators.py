@@ -49,9 +49,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
 
         if selected_features_file:
             self.feature_set = FeatureDictionary()
-
             selected_features = unpickle_beautified_file(selected_features_file)
-
             # sort to make the order of feature insertion deterministic
             for selected in sorted(selected_features):
                 self.feature_set[selected] = len(self.feature_set)
