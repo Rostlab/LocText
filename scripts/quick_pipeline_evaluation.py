@@ -31,7 +31,8 @@ print(sentence_distance, use_pred)
 # ----------------------------------------------------------------------------------------------------
 
 annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
-X = X.toarray()
+# X = X.toarray()
+print("SVC after preprocessing, #features: {} && max value: {}".format(X.shape[1], max(sklearn.utils.sparsefuncs.min_max_axis(X, axis=0)[1])))
 
 print("Shape X, before: ", X.shape)
 

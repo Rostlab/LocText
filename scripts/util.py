@@ -38,6 +38,7 @@ def get_model_and_data(sentence_distance, use_pred):
     annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
     annotator.pipeline.execute(corpus)
     X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
+    X = annotator.model.preprocess.fit_transform(X)
 
     return (annotator, X, y, groups)
 
@@ -81,7 +82,6 @@ def select_features_transformer_function(X, **kwargs):
     selected_feature_keys = kwargs["selected_feature_keys"]
 
     X_new = X[:, selected_feature_keys]
-    # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
 
     return X_new
 
@@ -110,10 +110,10 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
             self.kbest_unfitted = False
 
         X_new = self.kbest.transform(X)
-        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
+
         return self.svc.fit(X_new, y)
 
     def predict(self, X):
         X_new = self.kbest.transform(X)
-        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
+
         return self.svc.predict(X_new)
