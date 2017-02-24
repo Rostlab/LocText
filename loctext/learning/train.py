@@ -135,7 +135,7 @@ def evaluate(args, training_corpus, eval_corpus):
                     rel_evaluation = args.evaluator.evaluate(eval_corpus)
                 else:
                     # Else, write in a file the extracted relationships
-                    rel_evaluation = write_external_evaluation_results(eval_corpus)
+                    rel_evaluation = write_external_evaluation_results(args, eval_corpus)
 
             else:
                 rel_evaluation = "Model saved into folder: " + args.save_model
@@ -255,7 +255,7 @@ def _select_annotator_submodels(args):
     return submodels
 
 
-def write_external_evaluation_results(eval_corpus):
+def write_external_evaluation_results(args, eval_corpus):
 
     macro_counter = Counter()
     micro_counter = {}
@@ -266,12 +266,27 @@ def write_external_evaluation_results(eval_corpus):
     for docid, doc in eval_corpus.documents.items():
 
         for rel in doc.predicted_relations():
-            e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
-            e2s = filter(None, rel.entity2.normalisation_dict.get(GO_NORM_ID, "").split(","))
-            if (rel.entity2.class_id <= rel.entity1.class_id):
-                pairs = zip(e2s, e1s)
+
+            if rel.entity1.class_id == PRO_ID and rel.entity2.class_id == LOC_ID:
+                e1, e2 = rel.entity1, rel.entity2
+            elif rel.entity1.class_id == LOC_ID and rel.entity2.class_id == PRO_ID:
+                e1, e2 = rel.entity2, rel.entity1
             else:
-                pairs = zip(e1s, e2s)
+                raise AssertionError(("Cannot be", rel))
+
+            e1s = e1.normalisation_dict.get(UNIPROT_NORM_ID, None)
+            if e1s is not None:
+                e1s = e1s = filter(None, e1s.split(","))
+            else:
+                e1s = []
+
+            e2s = e2.normalisation_dict.get(GO_NORM_ID, None)
+            if e2s is not None:
+                e2s = e2s = filter(None, e2s.split(","))
+            else:
+                e2s = []
+
+            pairs = zip(e1s, e2s)
 
             for e1, e2 in pairs:
                 rel_key = (e1, e2)
