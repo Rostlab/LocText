@@ -116,7 +116,7 @@ def evaluate(args, training_corpus, eval_corpus):
 
         annotator_gen_fun = (lambda training_set: train(args, submodel_name, training_set, submodel, execute_pipeline=False))
 
-        if not eval_corpus:
+        if not (eval_corpus or args.save_model):
             # Do cross validation
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
             rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
@@ -124,17 +124,18 @@ def evaluate(args, training_corpus, eval_corpus):
         else:
             trained_annotator = annotator_gen_fun(training_corpus)
 
-            submodel.pipeline.execute(eval_corpus, only_features=False)
-            submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
+            if eval_corpus:
+                submodel.pipeline.execute(eval_corpus, only_features=False)
+                submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
 
-            trained_annotator(eval_corpus)
+                trained_annotator(eval_corpus)
 
-            if next(eval_corpus.relations(), None):
-                # The corpus has annotated relationships, therefore run a normal performance evaluation
-                rel_evaluation = args.evaluator.evaluate(eval_corpus)
-            else:
-                # Else, write in a file the extracted relationships
-                rel_evaluation = write_external_evaluation_results(eval_corpus)
+                if next(eval_corpus.relations(), None):
+                    # The corpus has annotated relationships, therefore run a normal performance evaluation
+                    rel_evaluation = args.evaluator.evaluate(eval_corpus)
+                else:
+                    # Else, write in a file the extracted relationships
+                    rel_evaluation = write_external_evaluation_results(eval_corpus)
 
     return rel_evaluation
 

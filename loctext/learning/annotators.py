@@ -381,11 +381,11 @@ class StringTagger(Tagger):
                         n_class_id = self.go_norm_id
                         norms.append(norm_id)
                     else:
-                        print_debug("REJECT", norm_id, get_localization_name(norm_id))
+                        print_verbose("REJECT", norm_id, get_localization_name(norm_id))
                         pass  # reject
 
                 except KeyError as e:
-                    print_debug("REJECT", norm_id, get_localization_name(norm_id))
+                    print_verbose("REJECT", norm_id, get_localization_name(norm_id))
                     pass  # reject
 
             elif norm["type"].startswith("uniprot_ac:"):
