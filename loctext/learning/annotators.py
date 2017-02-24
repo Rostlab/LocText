@@ -19,6 +19,7 @@ import urllib.request
 from loctext.learning.evaluations import are_go_parent_and_child, get_localization_name
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path, unpickle_beautified_file
 from nalaf.structures.data import FeatureDictionary
+from nalaf import print_verbose, print_debug
 
 
 class LocTextDXModelRelationExtractor(RelationExtractor):
@@ -234,7 +235,8 @@ class StringTagger(Tagger):
         # Rather, put those organisms we know we collected documents from
         tagger_entity_types="-22,-3,9606,3702,4932",
         send_whole_once=True,
-        filter_go_localizations=None,
+        filter_in_go_localizations=None,
+        filter_out_go_localizations=None,
         host='http://127.0.0.1:5000'
     ):
 
@@ -249,8 +251,8 @@ class StringTagger(Tagger):
         self.tagger_entity_types = tagger_entity_types
         self.send_whole_once = send_whole_once
 
-        if filter_go_localizations is None:
-            self.filter_go_localizations = {
+        if filter_in_go_localizations is None:
+            self.filter_in_go_localizations = {
                 'GO:0009579',  # 1: thylakoid
                 'GO:0005737',  # 2: cytoplasm
                 'GO:0005811',  # 3: lipid particle
@@ -266,7 +268,14 @@ class StringTagger(Tagger):
                 'GO:0042995',  # 13: cell projection
             }
         else:
-            self.filter_go_localizations = set(filter_go_localizations)
+            self.filter_in_go_localizations = set(filter_in_go_localizations)
+
+        if filter_out_go_localizations is None:
+            self.filter_out_go_localizations = {
+                'GO:0032991',  # 1: macromolecular complex -- http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0032991
+            }
+        else:
+            self.filter_out_go_localizations = set(filter_out_go_localizations)
 
         self.host = host
 
@@ -366,16 +375,17 @@ class StringTagger(Tagger):
 
             elif norm["type"] == "-22":
                 try:
-                    if any(are_go_parent_and_child(accepted_parent, norm_id) for accepted_parent in self.filter_go_localizations):
+                    if any(are_go_parent_and_child(in_parent, norm_id) for in_parent in self.filter_in_go_localizations) \
+                        and not any(are_go_parent_and_child(out_parent, norm_id) for out_parent in self.filter_out_go_localizations):
                         e_class_id = self.localization_id
                         n_class_id = self.go_norm_id
                         norms.append(norm_id)
                     else:
-                        print("REJECT", norm_id, get_localization_name(norm_id))
+                        print_debug("REJECT", norm_id, get_localization_name(norm_id))
                         pass  # reject
 
                 except KeyError as e:
-                    print("REJECT", norm_id, get_localization_name(norm_id))
+                    print_debug("REJECT", norm_id, get_localization_name(norm_id))
                     pass  # reject
 
             elif norm["type"].startswith("uniprot_ac:"):
