@@ -2,7 +2,7 @@ from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID
 from loctext.learning.evaluations import are_go_parent_and_child
 from loctext.util import simple_parse_GO
 
-GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
+GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-basic.cellular_component.latest.obo"))
 
 Lars = [
     "GO:0005576",  # extracellular
@@ -81,6 +81,7 @@ difficult_cases = [
     "GO:0034703",
     "GO:0005942",
     "GO:0016021",
+    "GO:0005694",  # chromosome
 ]
 
 # -------
@@ -98,9 +99,10 @@ print()
 
 for difficult in difficult_cases:
     try:
-        assert not any(are_go_parent_and_child(x, difficult) for x in final_set)
+        parents = [x for x in final_set if are_go_parent_and_child(x, difficult)]
+        assert len(parents) == 0
     except:
-        print("Difficult:", difficult)
+        print("Difficult:", difficult, parents)
 
 # -------
 
