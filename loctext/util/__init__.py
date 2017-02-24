@@ -9,13 +9,11 @@ UNIPROT_NORM_ID = 'n_7'
 GO_NORM_ID = 'n_8'
 TAXONOMY_NORM_ID = 'n_9'
 
-repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
-def repo_path(listOrString):
-    if type(listOrString) is str:
-        listOrString = [listOrString]
 
-    return os.path.join(repo_root, *listOrString)
+def repo_path(*args):
+    return os.path.join(REPO_ROOT, *args)
 
 
 def reversed_feature_set_map(feature_set):
@@ -52,23 +50,19 @@ def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_d
                     format_str = '    "{}",  # {}'.format(feat, index)
                 _print(format_str)
 
-            _print("# Selected Feature *{}*".format(name))
-            _print()
             _print("[")
 
             for index, feat in enumerate(feats):
                 _print_feat(feat, index)
 
             _print("]")
-            _print()
 
         return file_name
 
-    keys_file = _pickle_beautified_file("KEYS", selected_feat_keys)
     names_file = _pickle_beautified_file("NAMES", selected_feat_names)
     fig_file = all_filenames_prefix + "FIGURE.pdf"
 
-    return (keys_file, names_file, fig_file)
+    return (names_file, fig_file)
 
 
 def unpickle_beautified_file(file_path, k_best=None):

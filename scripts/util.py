@@ -7,6 +7,7 @@ from sklearn.datasets import make_classification
 from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import mutual_info_classif
+from sklearn.metrics import fbeta_score, make_scorer
 import numpy as np
 import scipy
 import time
@@ -26,6 +27,21 @@ from sklearn.metrics import euclidean_distances
 from sklearn.preprocessing import FunctionTransformer, maxabs_scale
 
 
+F05_SCORER = make_scorer(fbeta_score, beta=0.5)  # Assigns double the weight to *precision*
+F025_SCORER = make_scorer(fbeta_score, beta=0.25)  # Assigns quadruple the weight to *precision*
+
+
+def get_model_and_data(sentence_distance, use_pred):
+    corpus = read_corpus("LocText", predict_entities=use_pred)
+
+    # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
+    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
+    annotator.pipeline.execute(corpus)
+    X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
+    X = annotator.model.preprocess.fit_transform(X)
+
+    return (annotator, X, y, groups)
+
 
 def my_cv_generator(groups, num_instances=None):
     if num_instances is not None:
@@ -41,17 +57,6 @@ def my_cv_generator(groups, num_instances=None):
     for training_docs_keys, evaluation_doc_keys in Dataset._cv_kfold_splits_doc_keys_sets(groups.keys(), k, validation_set=True):
         tr, ev = map_indexes(training_docs_keys), map_indexes(evaluation_doc_keys)
         yield tr, ev
-
-
-def get_model_and_data(sentence_distance=0, use_pred=False):
-    corpus = read_corpus("LocText", predict_entities=use_pred)
-
-    # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
-    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
-    annotator.pipeline.execute(corpus, train=True)
-    X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
-
-    return (annotator, X, y, groups)
 
 
 def plot_recursive_features(scoring_name, scores, save_to=None, show=False):
@@ -77,7 +82,6 @@ def select_features_transformer_function(X, **kwargs):
     selected_feature_keys = kwargs["selected_feature_keys"]
 
     X_new = X[:, selected_feature_keys]
-    # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
 
     return X_new
 
@@ -106,10 +110,10 @@ class KBestSVC(BaseEstimator, ClassifierMixin):  # TODO inheriting on these ones
             self.kbest_unfitted = False
 
         X_new = self.kbest.transform(X)
-        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
+
         return self.svc.fit(X_new, y)
 
     def predict(self, X):
         X_new = self.kbest.transform(X)
-        # X_new = SklSVM._preprocess(X_new) ; the extra scaling is unnecessary, unless I do not apply the preprocessing in writing the instances
+
         return self.svc.predict(X_new)

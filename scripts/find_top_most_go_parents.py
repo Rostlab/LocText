@@ -1,8 +1,8 @@
-from loctext.util import simple_parse_GO
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path
 from loctext.learning.evaluations import are_go_parent_and_child
+from loctext.util import simple_parse_GO
 
-GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
+GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-basic.cellular_component.latest.obo"))
 
 Lars = [
     "GO:0005576",  # extracellular
@@ -44,7 +44,35 @@ Tanya = [
 
 Juanmi = [
     # "GO:0016020"  # membrane
+    "GO:0009579",  # thylakoid  https://en.wikipedia.org/wiki/Thylakoid
+    # "GO:0005840",  # ribosome
+    "GO:0005618",  # cell wall
 ]
+
+# -------
+
+LocText_Extra = [
+    "GO:0005929",  # cilium
+    "GO:0000781",  # chromosome, telomeric region
+    "GO:0005933",  # cellular bud
+    "GO:0000777",  # condensed chromosome kinetochore
+    "GO:0042470",  # melanosome
+    "GO:0005694",  # chromosome
+    "GO:0005737",  # cytoplasm
+    "GO:0016021",  # integral component of membrane
+    "GO:0042995",  # cell projection
+    "GO:0045121",  # membrane raft
+    "GO:0009986",  # cell surface
+    "GO:0033107",  # CVT vesicle
+    "GO:0000775",  # chromosome, centromeric region
+    "GO:0005811",  # lipid particle
+    "GO:0016020",  # membrane
+    "GO:0030136",  # clathrin-coated vesicle
+    "GO:0045202",  # synapse
+    "GO:0071944",  # cell periphery
+]
+
+# -------
 
 difficult_cases = [
     "GO:0071159",
@@ -53,24 +81,32 @@ difficult_cases = [
     "GO:0034703",
     "GO:0005942",
     "GO:0016021",
+    "GO:0005694",  # chromosome
 ]
 
 # -------
 
-whole_set = set(Lars + Tanya + Juanmi)
+whole_set = set(Lars + Tanya + Juanmi + LocText_Extra)
 final_set = set()
 
 for item in whole_set:
     if not any(are_go_parent_and_child(x, item) for x in whole_set if x != item):
         final_set.update({item})
 
+# -------
+
+print()
+
 for difficult in difficult_cases:
     try:
-        assert not any(are_go_parent_and_child(x, difficult) for x in final_set)
+        parents = [x for x in final_set if are_go_parent_and_child(x, difficult)]
+        assert len(parents) == 0
     except:
-        print("Difficult:", difficult)
+        print("Difficult:", difficult, parents)
 
 # -------
+
+print()
 
 print("{")
 for index, item in enumerate(final_set):

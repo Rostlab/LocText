@@ -20,6 +20,8 @@ from loctext.util import *
 from sklearn.model_selection import cross_val_score
 import time
 from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA, TruncatedSVD
+from sklearn.linear_model import RandomizedLogisticRegression
 
 sentence_distance = int(sys.argv[1])
 use_pred = sys.argv[2].lower() == "true"
@@ -29,21 +31,41 @@ print(sentence_distance, use_pred)
 # ----------------------------------------------------------------------------------------------------
 
 annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
+# X = X.toarray()
+print("SVC after preprocessing, #features: {} && max value: {}".format(X.shape[1], max(sklearn.utils.sparsefuncs.min_max_axis(X, axis=0)[1])))
 
 print("Shape X, before: ", X.shape)
 
 feature_selections = [
-    ("LinearSVC", SelectFromModel(LinearSVC(penalty="l1", dual=False, random_state=2727, tol=1e-50))),
+    # ("LinearSVC_C=4.0", SelectFromModel(LinearSVC(C=4.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    ("LinearSVC_C=2.0", SelectFromModel(LinearSVC(C=2.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    ("LinearSVC_C=1.0", SelectFromModel(LinearSVC(C=1.0, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    # ("LinearSVC_C=0.5", SelectFromModel(LinearSVC(C=0.5, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+    # ("LinearSVC_C=0.25", SelectFromModel(LinearSVC(C=0.25, penalty="l1", dual=False, random_state=2727, tol=1e-5))),
+
+    # ("RandomizedLogisticRegression_C=1", SelectFromModel(RandomizedLogisticRegression(C=1))),
+    # ("RandomizedLogisticRegression_C=0.5", SelectFromModel(RandomizedLogisticRegression(C=0.5))),
+
+    # ("PCA_2", PCA(2)),
+    # ("PCA_10", PCA(2)),
+    # ("PCA_100", PCA(2)),
+    # ("PCA_400", PCA(2)),
+    #
+    # ("TruncatedSVD_2", TruncatedSVD(2)),
+    # ("TruncatedSVD_10", TruncatedSVD(2)),
+    # ("TruncatedSVD_100", TruncatedSVD(2)),
+    # ("TruncatedSVD_400", TruncatedSVD(2)),
     # ("LogisticRegression", SelectFromModel(LogisticRegression(penalty="l1"))),
-    #("RandomForestClassifier_20", SelectFromModel(RandomForestClassifier(n_estimators=20, max_depth=3))),
-    #("RandomForestClassifier_100", SelectFromModel(RandomForestClassifier(n_estimators=100, max_depth=3))),
+    # ("RandomForestClassifier_20", SelectFromModel(RandomForestClassifier(n_estimators=20, max_depth=3))),
+    # ("RandomForestClassifier_100", SelectFromModel(RandomForestClassifier(n_estimators=100, max_depth=None))),
 ]
 
 estimators = [
     ("SVC_linear", SVC(kernel='linear')),
+    # ("LinearSVC", LinearSVC(penalty='l1', dual=False)),
     # ("SVC_rbf", SVC(kernel='rbf')),
-    #("RandomForestClassifier_20", RandomForestClassifier(n_estimators=20, max_depth=3)),
-    #("RandomForestClassifier_100", RandomForestClassifier(n_estimators=100, max_depth=3)),
+    # ("RandomForestClassifier_20", RandomForestClassifier(n_estimators=20, max_depth=3)),
+    # ("RandomForestClassifier_100", RandomForestClassifier(n_estimators=100, max_depth=5)),
 ]
 
 for fsel_name, feature_selection in feature_selections:
@@ -55,12 +77,13 @@ for fsel_name, feature_selection in feature_selections:
     print(fsel_name, " --- ", X_new.shape)
     print()
 
-    file_prefix = "_".join([str(sentence_distance), str(use_pred), fsel_name])
-
     selected_feature_keys = feature_selection.get_support(indices=True)
-    keys, names, fig_file = \
-        print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix=file_prefix)
-    print(keys, names)
+    fsel_names, _ = print_selected_features(
+        selected_feature_keys,
+        annotator.pipeline.feature_set,
+        file_prefix=("_".join([str(sentence_distance), str(use_pred), fsel_name]))
+    )
+    print(fsel_names)
 
     print()
 

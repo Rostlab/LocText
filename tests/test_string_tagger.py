@@ -3,8 +3,8 @@ from loctext.learning.train import read_corpus
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 
 
-TAGGER_SEND_PARTS = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False)
-TAGGER_SEND_WHOLE = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True)
+TAGGER_SEND_PARTS = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=False, tagger_entity_types="-22,-3,9606,3702,4932,10090,4896,511145,6239,7227,7955")
+TAGGER_SEND_WHOLE = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, send_whole_once=True, tagger_entity_types="-22,-3,9606,3702,4932,10090,4896,511145,6239,7227,7955")
 TAGGER_SEND_EGAL = TAGGER_SEND_PARTS
 
 
@@ -40,6 +40,7 @@ def test_number_of_tagged_entities():
 
         print("Numbers, real:", len(list(dataset_parts.entities())), "vs. pred: ", num_preds_with_parts, num_preds_with_whole)
 
+        # Equality holds if all tagger entity types are explicitly given, otherwise the tagging with parts yield less predicted entities
         assert num_preds_with_parts == num_preds_with_whole
 
         for pred_part, pred_whole in zip(dataset_parts.predicted_entities(), dataset_whole.predicted_entities()):

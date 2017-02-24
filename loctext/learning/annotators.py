@@ -16,7 +16,10 @@ from nalaf.learning.taggers import Tagger
 from nalaf.structures.data import Entity
 import requests
 import urllib.request
-from collections import OrderedDict
+from loctext.learning.evaluations import are_go_parent_and_child, get_localization_name
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path, unpickle_beautified_file
+from nalaf.structures.data import FeatureDictionary
+from nalaf import print_verbose, print_debug
 
 
 class LocTextDXModelRelationExtractor(RelationExtractor):
@@ -45,7 +48,16 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             use_pred=use_predicted_entities,
         )
 
-        self.selected_features_file = selected_features_file
+        if selected_features_file:
+            self.feature_set = FeatureDictionary(is_locked=False)
+            selected_features = unpickle_beautified_file(selected_features_file)
+            # sort to make the order of feature insertion deterministic
+            for selected in sorted(selected_features):
+                self.feature_set[selected] = len(self.feature_set)
+            self.feature_set.is_locked = True
+
+        else:
+            self.feature_set = None
 
         if pipeline:
             feature_generators = pipeline.feature_generators
@@ -55,7 +67,13 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             feature_generators = self.feature_generators()
 
         self.pipeline = pipeline if pipeline \
-            else RelationExtractionPipeline(entity1_class, entity2_class, rel_type, tokenizer=TmVarTokenizer(), edge_generator=edge_generator, feature_generators=feature_generators)
+            else RelationExtractionPipeline(
+                entity1_class, entity2_class, rel_type,
+                tokenizer=TmVarTokenizer(),
+                edge_generator=edge_generator,
+                feature_set=self.feature_set,
+                feature_generators=feature_generators
+        )
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
@@ -73,13 +91,12 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
             model_params["random_state"] = 2727
             pass
 
-        # TODO this would require setting the default model_path
         self.model = model if model else SklSVM(**model_params)
 
 
     def annotate(self, target_corpus):
         if self.execute_pipeline:
-            self.pipeline.execute(target_corpus, train=False)
+            self.pipeline.execute(target_corpus)
 
         self.model.annotate(target_corpus)
 
@@ -218,7 +235,8 @@ class StringTagger(Tagger):
         # Rather, put those organisms we know we collected documents from
         tagger_entity_types="-22,-3,9606,3702,4932",
         send_whole_once=True,
-        filter_go_localizations=None,
+        filter_in_go_localizations=None,
+        filter_out_go_localizations=None,
         host='http://127.0.0.1:5000'
     ):
 
@@ -233,23 +251,31 @@ class StringTagger(Tagger):
         self.tagger_entity_types = tagger_entity_types
         self.send_whole_once = send_whole_once
 
-        if filter_go_localizations is None:
-            self.filter_go_localizations = {
-                'GO:0005886',  # 1: plasma membrane
-                'GO:0005777',  # 2: peroxisome
-                'GO:0005576',  # 3: extracellular region
-                'GO:0005634',  # 4: nucleus
-                'GO:0005739',  # 5: mitochondrion
+        if filter_in_go_localizations is None:
+            self.filter_in_go_localizations = {
+                'GO:0009579',  # 1: thylakoid
+                'GO:0005737',  # 2: cytoplasm
+                'GO:0005811',  # 3: lipid particle
+                'GO:0016020',  # 4: membrane
+                'GO:0045202',  # 5: synapse
                 'GO:0005856',  # 6: cytoskeleton
-                'GO:0005768',  # 7: endosome
-                'GO:0005829',  # 8: cytosol
-                'GO:0005794',  # 9: Golgi apparatus
-                'GO:0005773',  # 10: vacuole
-                'GO:0009536',  # 11: plastid
-                'GO:0005783',  # 12: endoplasmic reticulum
+                'GO:0005694',  # 7: chromosome
+                'GO:0005933',  # 8: cellular bud
+                'GO:0005576',  # 9: extracellular region
+                'GO:0005634',  # 10: nucleus
+                'GO:0071944',  # 11: cell periphery
+                'GO:0009986',  # 12: cell surface
+                'GO:0042995',  # 13: cell projection
             }
         else:
-            self.filter_go_localizations = set(filter_go_localizations)
+            self.filter_in_go_localizations = set(filter_in_go_localizations)
+
+        if filter_out_go_localizations is None:
+            self.filter_out_go_localizations = {
+                'GO:0032991',  # 1: macromolecular complex -- http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0032991
+            }
+        else:
+            self.filter_out_go_localizations = set(filter_out_go_localizations)
 
         self.host = host
 
@@ -278,9 +304,12 @@ class StringTagger(Tagger):
                     while index < num_of_tagger_entities:
                         entity = tagger_annotations[index]
                         if entity['start'] < part_length:
-                            pred_entity = self.create_nalaf_entity(entity, text, offset_adjustment=(- extra_offset))
-                            part.predicted_annotations.append(pred_entity)
                             index += 1
+
+                            pred_entity = self.create_nalaf_entity(entity, text, offset_adjustment=(- extra_offset))
+                            if pred_entity is not None:
+                                part.predicted_annotations.append(pred_entity)
+
                         else:
                             extra_offset = part_length
                             break
@@ -292,7 +321,8 @@ class StringTagger(Tagger):
 
                     for entity in tagger_annotations:
                         pred_entity = self.create_nalaf_entity(entity, text)
-                        part.predicted_annotations.append(pred_entity)
+                        if pred_entity is not None:
+                            part.predicted_annotations.append(pred_entity)
 
         dataset.validate_entity_offsets()
 
@@ -303,7 +333,7 @@ class StringTagger(Tagger):
 
         try:
             entity_types = self.tagger_entity_types
-            json_response = requests.post(entry_point, json=dict(text=text, ids=entity_types, autodetect=True))
+            json_response = requests.post(entry_point, json=dict(text=text, ids=entity_types, autodetect=True, output="simple"))
             response_status = json_response.status_code
             assert response_status == 200
             return json_response.json()
@@ -331,51 +361,72 @@ class StringTagger(Tagger):
 
         e_class_id = n_class_id = None
         norms = []
+        organisms_proteins = {}
 
         for norm in tagger_entity["ids"]:
             # assumption: the e_class_id and n_class_id once set will not change
 
+            norm_id = norm["id"]
+
             if norm["type"] == "-3":
                 e_class_id = self.organism_id
                 n_class_id = self.taxonomy_norm_id
-                norms.append(norm["id"])
+                norms.append(norm_id)
 
             elif norm["type"] == "-22":
-                e_class_id = self.localization_id
-                n_class_id = self.go_norm_id
-                norms.append(norm["id"])
+                try:
+                    if any(are_go_parent_and_child(in_parent, norm_id) for in_parent in self.filter_in_go_localizations) \
+                        and not any(are_go_parent_and_child(out_parent, norm_id) for out_parent in self.filter_out_go_localizations):
+                        e_class_id = self.localization_id
+                        n_class_id = self.go_norm_id
+                        norms.append(norm_id)
+                    else:
+                        print_debug("REJECT", norm_id, get_localization_name(norm_id))
+                        pass  # reject
+
+                except KeyError as e:
+                    print_debug("REJECT", norm_id, get_localization_name(norm_id))
+                    pass  # reject
 
             elif norm["type"].startswith("uniprot_ac:"):
+                organism = int(norm["type"].split(":")[1])
+                prots = organisms_proteins.get(organism, set())
+                prots.update({norm_id})
+                organisms_proteins[organism] = prots
+
                 e_class_id = self.protein_id
                 n_class_id = self.uniprot_norm_id
-                norms.append(norm["id"])
+                norms.append(norm_id)
 
             elif norm["type"].startswith("string_id:"):
+                # Set e_class_id not to reject; this happens in the few cases the string id cannot be normalized to uniprot
                 e_class_id = self.protein_id
 
-        assert e_class_id is not None, tagger_entity
+        if not e_class_id:
+            return None  # reject
 
-        if not norms:
-            norms = None
         else:
-            # We found that for e.g. "membrane proteins" the tagger outputted a repeated normalization id: "GO:0098796"
-            # see: time http -v POST http://localhost:5000/annotate text="membrane proteins" output=tagger-raw
-            # Therefore we make a set to remove repetitions
+            norms = set(norms)  # convert to set first just in case the original tagger returns repeated ids (happened)
 
-            # Also beware, although no repetitions involved, the tagger may tag a cellular component to multiple GOs
-            # Example: "protoplasts", normalized to GO:0005622" and "GO:0044464"
+            # Remove ambiguous ids; heuristic: different normalizations for a same organism are considered ambiguous
+            for organism, proteins in organisms_proteins.items():
+                if len(proteins) > 1:
+                    for ambiguous_protein in proteins:
+                        norms.remove(ambiguous_protein)
 
-            norms = set(norms)
-            norms = ",".join(norms)
+            if not norms:
+                norms = None
+            else:
+                norms = ",".join(norms)
 
-        if n_class_id:
-            norms_dic = {n_class_id: norms}
-        else:
-            norms_dic = None
+            if n_class_id:
+                norms_dic = {n_class_id: norms}
+            else:
+                norms_dic = None
 
-        pred_entity = Entity(class_id=e_class_id, offset=offset, text=entity_text, norm=norms_dic)
+            pred_entity = Entity(class_id=e_class_id, offset=offset, text=entity_text, norm=norms_dic)
 
-        return pred_entity
+            return pred_entity
 
 
 # usage of LoctextAnnotator:

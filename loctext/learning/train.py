@@ -1,7 +1,8 @@
+import pickle
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import relation_accept_uniprot_go, _go_ids_accept_single
+from loctext.learning.evaluations import relation_accept_uniprot_go, are_go_parent_and_child, get_localization_name
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -12,8 +13,8 @@ from collections import Counter
 from nalaf.utils.download import DownloadArticle
 from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 from loctext.util import simple_parse_GO
+import time
 
-import pickle
 
 def parse_arguments(argv=[]):
     import argparse
@@ -21,66 +22,36 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
+    parser.add_argument('--predict_entities', default="False", choices=["True", "true", "False", "false"])
+    parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
+    parser.add_argument('--save_model', default=None, help="Dir. path to save the trained model to")
+    parser.add_argument('--load_model', default=None, help="File path to load a trained model from")
 
-    parser.add_argument('--corpus', default="LocText", choices=["LocText"])
-    parser.add_argument('--corpus_percentage', type=float, required=True, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
-    parser.add_argument('--test_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
-    parser.add_argument('--evaluation_level', type=int, choices=[1, 2, 3, 4], required=True)
+    parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
+    parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
+    parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
+
+    parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4])
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
-    parser.add_argument('--predict_entities', default=False, type=bool, choices=[True, False])
-
-    parser.add_argument('--use_test_set', default=False, action='store_true')
+    parser.add_argument('--cv_with_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
 
-    parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
-    parser.add_argument('--use_tk', default=False, action='store_true')
+    # # TODO clean and review how to set parameters for all different sentece models
+    # parser.add_argument('--minority_class_ss_model', type=int, default=+1, choices=[-1, +1])
+    # parser.add_argument('--majority_class_undersampling_ss_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    # parser.add_argument('--svm_hyperparameter_c_ss_model', action="store", default=0.0080)
+    # parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
+    #
+    # parser.add_argument('--minority_class_ds_model', type=int, default=+1, choices=[-1, +1])
+    # parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.07, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
+    # parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
+    # parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
 
-    parser.add_argument('--minority_class_ss_model', type=int, default=+1, choices=[-1, +1])
-    parser.add_argument('--majority_class_undersampling_ss_model', type=float, default=0.9, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-    parser.add_argument('--svm_hyperparameter_c_ss_model', action="store", default=0.0080)
-    parser.add_argument('--svm_threshold_ss_model', type=float, default=0.0)
+    # ----------------------------------------------------------------------------------------------------
 
-    # TODO clean and review how to set parameters for all different sentece models
-    parser.add_argument('--minority_class_ds_model', type=int, default=+1, choices=[-1, +1])
-    parser.add_argument('--majority_class_undersampling_ds_model', type=float, default=0.07, help='e.g. 1 == no undersampling; 0.5 == 50% undersampling')
-    parser.add_argument('--svm_hyperparameter_c_ds_model', action="store", default=None)
-    parser.add_argument('--svm_threshold_ds_model', type=float, default=0.0)
-
-    args = parser.parse_args(argv)
-
-    if args.evaluation_level == 1:
-        ENTITY_MAP_FUN = Entity.__repr__
-        RELATION_ACCEPT_FUN = str.__eq__
-    elif args.evaluation_level == 2:
-        ENTITY_MAP_FUN = 'lowercased'
-        RELATION_ACCEPT_FUN = str.__eq__
-    elif args.evaluation_level == 3:
-        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
-            {
-                PRO_ID: UNIPROT_NORM_ID,
-                LOC_ID: GO_NORM_ID,
-                ORG_ID: TAXONOMY_NORM_ID,
-            },
-            penalize_unknown_normalizations="soft"
-        )
-        RELATION_ACCEPT_FUN = str.__eq__
-    elif args.evaluation_level == 4:
-        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
-            {
-                PRO_ID: UNIPROT_NORM_ID,
-                LOC_ID: GO_NORM_ID,
-                ORG_ID: TAXONOMY_NORM_ID,
-            },
-            penalize_unknown_normalizations="soft"
-        )
-        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
-
-    args.evaluator = DocumentLevelRelationEvaluator(
-        rel_type=REL_PRO_LOC_ID,
-        entity_map_fun=ENTITY_MAP_FUN,
-        relation_accept_fun=RELATION_ACCEPT_FUN,
-        evaluate_only_on_edges_plausible_relations=args.evaluate_only_on_edges_plausible_relations,
-    )
+    def arg_bool(arg_value):
+        FALSE = ['false', 'f', '0', 'n', 'no', 'none']
+        return False if arg_value.lower() in FALSE else True
 
     def set_None_or_typed_argument(argument, expected_type):
         if not argument or argument == 'None':
@@ -91,14 +62,101 @@ def parse_arguments(argv=[]):
             except Exception as e:
                 raise Exception("The argument {} must be of type {}".format(argument, str(expected_type)))
 
-    args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
-    args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
+    def _select_submodel_params(annotator, args):
+
+        if isinstance(annotator, LocTextDXModelRelationExtractor):
+            return (args.minority_class_ss_model, args.majority_class_undersampling_ss_model, args.svm_hyperparameter_c_ss_model)
+
+        raise AssertionError()
+
+    # ----------------------------------------------------------------------------------------------------
+
+    args = parser.parse_args(argv)
+
+    args.evaluator = get_evaluator(args.evaluation_level, args.evaluate_only_on_edges_plausible_relations)
+    args.predict_entities = arg_bool(args.predict_entities)
+
+    # args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
+    # args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
 
     return args
 
 
-def parse_arguments_string(arguments=""):
-    return parse_arguments(arguments.split("\s+"))
+def evaluate_with_argv(argv=[]):
+    args = parse_arguments(argv)
+
+    training_corpus = None
+    eval_corpus = None
+
+    if args.training_corpus:
+        training_corpus, eval_corpus = read_corpus(args.training_corpus, args.corpus_percentage, args.predict_entities, return_eval_corpus=True)
+
+    if args.eval_corpus:
+        eval_corpus = read_corpus(args.eval_corpus, args.corpus_percentage, args.predict_entities, return_eval_corpus=False)
+
+    print_run_args(args, training_corpus, eval_corpus)
+    result = evaluate(args, training_corpus, eval_corpus)
+    print_run_args(args, training_corpus, eval_corpus)
+
+    return result
+
+
+def evaluate(args, training_corpus, eval_corpus):
+
+    submodels = _select_annotator_submodels(args)
+    are_features_already_extracted = False
+
+    for submodel_name, submodel in submodels.items():
+        print_debug("Training:", submodel_name)
+
+        if not args.load_model:
+            submodel.pipeline.execute(training_corpus, only_features=are_features_already_extracted)
+            submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
+            are_features_already_extracted = True
+
+        annotator_gen_fun = (lambda training_set: train(args, submodel_name, training_set, submodel, execute_pipeline=False))
+
+        if not eval_corpus:
+            # Do cross validation
+            evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
+            rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
+
+        else:
+            trained_annotator = annotator_gen_fun(training_corpus)
+
+            submodel.pipeline.execute(eval_corpus, only_features=False)
+            submodel.model.write_vector_instances(eval_corpus, submodel.pipeline.feature_set)
+
+            trained_annotator(eval_corpus)
+
+            if next(eval_corpus.relations(), None):
+                # The corpus has annotated relationships, therefore run a normal performance evaluation
+                rel_evaluation = args.evaluator.evaluate(eval_corpus)
+            else:
+                # Else, write in a file the extracted relationships
+                rel_evaluation = write_external_evaluation_results(eval_corpus)
+
+    return rel_evaluation
+
+
+def train(args, submodel_name, training_set, submodel, execute_pipeline):
+    if execute_pipeline:
+        submodel.pipeline.execute(training_set)
+
+    if not args.load_model:
+        # Train if not loaded model
+        submodel.model.train(training_set)
+
+    if args.save_model:
+        timestamp = time.time()
+        model_filename = "{}_{}_{}.bin".format(submodel_name, args.predict_entities, timestamp)
+        model_path = os.path.join(args.save_model, model_filename)
+
+        with open(model_path, "wb") as f:
+            pickle.dump(submodel.model, f)
+            print("Model saved to: ", model_path)
+
+    return submodel.annotate
 
 
 def _select_annotator_submodels(args):
@@ -116,35 +174,61 @@ def _select_annotator_submodels(args):
     submodels = OrderedDict()  # Order may matter
     submodels_names = args.model.split(",")
 
+    binary_model = None
+
+    if args.load_model:
+        if len(submodels_names) > 1:
+            raise NotImplementedError("No current support for loading multple trained models")
+        else:
+            with open(args.load_model, "rb") as f:
+                binary_model = pickle.load(f)
+
+    execute_pipeline = False  # not binary_model -- decide later
+
     for name in submodels_names:
-        # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = _select_submodel_params(annotator, args)
+        # TODO get here: minority_class, majority_class_undersampling, svm_hyperparameter_c = ...
 
         if "D0" == name:
             if args.predict_entities:
-                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_True_LinearSVC-1486839732.581865-NAMES.log"
-            else:
-                selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/0_False_LinearSVC-1486292275.065055-NAMES.log"
-                # selected_features.remove("LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]")
+                selected_features_file = repo_path("resources", "features", "selected", "0_True_LinearSVC_C=2.0-1487943476.673364-NAMES.py")
 
-            submodels[name] = LocTextDXModelRelationExtractor(
-                pro_id, loc_id, rel_id,
-                sentence_distance=0,
-                selected_features_file=selected_features_file,
-                feature_generators=indirect_feature_generators,
-                use_predicted_entities=args.predict_entities,
-                execute_pipeline=False,
-                model=None,
-                classification_threshold=args.svm_threshold_ss_model,
-                use_tree_kernel=args.use_tk,
-                preprocess=True,
-                #
-                class_weight=None,
-                kernel='linear',
-                C=1,
-            )
+                submodels[name] = LocTextDXModelRelationExtractor(
+                    pro_id, loc_id, rel_id,
+                    sentence_distance=0,
+                    selected_features_file=selected_features_file,
+                    feature_generators=indirect_feature_generators,
+                    use_predicted_entities=args.predict_entities,
+                    execute_pipeline=execute_pipeline,
+                    model=binary_model,
+                    #
+                    preprocess=True,
+                    #
+                    class_weight=None,
+                    kernel='linear',
+                    C=1,
+                )
+
+            else:
+                selected_features_file = repo_path("resources", "features", "selected", "0_False_LinearSVC-1486292275.065055-NAMES.py")
+
+                submodels[name] = LocTextDXModelRelationExtractor(
+                    pro_id, loc_id, rel_id,
+                    sentence_distance=0,
+                    selected_features_file=selected_features_file,
+                    feature_generators=indirect_feature_generators,
+                    use_predicted_entities=args.predict_entities,
+                    execute_pipeline=execute_pipeline,
+                    model=binary_model,
+                    #
+                    preprocess=True,
+                    #
+                    class_weight=None,
+                    kernel='linear',
+                    C=1,
+                )
 
         if "D1" == name:
-            selected_features_file = "/Users/juanmirocks/Work/hck/LocText/tmp/1_False_LinearSVC-1486481526.730234-NAMES.log"
+            selected_features_file = repo_path("resources", "features", "selected", "1_False_LinearSVC-1486481526.730234-NAMES.py")
 
             submodels[name] = LocTextDXModelRelationExtractor(
                 pro_id, loc_id, rel_id,
@@ -152,10 +236,9 @@ def _select_annotator_submodels(args):
                 selected_features_file=selected_features_file,
                 feature_generators=indirect_feature_generators,
                 use_predicted_entities=args.predict_entities,
-                execute_pipeline=False,
-                model=None,
-                classification_threshold=args.svm_threshold_ss_model,
-                use_tree_kernel=args.use_tk,
+                execute_pipeline=execute_pipeline,
+                model=binary_model,
+                #
                 preprocess=True,
                 #
                 class_weight=None,
@@ -168,131 +251,66 @@ def _select_annotator_submodels(args):
     return submodels
 
 
-def _select_submodel_params(annotator, args):
+def write_external_evaluation_results(eval_corpus):
 
-    if isinstance(annotator, LocTextDXModelRelationExtractor):
-        return (args.minority_class_ss_model, args.majority_class_undersampling_ss_model, args.svm_hyperparameter_c_ss_model)
+    macro_counter = Counter()
+    micro_counter = {}
 
-    raise AssertionError()
+    with open(repo_path("resources", "features", "SwissProt_relations.pickle"), "rb") as f:
+        SWISSPROT_RELATIONS = pickle.load(f)
 
+    for docid, doc in eval_corpus.documents.items():
 
-def train(training_set, args, submodel, execute_pipeline):
-    if execute_pipeline:
-        submodel.pipeline.execute(training_set, train=True)
+        for rel in doc.predicted_relations():
+            e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
+            e2s = filter(None, rel.entity2.normalisation_dict.get(GO_NORM_ID, "").split(","))
+            if (rel.entity2.class_id <= rel.entity1.class_id):
+                pairs = zip(e2s, e1s)
+            else:
+                pairs = zip(e1s, e2s)
 
-    submodel.model.train(training_set)
+            for e1, e2 in pairs:
+                rel_key = (e1, e2)
 
-    return submodel.annotate
+                rel_key_docid_counters = micro_counter.get(rel_key, Counter())
 
+                if docid not in rel_key_docid_counters:  # this rel_key was not in this counter before
+                    macro_counter.update({rel_key})
 
-def evaluate(training_corpus, test_corpus, args):
-    evaluator = args.evaluator
+                rel_key_docid_counters.update({docid})
+                micro_counter[rel_key] = rel_key_docid_counters
 
-    submodels = _select_annotator_submodels(args)
-    execute_only_features = False
+    with open(args.eval_corpus + "_" + "relations.tsv", "w") as f:
 
-    for submodel_name, submodel in submodels.items():
-        print("Executing :", submodel_name)
+        header = ["# Type", "UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "Child SwissProt", "Confirmed", "Num Docs"]
+        max_num_docs = len(micro_counter[macro_counter.most_common(1)[0][0]])
+        header = header + (["PMID"] * max_num_docs)
+        f.write("\t".join(header) + "\n")
 
-        submodel.pipeline.execute(training_corpus, train=True, only_features=execute_only_features)
-        execute_only_features = True
-        selected_features = unpickle_beautified_file(submodel.selected_features_file)
-        submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
-        submodel.model.write_vector_instances(training_corpus, submodel.pipeline.feature_set)
+        for rel_key, count in macro_counter.most_common():
+            u_ac, go = rel_key
+            name = get_localization_name(go)
+            inSwissProt = str(go in SWISSPROT_RELATIONS.get(u_ac, set()))
+            try:
+                childSwissProt = str(any(are_go_parent_and_child(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
+            except KeyError:
+                childSwissProt = str(False)
 
-        annotator_gen_fun = (lambda training_set: train(training_set, args, submodel, execute_pipeline=False))
+            cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
+            cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
+            f.write("\t".join(cols) + "\n")
 
-        if not args.test_corpus:
-            evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, evaluator, args.k_num_folds, use_validation_set=not args.use_test_set)
-            rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
-        else:
-            submodel.pipeline.execute(test_corpus, train=False, only_features=False)
-            selected_features = unpickle_beautified_file(submodel.selected_features_file)
-            submodel.model.set_allowed_feature_names(submodel.pipeline.feature_set, selected_features)
-            submodel.model.write_vector_instances(test_corpus, submodel.pipeline.feature_set)
-
-            annotator = annotator_gen_fun(training_corpus)
-            annotator(test_corpus)
-
-            macro_counter = Counter()
-            micro_counter = {}
-
-            with open(repo_path(["resources", "features", "SwissProt_relations.pickle"]), "rb") as f:
-                SWISSPROT_RELATIONS = pickle.load(f)
-
-            GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
-
-            for docid, doc in test_corpus.documents.items():
-
-                for rel in doc.predicted_relations():
-                    e1s = filter(None, rel.entity1.normalisation_dict.get(UNIPROT_NORM_ID, "").split(","))
-                    e2s = filter(None, rel.entity2.normalisation_dict.get(GO_NORM_ID, "").split(","))
-                    if (rel.entity2.class_id <= rel.entity1.class_id):
-                        pairs = zip(e2s, e1s)
-                    else:
-                        pairs = zip(e1s, e2s)
-
-                    for e1, e2 in pairs:
-                        rel_key = (e1, e2)
-
-                        rel_key_docid_counters = micro_counter.get(rel_key, Counter())
-
-                        if docid not in rel_key_docid_counters:  # this rel_key was not in this counter before
-                            macro_counter.update({rel_key})
-
-                        rel_key_docid_counters.update({docid})
-                        micro_counter[rel_key] = rel_key_docid_counters
-
-            with open(args.test_corpus + "_" + "relations.tsv", "w") as f:
-
-                header = ["# Type", "UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "Child SwissProt", "Confirmed", "Num Docs"]
-                max_num_docs = len(micro_counter[macro_counter.most_common(1)[0][0]])
-                header = header + (["PMID"] * max_num_docs)
-                f.write("\t".join(header) + "\n")
-
-                for rel_key, count in macro_counter.most_common():
-                    u_ac, go = rel_key
-                    name = GO_TREE.get(go, ("", "", ""))[0]
-                    inSwissProt = str(go in SWISSPROT_RELATIONS.get(u_ac, set()))
-                    try:
-                        childSwissProt = str(any(_go_ids_accept_single(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
-                    except KeyError:
-                        childSwissProt = str(False)
-
-                    cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
-                    cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
-                    f.write("\t".join(cols) + "\n")
-
-            rel_evaluation = macro_counter.most_common(100)
+    rel_evaluation = macro_counter.most_common(100)
 
     return rel_evaluation
 
 
-def evaluate_with_argv(argv=[]):
-    args = parse_arguments(argv)
-
-    training_corpus = read_corpus(args.corpus, args.corpus_percentage, args.predict_entities)
-    test_corpus = None
-    if args.test_corpus:
-        test_corpus = read_corpus(args.test_corpus, args.corpus_percentage, args.predict_entities)
-
-    print_run_args(args, training_corpus)
-    print()
-    result = evaluate(training_corpus, test_corpus, args)
-    print()
-    print_run_args(args, training_corpus)
-    print_corpus_pipeline_dependent_stats(training_corpus)
-    print()
-
-    return result
-
-
-def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
+def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, return_eval_corpus=False):
     import os
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
 
-    __corpora_dir = repo_path(["resources", "corpora"])
+    __corpora_dir = repo_path("resources", "corpora")
 
     if corpus_name in ["LocText", "LocText_v2"]:  # With reviewed normalizations (8 new protein normalizations made by Tanya; no other modifications)
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
@@ -309,10 +327,10 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
     elif corpus_name in ["SwissProt", "NewDiscoveries"]:
 
         if corpus_name == "SwissProt":
-            pmids_file_path = os.path.join(repo_path(["resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"]))
+            pmids_file_path = os.path.join(repo_path("resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"))
 
         elif corpus_name == "NewDiscoveries":
-            pmids_file_path = os.path.join(repo_path(["tmp", "pubmed_result.txt"]))
+            pmids_file_path = os.path.join(repo_path("resources", "evaluation", "pubmed_result.txt"))
 
         dir_html = None
         corpus = Dataset()
@@ -324,7 +342,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
 
                     for _, doc in PMID_DL.download([pmid]):
                         try:
-                            doc.get_text()  # some empty docs?
+                            doc.get_text()  # Had problems with few documents and needs investigation; empty docs?
                             corpus.documents[pmid] = doc
                         except:
                             pass
@@ -342,45 +360,105 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False):
             del corpus.documents["PMC2483532"]
             del corpus.documents["PMC2847216"]
 
-        AnnJsonAnnotationReader(
-            dir_annjson,
-            read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
-            read_relations=True,
-            delete_incomplete_docs=False).annotate(corpus)
+        if dir_annjson is not None:
+
+            AnnJsonAnnotationReader(
+                dir_annjson,
+                read_only_class_id=[PRO_ID, LOC_ID, ORG_ID],
+                read_relations=True,
+                delete_incomplete_docs=False).annotate(corpus)
+
+    eval_corpus = None
 
     if (corpus_percentage < 1.0):
-        corpus, _ = corpus.percentage_split(corpus_percentage)
+        corpus, eval_corpus = corpus.percentage_split(corpus_percentage)
 
     if predict_entities:
         # only human if dir_html is None == no LocText corpus, otherwise tag for the organisms that are in LocText
         tagger_entity_types = "-22,-3,9606,3702,4932" if dir_html else "-22,-3,9606"
-        # print(tagger_entity_types)
 
         STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, tagger_entity_types=tagger_entity_types, send_whole_once=True)
+
         STRING_TAGGER.annotate(corpus)
+        if return_eval_corpus and eval_corpus:
+            STRING_TAGGER.annotate(eval_corpus)
 
-    return corpus
+    if return_eval_corpus:
+        return (corpus, eval_corpus)
+
+    else:
+        return corpus
 
 
-def print_run_args(args, corpus):
-    print("Train Arguments: ")
+def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations):
+    normalization_penalization = "soft"
+
+    if evaluation_level == 1:
+        ENTITY_MAP_FUN = Entity.__repr__
+        RELATION_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 2:
+        ENTITY_MAP_FUN = 'lowercased'
+        RELATION_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 3:
+        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            # WARN: we should read the class ids from the corpus
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization,
+        )
+        RELATION_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 4:
+        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            # WARN: we should read the class ids from the corpus
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization
+        )
+        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+
+    else:
+        raise AssertionError(evaluation_level)
+
+    evaluator = DocumentLevelRelationEvaluator(
+        rel_type=REL_PRO_LOC_ID,
+        entity_map_fun=ENTITY_MAP_FUN,
+        relation_accept_fun=RELATION_ACCEPT_FUN,
+        evaluate_only_on_edges_plausible_relations=evaluate_only_on_edges_plausible_relations,
+    )
+
+    return evaluator
+
+
+def print_run_args(args, training_corpus, eval_corpus):
+    print()
+    print("Run Arguments: ")
     for key, value in sorted((vars(args)).items()):
         print("\t{} = {}".format(key, value))
 
-    print_corpus_hard_core_stats(corpus)
-
-
-def print_corpus_hard_core_stats(corpus):
     print()
-    print("Corpus stats:")
-    print("\t#documents: {}".format(len(corpus)))
-    print("\t#relations: {}".format(len(list(corpus.relations()))))
+    print_corpus_hard_core_stats("Training", training_corpus)
+    print_corpus_hard_core_stats("Evaluation", eval_corpus)
+
+
+def print_corpus_hard_core_stats(name, corpus):
+    if corpus:
+        print(name + " corpus stats:")
+        print("\t#documents: {}".format(len(corpus)))
+        print("\t#relations: {}".format(len(list(corpus.relations()))))
+        print_corpus_pipeline_dependent_stats(corpus)
+        print()
 
 
 def print_corpus_pipeline_dependent_stats(corpus):
-
-    # Assumes the sentences and edges have been generated (through relations_pipeline)
-
     T = 0
     P = 0
     N = 0
@@ -392,14 +470,12 @@ def print_corpus_pipeline_dependent_stats(corpus):
         else:
             N += 1
 
-    # Totals for whole corpus (test data too) and with SentenceDistanceEdgeGenerator (only same sentences)
-    # abstracts only -- #docs: 100 -- #P=351 vs. #N=308
-    # abstract + fulltext -- #docs: 104, P=614 vs N=1480
-
-    print("\t#sentences: {}".format(len(list(corpus.sentences()))))
-    print("\t#instances (edges): {} -- #P={} vs. #N={}".format(T, P, N))
-    print("\t#plausible relations from edges: {}".format(len(list(corpus.plausible_relations_from_generated_edges()))))
-    print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
+    if T > 0:
+        # Assumes the sentences and edges have been generated (through relations_pipeline)
+        print("\t#sentences: {}".format(len(list(corpus.sentences()))))
+        print("\t#instances (edges): {} -- #P={} vs. #N={}".format(T, P, N))
+        print("\t#plausible relations from edges: {}".format(len(list(corpus.plausible_relations_from_generated_edges()))))
+        print("\t#features: {}".format(next(corpus.edges()).features_vector.shape[1]))
 
     return (P, N)
 

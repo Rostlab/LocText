@@ -78,11 +78,11 @@ def call(run_rfe):
             print()
             print()
 
-            keys, names, fig_file = \
+            names, fig_file = \
                 print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="kbest_r_a")
 
             print()
-            print("\n".join([keys, names, fig_file]))
+            print("\n".join([names, fig_file]))
             print()
 
             plot_recursive_features(scoring_name, scores, save_to=fig_file, show=not run_rfe)

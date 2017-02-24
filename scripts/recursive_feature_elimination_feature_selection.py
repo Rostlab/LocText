@@ -53,11 +53,11 @@ def call(annotator, X, y, groups, pre_selected_feature_keys=None):
         print()
         print()
 
-        keys, names, fig_file = \
+        names, fig_file = \
             print_selected_features(selected_feature_keys, annotator.pipeline.feature_set, file_prefix="rfe")
 
         print()
-        print("\n".join([keys, names, fig_file]))
+        print("\n".join([names, fig_file]))
         print()
 
         plot_recursive_features(scoring_name, rfecv.grid_scores_, save_to=fig_file, show=False)

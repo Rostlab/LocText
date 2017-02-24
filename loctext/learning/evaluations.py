@@ -4,10 +4,14 @@ from loctext.util import simple_parse_GO
 from itertools import product
 
 
-GO_TREE = simple_parse_GO.simple_parse(repo_path(["resources", "ontologies", "go-basic.cellular_component.latest.obo"]))
+GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-basic.cellular_component.latest.obo"))
 """
 Dictionary with go term child --> to [list of go term parents] relationships
 """
+
+def get_localization_name(go_id, default=""):
+    return GO_TREE.get(go_id, (default, "", ""))[0]
+
 
 def relation_accept_uniprot_go(gold, pred):
 
