@@ -190,7 +190,7 @@ def _select_annotator_submodels(args):
 
         if "D0" == name:
             if args.predict_entities:
-                selected_features_file = repo_path("resources", "features", "selected", "0_True_LinearSVC_C=2.0-1487413027.853745-NAMES.py")
+                selected_features_file = repo_path("resources", "features", "selected", "0_True_LinearSVC_C=2.0-1487943476.673364-NAMES.py")
 
                 submodels[name] = LocTextDXModelRelationExtractor(
                     pro_id, loc_id, rel_id,
