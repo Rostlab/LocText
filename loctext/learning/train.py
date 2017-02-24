@@ -138,7 +138,7 @@ def evaluate(args, training_corpus, eval_corpus):
                     rel_evaluation = write_external_evaluation_results(eval_corpus)
 
             else:
-                rel_evaluation = "Model saved in folder: " + args.save_model
+                rel_evaluation = "Model saved into folder: " + args.save_model
 
     return rel_evaluation
 
