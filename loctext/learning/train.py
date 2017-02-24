@@ -137,6 +137,9 @@ def evaluate(args, training_corpus, eval_corpus):
                     # Else, write in a file the extracted relationships
                     rel_evaluation = write_external_evaluation_results(eval_corpus)
 
+            else:
+                rel_evaluation = "Model saved in folder: " + args.save_model
+
     return rel_evaluation
 
 
