@@ -116,13 +116,16 @@ def evaluate(args, training_corpus, eval_corpus):
 
         annotator_gen_fun = (lambda training_set: train(args, submodel_name, training_set, submodel, execute_pipeline=False))
 
-        if not (eval_corpus or args.save_model):
+        if not (eval_corpus or args.save_model or args.load_model):
             # Do cross validation
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
             rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
         else:
             trained_annotator = annotator_gen_fun(training_corpus)
+
+            if args.load_model and eval_corpus is None:
+                eval_corpus = training_corpus
 
             if eval_corpus:
                 submodel.pipeline.execute(eval_corpus, only_features=False)
@@ -138,7 +141,7 @@ def evaluate(args, training_corpus, eval_corpus):
                     rel_evaluation = write_external_evaluation_results(eval_corpus)
 
             else:
-                rel_evaluation = "Model saved into folder: " + args.save_model
+                rel_evaluation = "Model saved into folder: " + str(args.save_model)
 
     return rel_evaluation
 
