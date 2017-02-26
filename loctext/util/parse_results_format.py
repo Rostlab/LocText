@@ -11,14 +11,15 @@ def parse(filepath, previous_annotations=None):
             line = line.strip()
             typ, uniprot_ac, go, loc_name, inSwissProt, childSwissProt, confirmed, num_docs, *docs = line.split("\t")
 
+            rel_key = uniprot_ac, go
+
             if previous_annotations is None:
                 if not confirmed:
                     break
                 else:
-                    rel_key = uniprot_ac, go
                     ret[rel_key] = confirmed
             else:
-                confirmed = previous_annotations.get(uniprot_ac, "")
+                confirmed = previous_annotations.get(rel_key, "")
                 inSwissProt = str(is_in_swiss_prot(uniprot_ac, go))
                 childSwissProt = childSwissProt
                 row = [typ, uniprot_ac, go, loc_name, inSwissProt, childSwissProt, confirmed, num_docs] + docs
