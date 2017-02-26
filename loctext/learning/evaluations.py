@@ -1,13 +1,28 @@
+import pickle
+from itertools import product
 from loctext.util import repo_path
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
 from loctext.util import simple_parse_GO
-from itertools import product
 
 
 GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-basic.cellular_component.latest.obo"))
 """
 Dictionary with go term child --> to [list of go term parents] relationships
 """
+
+SWISSPROT_RELATIONS = None
+"""
+GO Localization/Component annotations written in SwissProt
+
+Dictionary UniProt AC --> set[GO] (set of GO ids explicitly written in SwissProt)
+"""
+
+with open(repo_path("resources", "features", "SwissProt_relations.pickle"), "rb") as f:
+    SWISSPROT_RELATIONS = pickle.load(f)
+
+
+# ----------------------------------------------------------------------------------------------------
+
 
 def get_localization_name(go_id, default=""):
     return GO_TREE.get(go_id, (default, "", ""))[0]
@@ -146,3 +161,30 @@ def _go_ids_accept_single_recursive(a, b, b_parents):
         return True
 
     return any(_go_ids_accept_single_recursive(a, pp, GO_TREE.get(pp).parents) for pp in b_parents if pp in GO_TREE)
+
+
+# ----------------------------------------------------------------------------------------------------
+
+
+def is_in_swiss_prot(uniprot_ac, go):
+    explicitly_written = go in SWISSPROT_RELATIONS.get(uniprot_ac, set())
+
+    return explicitly_written or is_parent_of_swiss_prot_annotation(uniprot_ac, go)
+
+
+def is_parent_of_swiss_prot_annotation(uniprot_ac, go):
+    try:
+        return any(are_go_parent_and_child(go, swissprot) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+    except KeyError:
+        return False
+
+
+def is_child_of_swiss_prot_annotation(uniprot_ac, go):
+    try:
+        return any(are_go_parent_and_child(swissprot, go) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+    except KeyError:
+        return False
+
+
+assert(is_in_swiss_prot("P51811", "GO:0016020"))
+assert(is_in_swiss_prot("Q53GL0", "GO:0005886"))
