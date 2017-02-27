@@ -1,4 +1,4 @@
-from nalaf.learning.evaluators import EntityLevelEvaluator, MentionLevelEvaluator
+from nalaf.learning.evaluators import EntityLevelEvaluator
 from loctext.learning.train import read_corpus
 from nalaf.structures.data import Entity
 from loctext.learning.evaluations import entity_accept_uniprot_go_taxonomy
