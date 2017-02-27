@@ -1,7 +1,6 @@
 import pickle
 from itertools import product
-from loctext.util import repo_path
-from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
+from loctext.util import repo_path, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from loctext.util import simple_parse_GO
 
 
@@ -55,6 +54,25 @@ def relation_accept_uniprot_go(gold, pred):
         return None
 
 
+def entity_accept_uniprot_go_taxonomy(gold, pred):
+
+    [g_key, g_value] = gold.split('|')
+    [p_key, p_value] = pred.split('|')
+
+    if p_key == '' or g_key == '':
+        return False
+
+    if g_value != "" and g_value == p_value:
+        return True
+
+    if g_key == UNIPROT_NORM_ID:
+        return _uniprot_ids_accept_multiple(g_value, p_value)
+    elif g_key == GO_NORM_ID:
+        return _go_ids_accept_multiple(g_value, p_value)
+    elif g_key == TAXONOMY_NORM_ID:
+        return _taxonomy_ids_accept_single(g_value, p_value)
+
+
 def _uniprot_ids_accept_multiple(gold, pred):
     """
     If all golds are UNKNOWN normalization, return None (reject) else accept if any pair match is equals
@@ -99,6 +117,13 @@ def _go_ids_accept_multiple(gold, pred):
 
     if one_is_None:
         return None
+    else:
+        return False
+
+
+def _taxonomy_ids_accept_single(gold, pred):
+    if gold == pred:
+        return True
     else:
         return False
 
