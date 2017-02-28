@@ -1,4 +1,4 @@
-from nalaf.learning.evaluators import EntityLevelEvaluator
+from nalaf.learning.evaluators import EntityEvaluator
 from loctext.learning.train import read_corpus
 from nalaf.structures.data import Entity
 from loctext.learning.evaluations import entity_accept_uniprot_go_taxonomy
@@ -20,7 +20,7 @@ def entity_overlap_fun(gold, pred):
 
 def _get_entity_evaluator(evaluation_level):
     """
-    Returns EntityLevelEvaluator object based on specified evaluation_level
+    Returns EntityEvaluator object based on specified evaluation_level
     """
     normalization_penalization = "soft"
     ENTITY_OVERLAP_FUN = entity_overlap_fun
@@ -34,7 +34,7 @@ def _get_entity_evaluator(evaluation_level):
         ENTITY_ACCEPT_FUN = str.__eq__
 
     elif evaluation_level == 3:
-        ENTITY_MAP_FUN = EntityLevelEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
             {
                 PRO_ID: UNIPROT_NORM_ID,
                 LOC_ID: GO_NORM_ID,
@@ -45,7 +45,7 @@ def _get_entity_evaluator(evaluation_level):
         ENTITY_ACCEPT_FUN = str.__eq__
 
     elif evaluation_level == 4:
-        ENTITY_MAP_FUN = EntityLevelEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
             {
                 PRO_ID: UNIPROT_NORM_ID,
                 LOC_ID: GO_NORM_ID,
@@ -58,7 +58,7 @@ def _get_entity_evaluator(evaluation_level):
     else:
         raise AssertionError(evaluation_level)
 
-    evaluator = EntityLevelEvaluator(
+    evaluator = EntityEvaluator(
         subclass_analysis=True,
         entity_map_fun=ENTITY_MAP_FUN,
         entity_overlap_fun=ENTITY_OVERLAP_FUN,
