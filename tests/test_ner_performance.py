@@ -10,31 +10,18 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
     pass
 
 
-def entity_overlap_fun(gold, pred):
-    """
-    :return:True  - if the offsets of the two entities overlap
-            False - otherwise
-    """
-    return gold.offset < pred.end_offset() and gold.end_offset() > pred.offset
-
-
 def _get_entity_evaluator(evaluation_level):
     """
     Returns EntityEvaluator object based on specified evaluation_level
     """
     normalization_penalization = "soft"
-    ENTITY_OVERLAP_FUN = entity_overlap_fun
 
     if evaluation_level == 1:
-        ENTITY_MAP_FUN = Entity.__repr__
-        ENTITY_ACCEPT_FUN = str.__eq__
-
-    elif evaluation_level == 2:
         ENTITY_MAP_FUN = 'lowercased'
         ENTITY_ACCEPT_FUN = str.__eq__
 
-    elif evaluation_level == 3:
-        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+    elif evaluation_level == 2:
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
             {
                 PRO_ID: UNIPROT_NORM_ID,
                 LOC_ID: GO_NORM_ID,
@@ -44,8 +31,8 @@ def _get_entity_evaluator(evaluation_level):
         )
         ENTITY_ACCEPT_FUN = str.__eq__
 
-    elif evaluation_level == 4:
-        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+    elif evaluation_level == 3:
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
             {
                 PRO_ID: UNIPROT_NORM_ID,
                 LOC_ID: GO_NORM_ID,
@@ -61,7 +48,6 @@ def _get_entity_evaluator(evaluation_level):
     evaluator = EntityEvaluator(
         subclass_analysis=True,
         entity_map_fun=ENTITY_MAP_FUN,
-        entity_overlap_fun=ENTITY_OVERLAP_FUN,
         entity_accept_fun=ENTITY_ACCEPT_FUN
     )
 
@@ -75,10 +61,11 @@ def test_get_evaluation_result_of_corpus():
     :param corpus:
     :return:
     """
-    # Gets both annotations and pred_annotations entities.
+
+    # Gets both annotation and pred_annotation entities.
     corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=True)
 
-    evaluator = _get_entity_evaluator(evaluation_level=4)
+    evaluator = _get_entity_evaluator(evaluation_level=3)
     evaluations = evaluator.evaluate(corpus)
     print("-----------------------------------------------------------------------------------")
     print(evaluations)

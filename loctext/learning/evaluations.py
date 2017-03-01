@@ -56,21 +56,38 @@ def relation_accept_uniprot_go(gold, pred):
 
 def entity_accept_uniprot_go_taxonomy(gold, pred):
 
-    [g_key, g_value] = gold.split('|')
-    [p_key, p_value] = pred.split('|')
-
-    if p_key == '' or g_key == '':
-        return False
-
-    if g_value != "" and g_value == p_value:
+    if gold == pred and gold != "":
         return True
 
-    if g_key == UNIPROT_NORM_ID:
-        return _uniprot_ids_accept_multiple(g_value, p_value)
-    elif g_key == GO_NORM_ID:
-        return _go_ids_accept_multiple(g_value, p_value)
-    elif g_key == TAXONOMY_NORM_ID:
-        return _taxonomy_ids_accept_single(g_value, p_value)
+    [g_class_id, g_offsets, g_norm_id, g_norm_value] = gold.split('|')
+    [p_class_id, p_offsets, p_norm_id, p_norm_value] = pred.split('|')
+
+    if g_class_id != p_class_id:
+        return False
+
+    # Check if the offsets overlap
+    if _entities_offset_overlap(g_offsets, p_offsets):
+
+        if g_norm_value != "" and g_norm_value == p_norm_value:
+            return True
+
+        if g_norm_id == UNIPROT_NORM_ID:
+            return _uniprot_ids_accept_multiple(g_norm_value, p_norm_value)
+        elif g_norm_id == GO_NORM_ID:
+            return _go_ids_accept_multiple(g_norm_value, p_norm_value)
+        elif g_norm_id == TAXONOMY_NORM_ID:
+            return _taxonomy_ids_accept_single(g_norm_value, p_norm_value)
+        else:
+            return None
+    else:
+        return False
+
+
+def _entities_offset_overlap(g_offsets, p_offsets):
+    g_start_offset, g_end_offset = g_offsets.split(',')
+    p_start_offset, p_end_offset = p_offsets.split(',')
+
+    return g_start_offset < p_end_offset and g_end_offset > p_start_offset
 
 
 def _uniprot_ids_accept_multiple(gold, pred):
