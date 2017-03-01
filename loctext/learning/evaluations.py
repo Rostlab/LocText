@@ -78,7 +78,7 @@ def entity_accept_uniprot_go_taxonomy(gold, pred):
         elif g_norm_id == TAXONOMY_NORM_ID:
             return _taxonomy_ids_accept_single(g_norm_value, p_norm_value)
         else:
-            return None
+            return True
     else:
         return False
 

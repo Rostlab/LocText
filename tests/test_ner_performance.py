@@ -10,25 +10,38 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
     pass
 
 
+def test_get_evaluation_result_of_corpus():
+    """
+    Evaluates the performance of corpus entities [e_1 (Protein), e_2 (Localization) and e_3 (Organism)]
+    [precision, recall and f-measure]
+    :param corpus:
+    :return:
+    """
+
+    # Gets both annotation and pred_annotation entities.
+    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=True)
+
+    evaluator = _get_entity_evaluator(evaluation_level=5)
+    evaluations = evaluator.evaluate(corpus)
+    print("-----------------------------------------------------------------------------------")
+    print(evaluations)
+    print("-----------------------------------------------------------------------------------")
+
+
 def _get_entity_evaluator(evaluation_level):
     """
     Returns EntityEvaluator object based on specified evaluation_level
     """
     normalization_penalization = "soft"
+    norm_required = True
+    norm_not_required = False
 
     if evaluation_level == 1:
-        ENTITY_MAP_FUN = 'lowercased'
+        ENTITY_MAP_FUN = Entity.__repr__
         ENTITY_ACCEPT_FUN = str.__eq__
 
     elif evaluation_level == 2:
-        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
-            {
-                PRO_ID: UNIPROT_NORM_ID,
-                LOC_ID: GO_NORM_ID,
-                ORG_ID: TAXONOMY_NORM_ID,
-            },
-            penalize_unknown_normalizations=normalization_penalization
-        )
+        ENTITY_MAP_FUN = 'lowercased'
         ENTITY_ACCEPT_FUN = str.__eq__
 
     elif evaluation_level == 3:
@@ -38,7 +51,44 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations=normalization_penalization
+            penalize_unknown_normalizations=normalization_penalization,
+            normalization_required = norm_not_required
+        )
+        ENTITY_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 4:
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization,
+            normalization_required = norm_required
+        )
+        ENTITY_ACCEPT_FUN = str.__eq__
+
+    elif evaluation_level == 5:
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization,
+            normalization_required = norm_not_required
+        )
+        ENTITY_ACCEPT_FUN = entity_accept_uniprot_go_taxonomy
+
+    elif evaluation_level == 6:
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization,
+            normalization_required = norm_required
         )
         ENTITY_ACCEPT_FUN = entity_accept_uniprot_go_taxonomy
 
@@ -54,22 +104,7 @@ def _get_entity_evaluator(evaluation_level):
     return evaluator
 
 
-def test_get_evaluation_result_of_corpus():
-    """
-    Evaluates the performance of corpus entities [e_1 (Protein), e_2 (Localization) and e_3 (Organism)]
-    [precision, recall and f-measure]
-    :param corpus:
-    :return:
-    """
 
-    # Gets both annotation and pred_annotation entities.
-    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=True)
-
-    evaluator = _get_entity_evaluator(evaluation_level=3)
-    evaluations = evaluator.evaluate(corpus)
-    print("-----------------------------------------------------------------------------------")
-    print(evaluations)
-    print("-----------------------------------------------------------------------------------")
 
 
 if __name__ == "__main__":
