@@ -304,4 +304,3 @@
     "LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]",  # 300
     "LocalizationRelationsRatios::58_SwissProt_normalized_exists_relation_[0]",  # 301
 ]
-
