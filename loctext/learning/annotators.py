@@ -188,7 +188,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
                 f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,  # 52
                 f_SwissProt_normalized_total_background_loc_rels_ratios=None,
                 #
-                f_SwissProt_normalized_exists_relation=58,
+                f_SwissProt_normalized_exists_relation=58,  # 58
             ),
 
         ]
