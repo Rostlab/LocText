@@ -1,4 +1,4 @@
-from loctext.learning.evaluations import is_in_swiss_prot, is_child_of_swiss_prot_annotation, relation_accept_uniprot_go, are_go_parent_and_child, get_localization_name
+from loctext.learning.evaluations import is_in_swiss_prot, is_child_of_swiss_prot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
 
 def parse(filepath, previous_annotations=None):
     ret = {}

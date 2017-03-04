@@ -16,7 +16,7 @@ from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator, CombinatorEdgeGenerator
 import math
 import sys
-from loctext.learning.evaluations import relation_accept_uniprot_go
+from loctext.learning.evaluations import accept_relation_uniprot_go
 from nalaf.structures.data import Entity
 
 

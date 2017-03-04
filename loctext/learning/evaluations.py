@@ -35,7 +35,7 @@ def _verify_in_ontology(term):
 # ----------------------------------------------------------------------------------------------------
 
 
-def relation_accept_uniprot_go(gold, pred):
+def accept_relation_uniprot_go(gold, pred):
 
     if gold == pred and gold != "":
         return True

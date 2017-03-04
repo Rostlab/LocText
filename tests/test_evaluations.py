@@ -6,7 +6,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 
 from pytest import raises
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
-from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
+from loctext.learning.evaluations import accept_relation_uniprot_go, GO_TREE
 from nalaf import print_verbose, print_debug
 
 
@@ -15,9 +15,9 @@ from nalaf import print_verbose, print_debug
 #
 
 
-def test_relation_accept_uniprot_go_basic_eq():
+def test_accept_relation_uniprot_go_basic_eq():
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
         "r_5|n_7|xxx|n_8|yyy",
@@ -37,9 +37,9 @@ def test_relation_accept_uniprot_go_basic_eq():
         "r_5|n_7|P04637|n_8|GO:0000123")
 
 
-def test_relation_accept_uniprot_go_basic_ne():
+def test_accept_relation_uniprot_go_basic_ne():
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     assert not accept_prediction(
         "r_5|n_7|xxx|n_8|yyy",
@@ -58,16 +58,16 @@ def test_relation_accept_uniprot_go_basic_ne():
 
 def test_relation_accept_uniprot_rel_type_is_not_compared():
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
         "r_5|n_7|xxx|n_8|yyy",
         "r_DIFFERENT|n_7|xxx|n_8|yyy")
 
 
-def test_relation_accept_uniprot_go_exceptions():
+def test_accept_relation_uniprot_go_exceptions():
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     with raises(Exception) as puta:
         assert accept_prediction(
@@ -100,7 +100,7 @@ def test_relation_accept_uniprot_go_exceptions():
             "r_5|n|xxx|n_8|yyy")
 
 
-def test_relation_accept_uniprot_go_direct_children_ORDER_DOES_MATTER():
+def test_accept_relation_uniprot_go_direct_children_ORDER_DOES_MATTER():
      # gold must be parecent to accept the prediction, not the other way around
 
     # see: http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0000123#term=ancchart
@@ -109,7 +109,7 @@ def test_relation_accept_uniprot_go_direct_children_ORDER_DOES_MATTER():
     # * direct child of GO:0044451 -- nucleoplasm part
     # * direct child of GO:0031248 -- protein acetyltransferase complex
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
         "r_5|n_7|xxx|n_8|GO:0044451",
@@ -140,7 +140,7 @@ def test_relation_accept_uniprot_go_direct_children_ORDER_DOES_MATTER():
         "r_5|n_7|xxx|n_8|GO:0031248")
 
 
-def test_relation_accept_uniprot_go_indirect_children():
+def test_accept_relation_uniprot_go_indirect_children():
     # see: http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0000123#term=ancchart
 
     # GO:0000123 (histone acetyltransferase complex) is a:
@@ -152,8 +152,8 @@ def test_relation_accept_uniprot_go_indirect_children():
     #
     # * indirect child of GO:0005575 (cellular_component) since this is the root of the cellular component ontology
 
-    accept_prediction = relation_accept_uniprot_go
-    ignore_prediction = (lambda gold, pred: relation_accept_uniprot_go(gold, pred) is None)
+    accept_prediction = accept_relation_uniprot_go
+    ignore_prediction = (lambda gold, pred: accept_relation_uniprot_go(gold, pred) is None)
 
     # Accept when the prediciton is more detailed than gold (that is, the prediction is an in-/direct child of gold)
 
@@ -200,13 +200,13 @@ def test_relation_accept_uniprot_go_indirect_children():
         "r_5|n_7|xxx|n_8|GO:0005575")
 
 
-def test_relation_accept_uniprot_go_all_children_of_root():
+def test_accept_relation_uniprot_go_all_children_of_root():
     # all go terms are indirect children of the root, cellular_component=GO:0005575, including the root itself
     # Therefore:
     #   1) if gold=root, all predictions are True (accept)
     #   2) if pred=root, all predictions are None (ignore)
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     assert 0 == len(GO_TREE['GO:0005575'].parents)
 
@@ -224,7 +224,7 @@ def test_relation_accept_uniprot_go_all_children_of_root():
             "r_5|n_7|xxx|n_8|" + go_term), go_term + " < " + ','.join(pred_parents)
 
         if not go_term == "GO:0005575":
-            assert None is relation_accept_uniprot_go(
+            assert None is accept_relation_uniprot_go(
                 "r_5|n_7|xxx|n_8|" + go_term,
                 "r_5|n_7|xxx|n_8|GO:0005575"), (go_term, GO_TREE[go_term])
 
@@ -249,9 +249,9 @@ def test_relation_accept_uniprot_go_all_children_of_root():
             "r_5|n_7|xxx|n_8|GO:0005575")
 
 
-def test_relation_accept_uniprot_go_uniprots_as_list():
+def test_accept_relation_uniprot_go_uniprots_as_list():
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     # Note, the following is a stub test relation and does not have to be biologically true
     assert accept_prediction(
@@ -284,9 +284,9 @@ def test_relation_accept_uniprot_go_uniprots_as_list():
         "r_5|n_7|P04637|n_8|yyy")
 
 
-def test_relation_accept_uniprot_go_uniprots_as_list_do_not_have_to_be_valid():
+def test_accept_relation_uniprot_go_uniprots_as_list_do_not_have_to_be_valid():
 
-    accept_prediction = relation_accept_uniprot_go
+    accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
         "r_5|n_7|a|n_8|yyy",
@@ -305,7 +305,7 @@ def test_relation_accept_uniprot_go_uniprots_as_list_do_not_have_to_be_valid():
         "r_5|n_7| a ,b,,|n_8|yyy")
 
 
-def test_relation_accept_uniprot_go_uniprots_do_not_create_spurious_ignores_Nones():
+def test_accept_relation_uniprot_go_uniprots_do_not_create_spurious_ignores_Nones():
 
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0005737#term=ancchart
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0044444#term=ancchart
@@ -315,31 +315,31 @@ def test_relation_accept_uniprot_go_uniprots_do_not_create_spurious_ignores_None
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0044424#term=ancchart
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0005622#term=ancchart
 
-    assert True is relation_accept_uniprot_go(
+    assert True is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0005737")
 
-    assert True is relation_accept_uniprot_go(
+    assert True is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0044444")
 
-    assert True is relation_accept_uniprot_go(
+    assert True is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0005783")
 
-    assert False is relation_accept_uniprot_go(
+    assert False is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0043231")
 
-    assert False is relation_accept_uniprot_go(
+    assert False is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0012505")
 
-    assert None is relation_accept_uniprot_go(
+    assert None is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0044424")
 
-    assert None is relation_accept_uniprot_go(
+    assert None is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0005622")
 
@@ -348,6 +348,6 @@ if __name__ == "__main__":
 
     # selected tests:
 
-    test_relation_accept_uniprot_go_direct_children_ORDER_DOES_MATTER()
-    test_relation_accept_uniprot_go_all_children_of_root()
+    test_accept_relation_uniprot_go_direct_children_ORDER_DOES_MATTER()
+    test_accept_relation_uniprot_go_all_children_of_root()
     test_relation_accept_uniprot_uniprots_as_list()

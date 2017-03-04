@@ -2,7 +2,7 @@ import pickle
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import is_in_swiss_prot, is_child_of_swiss_prot_annotation, relation_accept_uniprot_go, are_go_parent_and_child, get_localization_name
+from loctext.learning.evaluations import is_in_swiss_prot, is_child_of_swiss_prot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -438,7 +438,7 @@ def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=F
             },
             penalize_unknown_normalizations=normalization_penalization
         )
-        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+        RELATION_ACCEPT_FUN = accept_relation_uniprot_go
 
     else:
         raise AssertionError(evaluation_level)

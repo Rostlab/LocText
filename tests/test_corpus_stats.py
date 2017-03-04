@@ -14,7 +14,7 @@ import math
 import sys
 from nalaf.structures.data import Entity
 from collections import Counter
-from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
+from loctext.learning.evaluations import accept_relation_uniprot_go, GO_TREE
 
 
 CORPUS_PERCENTANGE = 1.0
@@ -72,7 +72,7 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
             },
             penalize_unknown_normalizations="softest’"
         ),
-        relation_accept_uniprot_go,
+        accept_relation_uniprot_go,
         #
         0.83,
         #
