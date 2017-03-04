@@ -45,7 +45,6 @@ def _get_entity_evaluator(evaluation_level):
     """
     Returns EntityEvaluator object based on specified evaluation_level
     """
-    normalization_penalization = "soft"
 
     if evaluation_level == 1:
         ENTITY_MAP_FUN = Entity.__repr__
@@ -58,7 +57,7 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations=normalization_penalization,
+            penalize_unknown_normalizations="no",
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['exact']
 
@@ -69,7 +68,7 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations=normalization_penalization,
+            penalize_unknown_normalizations="no",
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['overlapping']
 
@@ -80,7 +79,7 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations=normalization_penalization,
+            penalize_unknown_normalizations="soft",
         )
         ENTITY_ACCEPT_FUN = accept_entity_uniprot_go_taxonomy
 
@@ -88,7 +87,6 @@ def _get_entity_evaluator(evaluation_level):
         raise AssertionError(evaluation_level)
 
     entity_evaluator = EntityEvaluator(
-        subclass_analysis=True,
         entity_map_fun=ENTITY_MAP_FUN,
         entity_accept_fun=ENTITY_ACCEPT_FUN
     )
