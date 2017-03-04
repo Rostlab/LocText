@@ -1,4 +1,4 @@
-from nalaf.learning.evaluators import EntityEvaluator
+from nalaf.learning.evaluators import EntityEvaluator, MentionLevelEvaluator
 from loctext.learning.train import read_corpus
 from nalaf.structures.data import Entity
 from loctext.learning.evaluations import entity_accept_uniprot_go_taxonomy
@@ -19,12 +19,18 @@ def test_get_evaluation_result_of_corpus():
     """
 
     # Gets both annotation and pred_annotation entities.
-    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=True)
+    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=False)
 
-    evaluator = _get_entity_evaluator(evaluation_level=5)
-    evaluations = evaluator.evaluate(corpus)
+    (mention_evaluator, entity_evaluator) = _get_entity_evaluator(evaluation_level=5)
+
     print("-----------------------------------------------------------------------------------")
-    print(evaluations)
+    print("MentionLevelEvaluator")
+    print(mention_evaluator.evaluate(corpus))
+    print("-----------------------------------------------------------------------------------")
+
+    print("-----------------------------------------------------------------------------------")
+    print("EntityEvaluator")
+    print(entity_evaluator.evaluate(corpus))
     print("-----------------------------------------------------------------------------------")
 
 
@@ -64,7 +70,7 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations=normalization_penalization,
-            normalization_required = norm_required
+            normalization_required=norm_required
         )
         ENTITY_ACCEPT_FUN = str.__eq__
 
@@ -88,20 +94,22 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations=normalization_penalization,
-            normalization_required = norm_required
+            normalization_required=norm_required
         )
         ENTITY_ACCEPT_FUN = entity_accept_uniprot_go_taxonomy
 
     else:
         raise AssertionError(evaluation_level)
 
-    evaluator = EntityEvaluator(
+    entity_evaluator = EntityEvaluator(
         subclass_analysis=True,
         entity_map_fun=ENTITY_MAP_FUN,
         entity_accept_fun=ENTITY_ACCEPT_FUN
     )
 
-    return evaluator
+    mention_evaluator = MentionLevelEvaluator(subclass_analysis=True)
+
+    return (mention_evaluator, entity_evaluator)
 
 
 if __name__ == "__main__":
