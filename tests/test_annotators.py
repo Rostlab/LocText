@@ -33,7 +33,7 @@ EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_rel
 
 def test_baseline_D0(corpus_percentage=1.0):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.7533
+        EXPECTED_F = 0.7248
     else:
         EXPECTED_F = 0.7113
 

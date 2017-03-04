@@ -199,7 +199,7 @@ def accept_entity_uniprot_go_taxonomy(gold, pred):
     [g_class_id, g_offsets, g_norm_id, g_norm_value] = gold.split('|')
     [p_class_id, p_offsets, p_norm_id, p_norm_value] = pred.split('|')
 
-    if g_class_id != p_class_id:
+    if g_class_id != p_class_id or g_norm_id != p_norm_id:
         return False
 
     # Check if the offsets overlap
@@ -215,7 +215,8 @@ def accept_entity_uniprot_go_taxonomy(gold, pred):
         elif g_norm_id == TAXONOMY_NORM_ID:
             return _accept_taxonomy_ids_single(g_norm_value, p_norm_value)
         else:
-            return True
+            raise AssertionError
+
     else:
         return False
 
