@@ -470,6 +470,11 @@ def print_corpus_hard_core_stats(name, corpus):
         print(name + " corpus stats:")
         print("\t#documents: {}".format(len(corpus)))
         print("\t#relations: {}".format(len(list(corpus.relations()))))
+        entity_counter = Counter()
+        for e in corpus.entities():
+            entity_counter.update([e.class_id])
+        print("\t#entities: {}".format(entity_counter))
+
         print_corpus_pipeline_dependent_stats(corpus)
         print()
 
