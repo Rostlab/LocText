@@ -17,14 +17,14 @@ def get_loctree_relation_records(file_path):
 
             protein_id, score, localization, gene_ontology_terms = line.split("\t")
 
-            protein_id = protein_id[3:9]
+            protein_id = protein_id.split("|")[1]
             go_terms = regex_go_id.findall(gene_ontology_terms)
             relations[protein_id] = set(go_terms)
 
         return relations
 
 
-def get_loctext_relation_records(loctree_relations, file_path):
+def get_loctext_relation_records(loctree_relations, file_path, swissprot_says, min_num_docs):
     with open(file_path) as f:
         next(f)
         positive_relations = {}
@@ -35,16 +35,18 @@ def get_loctext_relation_records(loctree_relations, file_path):
         for line in f:
             record = line.split("\t")
 
-            if record[4] == 'False':
-                loctext_uniprot_id = record[1]
+            if record[4].startswith(swissprot_says) and int(record[7]) >= min_num_docs:
+                loctext_uniprot_ac = record[1]
                 loctext_go_id = record[2]
-                rel_key = loctext_uniprot_id + "|" + loctext_go_id
-                loctree_go_ids = loctree_relations.get(loctext_uniprot_id, {})
+                rel_key = (loctext_uniprot_ac, loctext_go_id)
+                loctree_go_ids = loctree_relations.get(loctext_uniprot_ac, {})
 
                 try:
-                    is_positive = any(are_go_parent_and_child(loctree_go_id, loctext_go_id) for loctree_go_id in loctree_go_ids)  # loctext_go_id in loctree_go_ids
+                    is_positive_a = any(are_go_parent_and_child(loctext_go_id, loctree_go_id) for loctree_go_id in loctree_go_ids)  # loctree_go_id in loctext_go_ids
+                    is_positive_b = any(are_go_parent_and_child(loctree_go_id, loctext_go_id) for loctree_go_id in loctree_go_ids)  # loctext_go_id in loctree_go_ids
+                    is_positive = is_positive_a or is_positive_b
                 except:
-                    print("ONE IS DEPRECATED", loctree_go_ids)
+                    # print("ONE IS DEPRECATED", loctree_go_ids)
                     is_positive = False
 
                 if is_positive:
@@ -59,9 +61,11 @@ if __name__ == "__main__":
 
     loctree_records_file_path = sys.argv[1]
     loctext_records_file_path = sys.argv[2]
+    swissprot_says = sys.argv[3]  # Values 'False', True, or '' to accept any
+    min_num_docs = int(sys.argv[4])
 
     loctree_relations = get_loctree_relation_records(loctree_records_file_path)
-    positive_relations, negative_relations = get_loctext_relation_records(loctree_relations, loctext_records_file_path)
+    positive_relations, negative_relations = get_loctext_relation_records(loctree_relations, loctext_records_file_path, swissprot_says, min_num_docs)
 
     positive_records = len(positive_relations)
     total_records = len(positive_relations) + len(negative_relations)
@@ -69,5 +73,5 @@ if __name__ == "__main__":
     print("***************************************************************************************************")
     print("LocText predicted RELATION ['in SwissProt' set to False], but present in LocTree: ", positive_records)
     print("Total predicted RELATION ['in SwissProt' set to False]: ", total_records)
-    print("Percentage predicts of LocText to LocTree: ", positive_records/total_records*100)
+    print("Percentage predicts of LocText to LocTree: ", (positive_records/total_records)*100)
     print("***************************************************************************************************")

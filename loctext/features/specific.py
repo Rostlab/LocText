@@ -63,24 +63,23 @@ class IsSpecificProteinType(EdgeFeatureGenerator):
                 self.add(f_set, edge, 'f_is_transporter')
 
 
-
 class LocalizationRelationsRatios(EdgeFeatureGenerator):
 
     def __init__(
         self,
+        # constants
         c_localization_enty_class=LOC_ID,
         c_localization_norm_class=GO_NORM_ID,
         c_protein_enty_class=PRO_ID,
         c_protein_norm_class=UNIPROT_NORM_ID,
         #
-        # ...constants...
+        # The following two were DOCUMENT-BASED features and not domain-specific
         #
         f_corpus_unnormalized_total_background_loc_rels_ratios=None,
         f_corpus_normalized_total_background_loc_rels_ratios=None,
         #
         f_SwissProt_normalized_total_absolute_loc_rels_ratios=None,
         f_SwissProt_normalized_total_background_loc_rels_ratios=None,
-        #
         #
         f_SwissProt_normalized_exists_relation=None,
     ):

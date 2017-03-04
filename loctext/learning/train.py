@@ -406,8 +406,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
         return corpus
 
 
-def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations):
-    normalization_penalization = "soft"
+def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="hard"):
 
     if evaluation_level == 1:
         ENTITY_MAP_FUN = Entity.__repr__
@@ -470,6 +469,11 @@ def print_corpus_hard_core_stats(name, corpus):
         print(name + " corpus stats:")
         print("\t#documents: {}".format(len(corpus)))
         print("\t#relations: {}".format(len(list(corpus.relations()))))
+        entity_counter = Counter()
+        for e in corpus.entities():
+            entity_counter.update([e.class_id])
+        print("\t#entities: {}".format(entity_counter))
+
         print_corpus_pipeline_dependent_stats(corpus)
         print()
 

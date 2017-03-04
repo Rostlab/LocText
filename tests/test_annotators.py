@@ -33,12 +33,8 @@ EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_rel
 
 def test_baseline_D0(corpus_percentage):
     if (corpus_percentage == 1.0):
-        # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
-        # r_5	241	106	90	0	0	0.6945	0.7281	0.7109	0.0028	0.6945	0.7281	0.7109	0.0028
-        # Computation(precision=0.6945244956772334, precision_SE=0.0028956219539813754, recall=0.7280966767371602, recall_SE=0.004139235568395008, f_measure=0.7109144542772862, f_measure_SE=0.002781031509621811)
-        EXPECTED_F = 0.7109
+        EXPECTED_F = 0.7533
     else:
-        # Computation(precision=0.7657657657657657, precision_SE=0.004062515118259012, recall=0.6640625, recall_SE=0.006891900506329359, f_measure=0.7112970711297071, f_measure_SE=0.004544881638992179)
         EXPECTED_F = 0.7113
 
     corpus = read_corpus("LocText", corpus_percentage)
@@ -49,9 +45,9 @@ def test_baseline_D0(corpus_percentage):
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
-    print("D0 Baseline", rel_evaluation)
+    print(evaluations)
 
-    return rel_evaluation
+    return evaluations
 
 
 def test_LocText_D0(corpus_percentage):
@@ -81,10 +77,10 @@ def test_baseline_D1(corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
-    print("D1 Baseline", rel_evaluation)
+    assert math.isclose(evaluations.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
+    print(rel_evaluation)
 
-    return rel_evaluation
+    return evaluations
 
 
 def test_LocText_D1(corpus_percentage):
@@ -157,9 +153,9 @@ def test_baseline_full(corpus_percentage):
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
-    print("Full Baseline", rel_evaluation)
+    print(evaluations)
 
-    return rel_evaluation
+    return evaluations
 
 
 # "Full" as in the full pipeline: first ner, then re
