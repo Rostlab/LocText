@@ -3,14 +3,16 @@ from loctext.learning.train import read_corpus
 from nalaf.structures.data import Entity
 from loctext.learning.evaluations import entity_accept_uniprot_go_taxonomy
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
+import pytest
 
 try:
     from .context import loctext
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
-    pass
+    raise
+    # pass
 
 
-def test_get_evaluation_result_of_corpus():
+def test_get_evaluation_result_of_corpus(evaluation_level):
     """
     Evaluates the performance of corpus entities [e_1 (Protein), e_2 (Localization) and e_3 (Organism)]
     [precision, recall and f-measure]
@@ -21,7 +23,11 @@ def test_get_evaluation_result_of_corpus():
     # Gets both annotation and pred_annotation entities.
     corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=False)
 
-    (mention_evaluator, entity_evaluator) = _get_entity_evaluator(evaluation_level=5)
+    (mention_evaluator, entity_evaluator) = _get_entity_evaluator(evaluation_level)
+
+    print()
+    print("EVALUATION LEVEL:", evaluation_level)
+    print()
 
     print("-----------------------------------------------------------------------------------")
     print("MentionLevelEvaluator")
@@ -113,4 +119,8 @@ def _get_entity_evaluator(evaluation_level):
 
 
 if __name__ == "__main__":
-    test_get_evaluation_result_of_corpus()
+    import sys
+
+    evaluation_level = int(sys.argv[1])
+
+    test_get_evaluation_result_of_corpus(evaluation_level)

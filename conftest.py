@@ -7,3 +7,12 @@ def pytest_addoption(parser):
 @pytest.fixture
 def corpus_percentage(request):
     return request.config.getoption("--corpus_percentage")
+
+
+def pytest_addoption(parser):
+    parser.addoption('--evaluation_level', type=int)
+
+
+@pytest.fixture
+def evaluation_level(request):
+    return request.config.getoption("--evaluation_level")
