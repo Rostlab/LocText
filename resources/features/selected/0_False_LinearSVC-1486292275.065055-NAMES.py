@@ -1,5 +1,3 @@
-# Selected Feature *NAMES*
-
 [
     "SentenceFeatureGenerator::1.1_counts_individual_int_individual_e_1_[0]",  # 0
     "SentenceFeatureGenerator::1.1_counts_individual_int_individual_e_3_[0]",  # 1
