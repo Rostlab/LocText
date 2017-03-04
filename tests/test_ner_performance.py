@@ -46,16 +46,21 @@ def _get_entity_evaluator(evaluation_level):
     Returns EntityEvaluator object based on specified evaluation_level
     """
     normalization_penalization = "soft"
-    norm_required = True
-    norm_not_required = False
 
     if evaluation_level == 1:
         ENTITY_MAP_FUN = Entity.__repr__
         ENTITY_ACCEPT_FUN = str.__eq__
 
     elif evaluation_level == 2:
-        ENTITY_MAP_FUN = 'lowercased'
-        ENTITY_ACCEPT_FUN = str.__eq__
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization,
+        )
+        ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['exact']
 
     elif evaluation_level == 3:
         ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
@@ -65,9 +70,8 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations=normalization_penalization,
-            normalization_required=norm_not_required
         )
-        ENTITY_ACCEPT_FUN = str.__eq__
+        ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['overlapping']
 
     elif evaluation_level == 4:
         ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
@@ -77,31 +81,6 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations=normalization_penalization,
-            normalization_required=norm_required
-        )
-        ENTITY_ACCEPT_FUN = str.__eq__
-
-    elif evaluation_level == 5:
-        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
-            {
-                PRO_ID: UNIPROT_NORM_ID,
-                LOC_ID: GO_NORM_ID,
-                ORG_ID: TAXONOMY_NORM_ID,
-            },
-            penalize_unknown_normalizations=normalization_penalization,
-            normalization_required=norm_not_required
-        )
-        ENTITY_ACCEPT_FUN = entity_accept_uniprot_go_taxonomy
-
-    elif evaluation_level == 6:
-        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
-            {
-                PRO_ID: UNIPROT_NORM_ID,
-                LOC_ID: GO_NORM_ID,
-                ORG_ID: TAXONOMY_NORM_ID,
-            },
-            penalize_unknown_normalizations=normalization_penalization,
-            normalization_required=norm_required
         )
         ENTITY_ACCEPT_FUN = entity_accept_uniprot_go_taxonomy
 
