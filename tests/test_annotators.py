@@ -6,7 +6,7 @@ from loctext.learning.annotators import LocTextAnnotator
 try:
     from .context import loctext
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
-    pass
+    raise
 
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
@@ -31,7 +31,7 @@ EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_rel
 # -----------------------------------------------------------------------------------
 
 
-def test_baseline_D0(corpus_percentage):
+def test_baseline_D0(corpus_percentage=1.0):
     if (corpus_percentage == 1.0):
         EXPECTED_F = 0.7533
     else:
