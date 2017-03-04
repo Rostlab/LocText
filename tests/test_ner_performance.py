@@ -1,7 +1,7 @@
 from nalaf.learning.evaluators import EntityEvaluator, MentionLevelEvaluator
 from loctext.learning.train import read_corpus
 from nalaf.structures.data import Entity
-from loctext.learning.evaluations import entity_accept_uniprot_go_taxonomy
+from loctext.learning.evaluations import accept_entity_uniprot_go_taxonomy
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 import pytest
 
@@ -82,7 +82,7 @@ def _get_entity_evaluator(evaluation_level):
             },
             penalize_unknown_normalizations=normalization_penalization,
         )
-        ENTITY_ACCEPT_FUN = entity_accept_uniprot_go_taxonomy
+        ENTITY_ACCEPT_FUN = accept_entity_uniprot_go_taxonomy
 
     else:
         raise AssertionError(evaluation_level)
