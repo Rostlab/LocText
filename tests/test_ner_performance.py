@@ -21,7 +21,7 @@ def test_get_evaluation_result_of_corpus(evaluation_level):
     """
 
     # Gets both annotation and pred_annotation entities.
-    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=False)
+    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=True)
 
     (mention_evaluator, entity_evaluator) = _get_entity_evaluator(evaluation_level)
 
@@ -33,7 +33,8 @@ def test_get_evaluation_result_of_corpus(evaluation_level):
     print("MentionLevelEvaluator")
     print(mention_evaluator.evaluate(corpus))
     print("-----------------------------------------------------------------------------------")
-
+    print()
+    print()
     print("-----------------------------------------------------------------------------------")
     print("EntityEvaluator")
     print(entity_evaluator.evaluate(corpus))
