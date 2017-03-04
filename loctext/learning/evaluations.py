@@ -27,6 +27,14 @@ def get_localization_name(go_id, default=""):
     return GO_TREE.get(go_id, (default, "", ""))[0]
 
 
+def _verify_in_ontology(term):
+    if term not in GO_TREE:
+        raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
+
+
+# ----------------------------------------------------------------------------------------------------
+
+
 def relation_accept_uniprot_go(gold, pred):
 
     if gold == pred and gold != "":
@@ -139,16 +147,7 @@ def _go_ids_accept_multiple(gold, pred):
 
 
 def _taxonomy_ids_accept_single(gold, pred):
-    if gold == pred:
-        return True
-    else:
-        return False
-
-
-def _verify_in_ontology(term):
-
-    if term not in GO_TREE:
-        raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
+    return gold == pred
 
 
 def are_go_parent_and_child(parent, child):
