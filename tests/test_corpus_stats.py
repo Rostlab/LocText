@@ -35,10 +35,10 @@ def test_count_relations_dists_without_repetitions(corpus_percentage):
         DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['lowercased'],
         None,  # meaning: str.__eq__
         #
-        0.79,
+        0.80,
         #
-        Counter({'D0': 278, 'D1': 76, 'D2': 46, 'D3': 22, 'D5': 9, 'D6': 7, 'D4': 5, 'D9': 2, 'D7': 1}),
-        Counter({'D0': 0.6233183856502242, 'D1': 0.17040358744394618, 'D2': 0.1031390134529148, 'D3': 0.04932735426008968, 'D5': 0.020179372197309416, 'D6': 0.01569506726457399, 'D4': 0.011210762331838564, 'D9': 0.004484304932735426, 'D7': 0.002242152466367713})
+        Counter({'D0': 278, 'D1': 78, 'D2': 44, 'D3': 22, 'D5': 9, 'D6': 7, 'D4': 5, 'D9': 2, 'D7': 1}),
+        Counter({'D0': 0.6233183856502242, 'D1': 0.17488789237668162, 'D2': 0.09865470852017937, 'D3': 0.04932735426008968, 'D5': 0.020179372197309416, 'D6': 0.01569506726457399, 'D4': 0.011210762331838564, 'D9': 0.004484304932735426, 'D7': 0.002242152466367713})
     )
 
 
@@ -55,10 +55,10 @@ def test_count_relations_dists_normalizations_without_repetitions(corpus_percent
         ),
         None,  # meaning: str.__eq__
         #
-        0.80,
+        0.81,
         #
-        Counter({'D0': 217, 'D1': 47, 'D2': 32, 'D3': 15, 'D5': 9, 'D6': 6, 'D4': 3, 'D9': 2}),
-        Counter({'D0': 0.6555891238670695, 'D1': 0.1419939577039275, 'D2': 0.09667673716012085, 'D3': 0.045317220543806644, 'D5': 0.027190332326283987, 'D6': 0.01812688821752266, 'D4': 0.00906344410876133, 'D9': 0.006042296072507553})
+        Counter({'D0': 217, 'D1': 52, 'D2': 31, 'D3': 12, 'D5': 9, 'D6': 6, 'D9': 2, 'D4': 2}),
+        Counter({'D0': 0.6555891238670695, 'D1': 0.15709969788519637, 'D2': 0.09365558912386707, 'D3': 0.03625377643504532, 'D5': 0.027190332326283987, 'D6': 0.01812688821752266, 'D9': 0.006042296072507553, 'D4': 0.006042296072507553})
     )
 
 
@@ -75,10 +75,10 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
         ),
         accept_relation_uniprot_go,
         #
-        0.83,
+        0.89,
         #
-        Counter({'D0': 169, 'D1': 41, 'D2': 21, 'D3': 9, 'D5': 7, 'D6': 5, 'D9': 2, 'D4': 1}),
-        Counter({'D0': 0.6627450980392157, 'D1': 0.1607843137254902, 'D2': 0.08235294117647059, 'D3': 0.03529411764705882, 'D5': 0.027450980392156862, 'D6': 0.0196078431372549, 'D9': 0.00784313725490196, 'D4': 0.00392156862745098})
+        Counter({'D0': 241, 'D1': 52, 'D3': 12, 'D2': 12, 'D5': 8, 'D6': 4, 'D9': 1, 'D4': 1}),
+        Counter({'D0': 0.7280966767371602, 'D1': 0.15709969788519637, 'D3': 0.03625377643504532, 'D2': 0.03625377643504532, 'D5': 0.02416918429003021, 'D6': 0.012084592145015106, 'D9': 0.0030211480362537764, 'D4': 0.0030211480362537764})
     )
 
 
@@ -89,7 +89,7 @@ def _test(corpus_percentage, entity_map_fun, relation_accept_fun, expected_sum_p
     corpus = read_corpus("LocText", corpus_percentage)
 
     # Note: the predictor will already split & tokenize the corpus. See the implementation for details
-    StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate(corpus)
+    StubSamePartRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate(corpus)
 
     (counter_nums, counter_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun, relation_accept_fun)
 
