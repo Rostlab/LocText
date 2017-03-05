@@ -25,13 +25,13 @@ TEST_MIN_CORPUS_PERCENTAGE = 0.4
 
 EVALUATION_LEVEL = 4
 
-EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False)
+EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft")
 
 
 # -----------------------------------------------------------------------------------
 
 
-def test_baseline_D0(corpus_percentage=1.0):
+def test_baseline_D0(evaluation_level, corpus_percentage=1.0):
     if (corpus_percentage == 1.0):
         EXPECTED_F = 0.7248
     else:
@@ -41,11 +41,13 @@ def test_baseline_D0(corpus_percentage=1.0):
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
 
+    EVALUATOR = get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft")
+
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
     print(evaluations)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
 
     return evaluations
 
