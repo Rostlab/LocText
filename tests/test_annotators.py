@@ -1,6 +1,3 @@
-# Be able to call directly such as `python test_annotators.py`
-from build.lib.nalaf.learning.taggers import StubSamePartRelationExtractor
-
 from loctext.learning.annotators import LocTextAnnotator
 
 try:
@@ -10,7 +7,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
-from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor
+from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor, StubSamePartRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv, get_evaluator
 from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator, CombinatorEdgeGenerator
@@ -31,7 +28,7 @@ EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_rel
 # -----------------------------------------------------------------------------------
 
 
-def test_baseline_D0(evaluation_level, corpus_percentage=1.0):
+def test_baseline_D0(evaluation_level, corpus_percentage):
     if (corpus_percentage == 1.0):
         EXPECTED_F = 0.7248
     else:
