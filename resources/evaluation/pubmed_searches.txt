@@ -1,5 +1,5 @@
-((human OR patient) AND (protein OR gene) AND (localize OR localized OR colocalize OR colocalized OR subcellular OR localization OR compartment)) AND ("2013"[Date - Publication] : "2017/03/10"[Date - Publication]) AND hasabstract[text]
+((human OR patient) AND (protein OR gene) AND (localize OR localized OR colocalize OR colocalized OR subcellular OR localization OR compartment)) AND ("2012"[Date - Publication] : "2017/03/10"[Date - Publication]) AND hasabstract[text]
 
-((arabidopsis) AND (protein OR gene) AND (localize OR localized OR colocalize OR colocalized OR subcellular OR localization OR compartment)) AND ("2013"[Date - Publication] : "2017/03/10"[Date - Publication]) AND hasabstract[text]
+((arabidopsis) AND (protein OR gene) AND (localize OR localized OR colocalize OR colocalized OR subcellular OR localization OR compartment)) AND ("1990"[Date - Publication] : "2017/03/10"[Date - Publication]) AND hasabstract[text]
 
-((yeast) AND (protein OR gene) AND (localize OR localized OR colocalize OR colocalized OR subcellular OR localization OR compartment)) AND ("2013"[Date - Publication] : "2017/03/10"[Date - Publication]) AND hasabstract[text]
+((yeast) AND (protein OR gene) AND (localize OR localized OR colocalize OR colocalized OR subcellular OR localization OR compartment)) AND ("1990"[Date - Publication] : "2017/03/10"[Date - Publication]) AND hasabstract[text]
