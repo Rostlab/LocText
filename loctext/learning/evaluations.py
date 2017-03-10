@@ -39,15 +39,14 @@ with open(repo_path("resources", "features", "SwissProt_all_relations.pickle"), 
     SWISSPROT_ALL_RELATIONS = pickle.load(f)
 
 
-def is_in_swiss_prot(uniprot_ac, go, organism_ids):
-    for org_id in organism_ids:
-        organism_relations = SWISSPROT_ALL_RELATIONS[org_id]  # fails with non-supported organisms
-        explicitly_written = go in organism_relations.get(uniprot_ac, set())
+def is_in_swiss_prot(uniprot_ac, go, organism_id):
+    return is_in_swissprot_explicitly_written(uniprot_ac, go, organism_id) or \
+        is_parent_of_swiss_prot_annotation(uniprot_ac, go, organism_id)
 
-        if explicitly_written or is_parent_of_swiss_prot_annotation(uniprot_ac, go, org_id):
-            return True
 
-    return False
+def is_in_swissprot_explicitly_written(uniprot_ac, go, organism_id):
+    organism_relations = SWISSPROT_ALL_RELATIONS[organism_id]  # fails with non-supported organisms
+    return go in organism_relations.get(uniprot_ac, set())
 
 
 def is_parent_of_swiss_prot_annotation(uniprot_ac, go, organism_id):
@@ -238,5 +237,5 @@ def _overlap_entities_offsets(g_offsets, p_offsets):
 # --------------------------------------------------------------------------------------------------
 
 
-assert(is_in_swiss_prot("P51811", "GO:0016020", [9606]))
-assert(is_in_swiss_prot("Q53GL0", "GO:0005886", [9606]))
+assert(is_in_swiss_prot("P51811", "GO:0016020", 9606))
+assert(is_in_swiss_prot("Q53GL0", "GO:0005886", 9606))

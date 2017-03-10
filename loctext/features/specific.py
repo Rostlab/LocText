@@ -3,7 +3,7 @@ from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, GO_NORM_ID, UNIPROT_NORM_ID, repo_path
 from nalaf.features.stemming import ENGLISH_STEMMER
-from loctext.learning.evaluations import SWISSPROT_ALL_RELATIONS, is_in_swiss_prot
+from loctext.learning.evaluations import SWISSPROT_ALL_RELATIONS, is_in_swissprot_explicitly_written
 import pickle
 
 
@@ -165,7 +165,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
                 pro_norm_ids = []
             else:
                 for pro_norm_id in pro_norm_ids_str.split(","):
-                    if any(loc_norm in self.c_SwissProt_all_relations[org_id].get(pro_norm_id, set()) for org_id in self.c_SwissProt_organisms_used):
+                    if is_in_swissprot_explicitly_written(pro_norm_id, loc_norm, 9606):
                         self.add(f_set, edge, "f_SwissProt_normalized_exists_relation")
 
 
