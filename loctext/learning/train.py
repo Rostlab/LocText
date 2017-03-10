@@ -2,7 +2,7 @@ import pickle
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import is_in_swissprot, is_child_of_swissprot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name, is_protein_in_swissprot
+from loctext.learning.evaluations import is_in_swissprot, is_child_of_swissprot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name, is_protein_in_swissprot, is_in_loctree3
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -318,7 +318,7 @@ def write_external_evaluation_results(args, eval_corpus):
 
                 inSwissProt = str(is_in_swissprot(u_ac, go, organism_id))
                 childSwissProt = str(is_child_of_swissprot_annotation(u_ac, go, organism_id))
-                inLocTree3 = "???"
+                inLocTree3 = str(is_in_loctree3(u_ac, go, organism_id))
                 confirmed = ""
 
                 cols = [u_ac, go, loc_name, inSwissProt, childSwissProt, inLocTree3, confirmed, str(count)]

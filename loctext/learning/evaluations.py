@@ -72,6 +72,57 @@ def is_child_of_swissprot_annotation(uniprot_ac, go, organism_id):
 # ----------------------------------------------------------------------------------------------------
 
 
+LOCTREE3_ALL_RELATIONS = {}
+"""
+GO Localization/Component annotations predicted from LocTree3, https://rostlab.org/services/loctree3/proteomes
+
+Dictionary: {Organism ID -> {UniProt AC --> set[GO]}
+"""
+
+
+def parse_loctree_relation_records(filepath):
+    import re
+    regex_go_id = re.compile('GO:[0-9]+')
+
+    with open(filepath) as f:
+        relations = {}
+
+        # A record from LocTree is like:
+        # sp|P48200|IREB2_HUMAN	100	cytoplasm	cytoplasm GO:0005737(NAS); cytosol GO:0005829(IEA); mitochondrion GO:0005739(IEA);
+        for line in f:
+            if not line.startswith("#"):  # ignore comments
+                protein_id, score, localization, gene_ontology_terms = line.split("\t")
+
+                uniprot_ac = protein_id.split("|")[1]
+                go_terms = regex_go_id.findall(gene_ontology_terms)
+                relations[uniprot_ac] = set(go_terms)
+
+        return relations
+
+
+def is_in_loctree3(uniprot_ac, go, organism_id):
+    """
+    True, False, or None if uniprot_ac not all in LocTree3 data
+    """
+
+    org = LOCTREE3_ALL_RELATIONS.get(organism_id, None)
+    if not org:
+        return None
+    else:
+        gos = org.get(uniprot_ac, set())
+        if not gos:
+            return None
+        else:
+            return go in gos
+
+
+LOCTREE3_ALL_RELATIONS[9606] = parse_loctree_relation_records(repo_path("resources", "evaluation", "9606_Homo_sapiens.euka.lc3"))
+LOCTREE3_ALL_RELATIONS[3702] = parse_loctree_relation_records(repo_path("resources", "evaluation", "3702_Arabidopsis_thaliana.euka.lc3"))
+
+
+# ----------------------------------------------------------------------------------------------------
+
+
 def accept_relation_uniprot_go(gold, pred):
 
     if gold == pred and gold != "":
