@@ -229,7 +229,7 @@ class StringTagger(Tagger):
         uniprot_norm_id,
         go_norm_id,
         taxonomy_norm_id,
-        # Default: explicitly put all organisms in to force try to normalize all their proteins,
+        # Perhaps explicitly put all organisms in to force try to normalize all their proteins,
         # not only when their [organism] names appear together with a protein name
         # "-22,-3,9606,3702,4932,10090,4896,511145,6239,7227,7955",
         # Rather, put those organisms we know we collected documents from
