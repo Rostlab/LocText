@@ -255,8 +255,6 @@ def _select_annotator_submodels(args):
     return submodels
 
 
-
-
 def write_external_evaluation_results(args, eval_corpus):
 
     macro_counter = Counter()
@@ -360,7 +358,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
                         try:
                             doc.get_text()  # Had problems with few documents and needs investigation; empty docs?
                             corpus.documents[pmid] = doc
-                        except:
+                        except Exception:
                             pass
 
     else:
