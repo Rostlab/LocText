@@ -2,7 +2,7 @@ import pickle
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import is_in_swiss_prot, is_child_of_swiss_prot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
+from loctext.learning.evaluations import is_in_swissprot, is_child_of_swissprot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -309,8 +309,8 @@ def write_external_evaluation_results(args, eval_corpus):
             u_ac, go = rel_key
             name = get_localization_name(go)
 
-            inSwissProt = str(is_in_swiss_prot(u_ac, go))
-            childSwissProt = str(is_child_of_swiss_prot_annotation(u_ac, go))
+            inSwissProt = str(is_in_swissprot(u_ac, go))
+            childSwissProt = str(is_child_of_swissprot_annotation(u_ac, go))
 
             cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
             cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
