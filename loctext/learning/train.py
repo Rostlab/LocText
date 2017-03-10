@@ -2,7 +2,7 @@ import pickle
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import is_in_swissprot, is_child_of_swissprot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
+from loctext.learning.evaluations import is_in_swissprot, is_child_of_swissprot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name, is_protein_in_swissprot
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -22,13 +22,14 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
-    parser.add_argument('--predict_entities', default="False", choices=["True", "true", "False", "false"])
+    parser.add_argument('--predict_entities', default=None)
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
     parser.add_argument('--save_model', default=None, help="Dir. path to save the trained model to")
     parser.add_argument('--load_model', default=None, help="File path to load a trained model from")
 
     parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
     parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
+    parser.add_argument('--force_external_corpus_evaluation', default=False, action="store_true")
     parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
 
     parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4])
@@ -74,7 +75,7 @@ def parse_arguments(argv=[]):
     args = parser.parse_args(argv)
 
     args.evaluator = get_evaluator(args.evaluation_level, args.evaluate_only_on_edges_plausible_relations)
-    args.predict_entities = arg_bool(args.predict_entities)
+    args.predict_entities = [] if not args.predict_entities else [int(x) for x in args.predict_entities.split(",")]
 
     # args.svm_hyperparameter_c_ss_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ss_model, float)
     # args.svm_hyperparameter_c_ds_model = set_None_or_typed_argument(args.svm_hyperparameter_c_ds_model, float)
@@ -130,8 +131,8 @@ def evaluate(args, training_corpus, eval_corpus):
 
                 trained_annotator(eval_corpus)
 
-                if next(eval_corpus.relations(), None):
-                    # The corpus has annotated relationships, therefore run a normal performance evaluation
+                if not args.force_external_corpus_evaluation and next(eval_corpus.relations(), None):
+                    # The corpus has annotated relationships: run a normal performance evaluation
                     rel_evaluation = args.evaluator.evaluate(eval_corpus)
                 else:
                     # Else, write in a file the extracted relationships
@@ -153,7 +154,7 @@ def train(args, submodel_name, training_set, submodel, execute_pipeline):
 
     if args.save_model:
         timestamp = time.time()
-        model_filename = "{}_{}_{}.bin".format(submodel_name, args.predict_entities, timestamp)
+        model_filename = "{}_{}_{}.bin".format(submodel_name, ",".join([str(x) for x in predict_entities]), timestamp)
         model_path = os.path.join(args.save_model, model_filename)
 
         with open(model_path, "wb") as f:
@@ -201,7 +202,7 @@ def _select_annotator_submodels(args):
                     sentence_distance=0,
                     selected_features_file=selected_features_file,
                     feature_generators=indirect_feature_generators,
-                    use_predicted_entities=args.predict_entities,
+                    use_predicted_entities=True,
                     execute_pipeline=execute_pipeline,
                     model=binary_model,
                     #
@@ -220,7 +221,7 @@ def _select_annotator_submodels(args):
                     sentence_distance=0,
                     selected_features_file=selected_features_file,
                     feature_generators=indirect_feature_generators,
-                    use_predicted_entities=args.predict_entities,
+                    use_predicted_entities=False,
                     execute_pipeline=execute_pipeline,
                     model=binary_model,
                     #
@@ -239,7 +240,7 @@ def _select_annotator_submodels(args):
                 sentence_distance=1,
                 selected_features_file=selected_features_file,
                 feature_generators=indirect_feature_generators,
-                use_predicted_entities=args.predict_entities,
+                use_predicted_entities=len(args.predict_entities) > 0,
                 execute_pipeline=execute_pipeline,
                 model=binary_model,
                 #
@@ -256,6 +257,12 @@ def _select_annotator_submodels(args):
 
 
 def write_external_evaluation_results(args, eval_corpus):
+    if len(args.predict_entities) == 0:
+        args.predict_entities = [9606]
+    else:
+        assert len(args.predict_entities) == 1
+
+    organism_id = args.predict_entities[0]
 
     macro_counter = Counter()
     micro_counter = {}
@@ -298,28 +305,32 @@ def write_external_evaluation_results(args, eval_corpus):
 
     with open(args.eval_corpus + "_" + "relations.tsv", "w") as f:
 
-        header = ["# Type", "UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "Child SwissProt", "Confirmed", "Num Docs"]
+        header = ["UniProtAC", "LOC_GO", "LOC_NAME", "In SwissProt", "ChildOf SwissProt", "In LocTree3", "Confirmed", "Num Docs"]
         max_num_docs = len(micro_counter[macro_counter.most_common(1)[0][0]])
         header = header + (["PMID"] * max_num_docs)
         f.write("\t".join(header) + "\n")
 
         for rel_key, count in macro_counter.most_common():
             u_ac, go = rel_key
-            name = get_localization_name(go)
 
-            inSwissProt = str(is_in_swissprot(u_ac, go))
-            childSwissProt = str(is_child_of_swissprot_annotation(u_ac, go))
+            if is_protein_in_swissprot(u_ac, organism_id):
+                loc_name = get_localization_name(go)
 
-            cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
-            cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
-            f.write("\t".join(cols) + "\n")
+                inSwissProt = str(is_in_swissprot(u_ac, go, organism_id))
+                childSwissProt = str(is_child_of_swissprot_annotation(u_ac, go, organism_id))
+                inLocTree3 = "???"
+                confirmed = ""
+
+                cols = [u_ac, go, loc_name, inSwissProt, childSwissProt, inLocTree3, confirmed, str(count)]
+                cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
+                f.write("\t".join(cols) + "\n")
 
     rel_evaluation = macro_counter.most_common(100)
 
     return rel_evaluation
 
 
-def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, return_eval_corpus=False):
+def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=[], return_eval_corpus=False):
     import os
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
@@ -338,13 +349,16 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_master_json/pool/')
 
-    elif corpus_name in ["SwissProt", "NewDiscoveries"]:
+    elif corpus_name in ["NewDiscoveries_9606", "NewDiscoveries_3702", "NewDiscoveries_4932"]:
 
-        if corpus_name == "SwissProt":
-            pmids_file_path = os.path.join(repo_path("resources", "features", "human_localization_all_PMIDs_only__2016-11-20.tsv"))
+        if corpus_name == "NewDiscoveries_9606":
+            pmids_file_path = os.path.join(repo_path("resources", "evaluation", "human_pubmed_result.txt"))
 
-        elif corpus_name == "NewDiscoveries":
-            pmids_file_path = os.path.join(repo_path("resources", "evaluation", "pubmed_result.txt"))
+        elif corpus_name == "NewDiscoveries_3702":
+            pmids_file_path = os.path.join(repo_path("resources", "evaluation", "arabidopsis_pubmed_result.txt"))
+
+        elif corpus_name == "NewDiscoveries_4932":
+            pmids_file_path = os.path.join(repo_path("resources", "evaluation", "yeast_pubmed_result.txt"))
 
         dir_html = None
         corpus = Dataset()
@@ -388,8 +402,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
         corpus, eval_corpus = corpus.percentage_split(corpus_percentage)
 
     if predict_entities:
-        # only human if dir_html is None == no LocText corpus, otherwise tag for the organisms that are in LocText
-        tagger_entity_types = "-22,-3,9606,3702,4932" if dir_html else "-22,-3,9606"
+        tagger_entity_types = "-22,-3" + ",".join([str(x) for x in predict_entities])
 
         STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, tagger_entity_types=tagger_entity_types, send_whole_once=True)
 

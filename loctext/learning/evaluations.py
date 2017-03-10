@@ -39,6 +39,10 @@ with open(repo_path("resources", "features", "SwissProt_all_relations.pickle"), 
     SWISSPROT_ALL_RELATIONS = pickle.load(f)
 
 
+def is_protein_in_swissprot(uniprot_ac, organism_id):
+    return uniprot_ac in SWISSPROT_ALL_RELATIONS[organism_id]
+
+
 def is_in_swissprot(uniprot_ac, go, organism_id):
     return is_in_swissprot_explicitly_written(uniprot_ac, go, organism_id) or \
         is_parent_of_swissprot_annotation(uniprot_ac, go, organism_id)
