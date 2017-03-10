@@ -1,4 +1,15 @@
-Protein Id	Score	Localization	Gene Ontology Terms
+# Localization Prediction using LocTree3
+# Note: chloroplast and plastid classes are valid for plant proteins only.
+# Therefore, if the origin of a non-plant protein is known, please consider predictions of these classes as mitochondrial.
+# Domain: euka
+#
+# NOTATION Protein Id: Fasta sequences Id truncated by whitespace
+# NOTATION Score: Reliability score on a 0-100 scale (0=unreliable & 100=most reliable)
+# NOTATION Localization: Predicted sub-cellular localization class
+# NOTATION Gene Ontology Terms: Gene Ontology (GO) term/s of the corresponding localization. GO terms predicted by PSI-BLAST are supported by evidence codes (see http://www.geneontology.org/GO.evidence.shtml)
+#
+# PSI-BLAST annotation based on Swiss-Prot release 2013_11.
+# Protein Id	Score	Localization	Gene Ontology Terms
 sp|P48200|IREB2_HUMAN	100	cytoplasm	cytoplasm GO:0005737(NAS); cytosol GO:0005829(IEA); mitochondrion GO:0005739(IEA);
 sp|P09326|CD48_HUMAN	12	plasma membrane	external side of plasma membrane GO:0009897(IEA); integral to membrane GO:0016021(IEA);
 sp|Q8TC90|CCER1_HUMAN	13	nucleus	mitotic spindle pole body GO:0044732(IDA); nucleus GO:0005634(IDA);
@@ -15670,6 +15681,12 @@ sp|Q969Q1|TRI63_HUMAN	49	cytoplasm	microtubule GO:0005874(IEA); microtubule asso
 sp|Q641Q2|FA21A_HUMAN	9	nucleus	mitotic spindle pole body GO:0044732(IDA); nucleus GO:0005634(IDA);
 sp|Q96T58|MINT_HUMAN	100	nucleus	transcriptional repressor complex GO:0017053(IDA);
 sp|Q96N66|MBOA7_HUMAN	10	endoplasmic reticulum membrane	integral to endoplasmic reticulum membrane GO:0030176(IDA);
+#
+# LocTree2 annotation - de novo prediction.
+# No predictions were possible for:
+# sp|Q5CZC0|FSIP2_HUMAN has no profile file specified.
+# 
+#Protein Id	Score	Localization	Gene Ontology Terms
 sp|A6NLE4|CE050_HUMAN	29	secreted	extracellular region GO:0005576;
 sp|Q6PII3|CC174_HUMAN	87	nucleus	nucleus GO:0005634
 sp|Q0IIN9|ZNFS1_HUMAN	61	secreted	extracellular region GO:0005576;
