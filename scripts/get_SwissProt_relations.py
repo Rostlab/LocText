@@ -12,20 +12,20 @@ regex_go_id = re.compile('GO:[0-9]+')
 with open(in_path) as f:
     next(f)  # skip header
 
-    relations = {}
+    all_relations = {}
 
     for line in f:
-        # upid, _, protein_names, gene_names, localization_names, localization_gos = line.split("\t")
         upid, organism_id, localization_gos = line.split("\t")
+        organism_id = int(organism_id)
 
-        if organism_id in ["9606"]:  # TODO perhaps use other organisms ?
-            go_terms = regex_go_id.findall(localization_gos)
-            relations[upid] = set(go_terms)
+        organism_relations = all_relations.get(organism_id, {})
+        go_terms = regex_go_id.findall(localization_gos)
+        organism_relations[upid] = set(go_terms)
+        all_relations[organism_id] = organism_relations
 
-    print("Total uniprot entries: " + str(len(relations)))
-    # for upid, gos in relations.items():
-    #     print(upid, gos)
+    print("Total uniprot entries:", sum(len(organism_relations) for organism_relations in all_relations.values()))
+    print("9606 unit prot entiries:", (len(all_relations[9606])))
 
-    out_path = repo_path(["resources", "features", "SwissProt_relations.pickle"])
+    out_path = repo_path("resources", "features", "SwissProt_all_relations.pickle")
     with open(out_path, "wb") as f:
-        pickle.dump(relations, f)
+        pickle.dump(all_relations, f)

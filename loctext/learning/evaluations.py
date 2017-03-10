@@ -28,33 +28,40 @@ def are_go_parent_and_child(parent, child):
 
 # ----------------------------------------------------------------------------------------------------
 
-SWISSPROT_RELATIONS = None
+SWISSPROT_ALL_RELATIONS = None
 """
 GO Localization/Component annotations written in SwissProt
 
-Dictionary UniProt AC --> set[GO] (set of GO ids explicitly written in SwissProt)
+Dictionary: {Organism ID -> {UniProt AC --> set[GO]} (set of GO ids explicitly written in SwissProt)
 """
 
-with open(repo_path("resources", "features", "SwissProt_relations.pickle"), "rb") as f:
-    SWISSPROT_RELATIONS = pickle.load(f)
+with open(repo_path("resources", "features", "SwissProt_all_relations.pickle"), "rb") as f:
+    SWISSPROT_ALL_RELATIONS = pickle.load(f)
 
 
-def is_in_swiss_prot(uniprot_ac, go):
-    explicitly_written = go in SWISSPROT_RELATIONS.get(uniprot_ac, set())
+def is_in_swiss_prot(uniprot_ac, go, organism_ids):
+    for org_id in organism_ids:
+        organism_relations = SWISSPROT_ALL_RELATIONS[org_id]  # fails with non-supported organisms
+        explicitly_written = go in organism_relations.get(uniprot_ac, set())
 
-    return explicitly_written or is_parent_of_swiss_prot_annotation(uniprot_ac, go)
+        if explicitly_written or is_parent_of_swiss_prot_annotation(uniprot_ac, go, org_id):
+            return True
+
+    return False
 
 
-def is_parent_of_swiss_prot_annotation(uniprot_ac, go):
+def is_parent_of_swiss_prot_annotation(uniprot_ac, go, organism_id):
+    organism_relations = SWISSPROT_ALL_RELATIONS[organism_id]  # fails with non-supported organisms
     try:
-        return any(are_go_parent_and_child(go, swissprot) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+        return any(are_go_parent_and_child(go, swissprot) for swissprot in organism_relations.get(uniprot_ac, set()))
     except KeyError:
         return False
 
 
-def is_child_of_swiss_prot_annotation(uniprot_ac, go):
+def is_child_of_swiss_prot_annotation(uniprot_ac, go, organism_id):
+    organism_relations = SWISSPROT_ALL_RELATIONS[organism_id]  # fails with non-supported organisms
     try:
-        return any(are_go_parent_and_child(swissprot, go) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+        return any(are_go_parent_and_child(swissprot, go) for swissprot in organism_relations.get(uniprot_ac, set()))
     except KeyError:
         return False
 
@@ -231,5 +238,5 @@ def _overlap_entities_offsets(g_offsets, p_offsets):
 # --------------------------------------------------------------------------------------------------
 
 
-assert(is_in_swiss_prot("P51811", "GO:0016020"))
-assert(is_in_swiss_prot("Q53GL0", "GO:0005886"))
+assert(is_in_swiss_prot("P51811", "GO:0016020", [9606]))
+assert(is_in_swiss_prot("Q53GL0", "GO:0005886", [9606]))
