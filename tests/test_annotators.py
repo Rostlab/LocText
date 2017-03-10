@@ -1,22 +1,19 @@
-# Be able to call directly such as `python test_annotators.py`
-from build.lib.nalaf.learning.taggers import StubSamePartRelationExtractor
-
 from loctext.learning.annotators import LocTextAnnotator
 
 try:
     from .context import loctext
 except SystemError:  # Parent module '' not loaded, cannot perform relative import
-    pass
+    raise
 
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
-from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor
+from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelationExtractor, StubSamePartRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv, get_evaluator
 from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator, CombinatorEdgeGenerator
 import math
 import sys
-from loctext.learning.evaluations import relation_accept_uniprot_go
+from loctext.learning.evaluations import accept_relation_uniprot_go
 from nalaf.structures.data import Entity
 
 
@@ -25,33 +22,31 @@ TEST_MIN_CORPUS_PERCENTAGE = 0.4
 
 EVALUATION_LEVEL = 4
 
-EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False)
+EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft")
 
 
 # -----------------------------------------------------------------------------------
 
 
-def test_baseline_D0(corpus_percentage):
+def test_baseline_D0(evaluation_level, corpus_percentage):
     if (corpus_percentage == 1.0):
-        # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
-        # r_5	241	106	90	0	0	0.6945	0.7281	0.7109	0.0028	0.6945	0.7281	0.7109	0.0028
-        # Computation(precision=0.6945244956772334, precision_SE=0.0028956219539813754, recall=0.7280966767371602, recall_SE=0.004139235568395008, f_measure=0.7109144542772862, f_measure_SE=0.002781031509621811)
-        EXPECTED_F = 0.7109
+        EXPECTED_F = 0.7248
     else:
-        # Computation(precision=0.7657657657657657, precision_SE=0.004062515118259012, recall=0.6640625, recall_SE=0.006891900506329359, f_measure=0.7112970711297071, f_measure_SE=0.004544881638992179)
         EXPECTED_F = 0.7113
 
     corpus = read_corpus("LocText", corpus_percentage)
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
 
+    EVALUATOR = get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft")
+
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
+    print(evaluations)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
-    print("D0 Baseline", rel_evaluation)
 
-    return rel_evaluation
+    return evaluations
 
 
 def test_LocText_D0(corpus_percentage):
@@ -81,10 +76,10 @@ def test_baseline_D1(corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
-    print("D1 Baseline", rel_evaluation)
+    assert math.isclose(evaluations.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
+    print(rel_evaluation)
 
-    return rel_evaluation
+    return evaluations
 
 
 def test_LocText_D1(corpus_percentage):
@@ -145,9 +140,9 @@ def test_LocText_D0_D1(corpus_percentage):
 # "Full" as in the full pipeline: first ner, then re
 def test_baseline_full(corpus_percentage):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.4306
+        EXPECTED_F = 0.4712
     else:
-        EXPECTED_F = 0.3629
+        EXPECTED_F = None
 
     corpus = read_corpus("LocText", corpus_percentage, predict_entities=True)
 
@@ -156,10 +151,10 @@ def test_baseline_full(corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
+    print(evaluations)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
-    print("Full Baseline", rel_evaluation)
 
-    return rel_evaluation
+    return evaluations
 
 
 # "Full" as in the full pipeline: first ner, then re

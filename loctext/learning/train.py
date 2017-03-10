@@ -2,7 +2,7 @@ import pickle
 from loctext.learning.annotators import LocTextDXModelRelationExtractor, LocTextCombinedModelRelationExtractor
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
 from nalaf import print_verbose, print_debug
-from loctext.learning.evaluations import relation_accept_uniprot_go, are_go_parent_and_child, get_localization_name
+from loctext.learning.evaluations import is_in_swiss_prot, is_child_of_swiss_prot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Entity
 from loctext.util import *
@@ -255,13 +255,12 @@ def _select_annotator_submodels(args):
     return submodels
 
 
+
+
 def write_external_evaluation_results(args, eval_corpus):
 
     macro_counter = Counter()
     micro_counter = {}
-
-    with open(repo_path("resources", "features", "SwissProt_relations.pickle"), "rb") as f:
-        SWISSPROT_RELATIONS = pickle.load(f)
 
     for docid, doc in eval_corpus.documents.items():
 
@@ -309,11 +308,9 @@ def write_external_evaluation_results(args, eval_corpus):
         for rel_key, count in macro_counter.most_common():
             u_ac, go = rel_key
             name = get_localization_name(go)
-            inSwissProt = str(go in SWISSPROT_RELATIONS.get(u_ac, set()))
-            try:
-                childSwissProt = str(any(are_go_parent_and_child(inSwissProt, go) for inSwissProt in SWISSPROT_RELATIONS.get(u_ac, set())))
-            except KeyError:
-                childSwissProt = str(False)
+
+            inSwissProt = str(is_in_swiss_prot(u_ac, go))
+            childSwissProt = str(is_child_of_swiss_prot_annotation(u_ac, go))
 
             cols = ["RELATION", u_ac, go, name, inSwissProt, childSwissProt, "", str(count)]
             cols = cols + [docid for docid, _ in micro_counter[rel_key].most_common()]
@@ -409,8 +406,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=False, retu
         return corpus
 
 
-def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations):
-    normalization_penalization = "soft"
+def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft"):
 
     if evaluation_level == 1:
         ENTITY_MAP_FUN = Entity.__repr__
@@ -442,7 +438,7 @@ def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations):
             },
             penalize_unknown_normalizations=normalization_penalization
         )
-        RELATION_ACCEPT_FUN = relation_accept_uniprot_go
+        RELATION_ACCEPT_FUN = accept_relation_uniprot_go
 
     else:
         raise AssertionError(evaluation_level)
@@ -473,6 +469,11 @@ def print_corpus_hard_core_stats(name, corpus):
         print(name + " corpus stats:")
         print("\t#documents: {}".format(len(corpus)))
         print("\t#relations: {}".format(len(list(corpus.relations()))))
+        entity_counter = Counter()
+        for e in corpus.entities():
+            entity_counter.update([e.class_id])
+        print("\t#entities: {}".format(entity_counter))
+
         print_corpus_pipeline_dependent_stats(corpus)
         print()
 

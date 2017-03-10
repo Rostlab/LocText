@@ -6,7 +6,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from nalaf.learning.evaluators import DocumentLevelRelationEvaluator, Evaluations
-from nalaf.learning.taggers import StubSamePartRelationExtractor, StubRelationExtractor
+from nalaf.learning.taggers import StubSamePartRelationExtractor, StubSameSentenceRelationExtractor, StubRelationExtractor
 from loctext.learning.train import read_corpus, evaluate_with_argv
 from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator
@@ -14,14 +14,12 @@ import math
 import sys
 from nalaf.structures.data import Entity
 from collections import Counter
-from loctext.learning.evaluations import relation_accept_uniprot_go, GO_TREE
+from loctext.learning.evaluations import accept_relation_uniprot_go, GO_TREE
 
 
-CORPUS_PERCENTANGE = 1.0
-
-
-def test_count_relations_dists_with_repetitions():
+def test_count_relations_dists_with_repetitions(corpus_percentage):
     _test(
+        corpus_percentage,
         Entity.__repr__,
         None,  # meaning: str.__eq__
         #
@@ -31,8 +29,9 @@ def test_count_relations_dists_with_repetitions():
         Counter({'D0': 0.6381818181818182, 'D1': 0.17272727272727273, 'D2': 0.09636363636363636, 'D3': 0.04181818181818182, 'D5': 0.016363636363636365, 'D6': 0.014545454545454545, 'D4': 0.012727272727272728, 'D9': 0.0036363636363636364, 'D7': 0.0036363636363636364})
     )
 
-def test_count_relations_dists_without_repetitions():
+def test_count_relations_dists_without_repetitions(corpus_percentage):
     _test(
+        corpus_percentage,
         DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['lowercased'],
         None,  # meaning: str.__eq__
         #
@@ -43,54 +42,56 @@ def test_count_relations_dists_without_repetitions():
     )
 
 
-def test_count_relations_dists_normalizations_without_repetitions():
+def test_count_relations_dists_normalizations_without_repetitions(corpus_percentage):
     _test(
+        corpus_percentage,
         DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
             {
                 PRO_ID: UNIPROT_NORM_ID,
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="softest"
+            penalize_unknown_normalizations="soft"
         ),
         None,  # meaning: str.__eq__
         #
         0.81,
         #
-        Counter({'D0': 210, 'D1': 50, 'D2': 31, 'D3': 12, 'D5': 9, 'D6': 6, 'D9': 2, 'D4': 1}),
-        Counter({'D0': 0.6542056074766355, 'D1': 0.1557632398753894, 'D2': 0.09657320872274143, 'D3': 0.037383177570093455, 'D5': 0.028037383177570093, 'D6': 0.018691588785046728, 'D9': 0.006230529595015576, 'D4': 0.003115264797507788})
+        Counter({'D0': 217, 'D1': 52, 'D2': 31, 'D3': 12, 'D5': 9, 'D6': 6, 'D9': 2, 'D4': 2}),
+        Counter({'D0': 0.6555891238670695, 'D1': 0.15709969788519637, 'D2': 0.09365558912386707, 'D3': 0.03625377643504532, 'D5': 0.027190332326283987, 'D6': 0.01812688821752266, 'D9': 0.006042296072507553, 'D4': 0.006042296072507553})
     )
 
 
-def test_count_relations_dists_normalizations_without_repetitions_considering_hierarchy():
+def test_count_relations_dists_normalizations_without_repetitions_considering_hierarchy(corpus_percentage):
     _test(
+        corpus_percentage,
         DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
             {
                 PRO_ID: UNIPROT_NORM_ID,
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="softest’"
+            penalize_unknown_normalizations="soft"
         ),
-        relation_accept_uniprot_go,
+        accept_relation_uniprot_go,
         #
-        0.83,
+        0.89,
         #
-        Counter({'D0': 169, 'D1': 41, 'D2': 21, 'D3': 9, 'D5': 7, 'D6': 5, 'D9': 2, 'D4': 1}),
-        Counter({'D0': 0.6627450980392157, 'D1': 0.1607843137254902, 'D2': 0.08235294117647059, 'D3': 0.03529411764705882, 'D5': 0.027450980392156862, 'D6': 0.0196078431372549, 'D9': 0.00784313725490196, 'D4': 0.00392156862745098})
+        Counter({'D0': 241, 'D1': 52, 'D3': 12, 'D2': 12, 'D5': 8, 'D6': 4, 'D9': 1, 'D4': 1}),
+        Counter({'D0': 0.7280966767371602, 'D1': 0.15709969788519637, 'D3': 0.03625377643504532, 'D2': 0.03625377643504532, 'D5': 0.02416918429003021, 'D6': 0.012084592145015106, 'D9': 0.0030211480362537764, 'D4': 0.0030211480362537764})
     )
 
 
 #
 
 
-def _test(entity_map_fun, relation_accept_fun, expected_sum_perct_d0_d1, expected_nums, expected_percts):
-    corpus = read_corpus("LocText", CORPUS_PERCENTANGE)
+def _test(corpus_percentage, entity_map_fun, relation_accept_fun, expected_sum_perct_d0_d1, expected_nums, expected_percts):
+    corpus = read_corpus("LocText", corpus_percentage)
 
     # Note: the predictor will already split & tokenize the corpus. See the implementation for details
     StubSamePartRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate(corpus)
 
-    (counter_nums, counter_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun, relation_accept_fun, predicted=True)
+    (counter_nums, counter_percts) = corpus.compute_stats_relations_distances(REL_PRO_LOC_ID, entity_map_fun, relation_accept_fun)
 
     print()
     print("# Documents", len(corpus))

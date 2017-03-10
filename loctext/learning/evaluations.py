@@ -1,7 +1,7 @@
-from loctext.util import repo_path
-from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
-from loctext.util import simple_parse_GO
+import pickle
 from itertools import product
+from loctext.util import repo_path, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
+from loctext.util import simple_parse_GO
 
 
 GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-basic.cellular_component.latest.obo"))
@@ -9,11 +9,60 @@ GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-
 Dictionary with go term child --> to [list of go term parents] relationships
 """
 
+
 def get_localization_name(go_id, default=""):
     return GO_TREE.get(go_id, (default, "", ""))[0]
 
 
-def relation_accept_uniprot_go(gold, pred):
+def _verify_in_ontology(term):
+    if term not in GO_TREE:
+        raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
+
+
+def are_go_parent_and_child(parent, child):
+    """
+    True if terms are equal or parent is indeed a parent in the localization GO of the child. False otherwise.
+    """
+    return _go_ids_accept_single(parent, child) is True
+
+
+# ----------------------------------------------------------------------------------------------------
+
+SWISSPROT_RELATIONS = None
+"""
+GO Localization/Component annotations written in SwissProt
+
+Dictionary UniProt AC --> set[GO] (set of GO ids explicitly written in SwissProt)
+"""
+
+with open(repo_path("resources", "features", "SwissProt_relations.pickle"), "rb") as f:
+    SWISSPROT_RELATIONS = pickle.load(f)
+
+
+def is_in_swiss_prot(uniprot_ac, go):
+    explicitly_written = go in SWISSPROT_RELATIONS.get(uniprot_ac, set())
+
+    return explicitly_written or is_parent_of_swiss_prot_annotation(uniprot_ac, go)
+
+
+def is_parent_of_swiss_prot_annotation(uniprot_ac, go):
+    try:
+        return any(are_go_parent_and_child(go, swissprot) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+    except KeyError:
+        return False
+
+
+def is_child_of_swiss_prot_annotation(uniprot_ac, go):
+    try:
+        return any(are_go_parent_and_child(swissprot, go) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+    except KeyError:
+        return False
+
+
+# ----------------------------------------------------------------------------------------------------
+
+
+def accept_relation_uniprot_go(gold, pred):
 
     if gold == pred and gold != "":
         return True
@@ -28,8 +77,8 @@ def relation_accept_uniprot_go(gold, pred):
     assert p_pro_key == UNIPROT_NORM_ID, pred
     assert p_loc_key == GO_NORM_ID, pred
 
-    uniprot_accept = _uniprot_ids_accept_multiple(g_n_7, p_n_7)
-    go_accept = _go_ids_accept_multiple(g_n_8, p_n_8)
+    uniprot_accept = _accept_uniprot_ids_multiple(g_n_7, p_n_7)
+    go_accept = _accept_go_ids_multiple(g_n_8, p_n_8)
     combined = {uniprot_accept, go_accept}
 
     if combined == {True}:
@@ -40,7 +89,11 @@ def relation_accept_uniprot_go(gold, pred):
         return None
 
 
-def _uniprot_ids_accept_multiple(gold, pred):
+def _accept_taxonomy_ids_single(gold, pred):
+    return gold == pred
+
+
+def _accept_uniprot_ids_multiple(gold, pred):
     """
     If all golds are UNKNOWN normalization, return None (reject) else accept if any pair match is equals
     """
@@ -58,7 +111,7 @@ def _uniprot_ids_accept_multiple(gold, pred):
     return any(g == p for (g, p) in product(golds, preds))
 
 
-def _go_ids_accept_multiple(gold, pred):
+def _accept_go_ids_multiple(gold, pred):
     """
     Apply essentially same behavior as for multiple unitprot_ids:
     accept if any is true, otherwise None if any is None, or otherwise False
@@ -86,19 +139,6 @@ def _go_ids_accept_multiple(gold, pred):
         return None
     else:
         return False
-
-
-def _verify_in_ontology(term):
-
-    if term not in GO_TREE:
-        raise KeyError("The term '{}' is not recognized in the considered GO ontology hierarchy".format(term))
-
-
-def are_go_parent_and_child(parent, child):
-    """
-    True if terms are equal or parent is indeed a parent in the localization GO of the child. False otherwise.
-    """
-    return _go_ids_accept_single(parent, child) is True
 
 
 def _go_ids_accept_single(gold, pred):
@@ -146,3 +186,50 @@ def _go_ids_accept_single_recursive(a, b, b_parents):
         return True
 
     return any(_go_ids_accept_single_recursive(a, pp, GO_TREE.get(pp).parents) for pp in b_parents if pp in GO_TREE)
+
+
+# --------------------------------------------------------------------------------------------------
+
+
+def accept_entity_uniprot_go_taxonomy(gold, pred):
+
+    if gold == pred and gold != "":
+        return True
+
+    [g_class_id, g_offsets, g_norm_id, g_norm_value] = gold.split('|')
+    [p_class_id, p_offsets, p_norm_id, p_norm_value] = pred.split('|')
+
+    if g_class_id != p_class_id or g_norm_id != p_norm_id:
+        return False
+
+    # Check if the offsets overlap
+    if _overlap_entities_offsets(g_offsets, p_offsets):
+
+        if g_norm_value != "" and g_norm_value == p_norm_value:
+            return True
+
+        if g_norm_id == UNIPROT_NORM_ID:
+            return _accept_uniprot_ids_multiple(g_norm_value, p_norm_value)
+        elif g_norm_id == GO_NORM_ID:
+            return _accept_go_ids_multiple(g_norm_value, p_norm_value)
+        elif g_norm_id == TAXONOMY_NORM_ID:
+            return _accept_taxonomy_ids_single(g_norm_value, p_norm_value)
+        else:
+            raise AssertionError
+
+    else:
+        return False
+
+
+def _overlap_entities_offsets(g_offsets, p_offsets):
+    g_start_offset, g_end_offset = g_offsets.split(',')
+    p_start_offset, p_end_offset = p_offsets.split(',')
+
+    return int(g_start_offset) < int(p_end_offset) and int(g_end_offset) > int(p_start_offset)
+
+
+# --------------------------------------------------------------------------------------------------
+
+
+assert(is_in_swiss_prot("P51811", "GO:0016020"))
+assert(is_in_swiss_prot("Q53GL0", "GO:0005886"))

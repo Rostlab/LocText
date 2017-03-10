@@ -55,8 +55,21 @@ for type_key, mention_counter in mention_mode_total_counter.items():
 
 #######################################################################################################################
 
+for type_key, ratio_counter in mention_mode_total_counter.items():
+    # if type_key == LOC_ID:
+        ratio_sorted = sorted(ratio_counter.items(), key=lambda pair: pair[1])
+
+        print()
+        for entity_key, val in ratio_sorted:
+            print('"{}": {},'.format(entity_key, val))
+
+        print()
+        print("Total entity_keys: ", len(ratio_sorted))
+        print()
+
+
 for type_key, ratio_counter in ratio_mode_total_counter.items():
-    if type_key == LOC_ID:
+    # if type_key == LOC_ID:
         ratio_sorted = sorted(ratio_counter.items(), key=lambda pair: pair[1])
 
         print()
@@ -69,7 +82,7 @@ for type_key, ratio_counter in ratio_mode_total_counter.items():
 
 print()
 
-out_path = repo_path(["resources", "features", "corpus_" + mode + "_total_background_loc_rels_ratios.pickle"])
+out_path = repo_path("resources", "features", "corpus_" + mode + "_total_background_loc_rels_ratios.pickle")
 with open(out_path, "wb") as f:
     pickle.dump(ratio_mode_total_counter[LOC_ID], f)
 

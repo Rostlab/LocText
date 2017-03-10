@@ -1,5 +1,3 @@
-# Selected Feature *NAMES*
-
 [
     "SentenceFeatureGenerator::1.1_counts_individual_int_individual_e_1_[0]",  # 0
     "SentenceFeatureGenerator::1.1_counts_individual_int_individual_e_3_[0]",  # 1
@@ -304,4 +302,3 @@
     "LocalizationRelationsRatios::50_corpus_unnormalized_total_background_loc_rels_ratios_[0]",  # 300
     "LocalizationRelationsRatios::58_SwissProt_normalized_exists_relation_[0]",  # 301
 ]
-
