@@ -28,7 +28,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--load_model', default=None, help="File path to load a trained model from")
 
     parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
-    parser.add_argument('--eval_corpus', required=False, choices=["SwissProt", "NewDiscoveries", "LocText"])
+    parser.add_argument('--eval_corpus', required=False)
     parser.add_argument('--force_external_corpus_evaluation', default=False, action="store_true")
     parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
 
