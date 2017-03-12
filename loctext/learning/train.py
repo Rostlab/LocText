@@ -402,7 +402,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=[], return_
         corpus, eval_corpus = corpus.percentage_split(corpus_percentage)
 
     if predict_entities:
-        tagger_entity_types = "-22,-3" + ",".join([str(x) for x in predict_entities])
+        tagger_entity_types = "-22,-3," + ",".join([str(x) for x in predict_entities])
 
         STRING_TAGGER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, tagger_entity_types=tagger_entity_types, send_whole_once=True)
 
