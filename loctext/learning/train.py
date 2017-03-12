@@ -330,10 +330,13 @@ def write_external_evaluation_results(args, eval_corpus):
     return rel_evaluation
 
 
-def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=[], return_eval_corpus=False):
+def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=None, return_eval_corpus=False):
     import os
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
+
+    if isinstance(predict_entities, str):
+        predict_entities = predict_entities.split(",")
 
     __corpora_dir = repo_path("resources", "corpora")
 
