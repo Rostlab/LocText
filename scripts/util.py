@@ -31,11 +31,11 @@ F05_SCORER = make_scorer(fbeta_score, beta=0.5)  # Assigns double the weight to 
 F025_SCORER = make_scorer(fbeta_score, beta=0.25)  # Assigns quadruple the weight to *precision*
 
 
-def get_model_and_data(sentence_distance, use_pred):
-    corpus = read_corpus("LocText", predict_entities=use_pred)
+def get_model_and_data(sentence_distance, predict_entities):
+    corpus = read_corpus("LocText", predict_entities=predict_entities)
 
     # TODO the specific parameters like C=1 or even `linear` are controversial -- Maybe I should I change that
-    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=use_pred, preprocess=True, kernel='linear', C=1)
+    annotator = LocTextDXModelRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, sentence_distance, use_predicted_entities=len(predict_entities) > 0, preprocess=True, kernel='linear', C=1)
     annotator.pipeline.execute(corpus)
     X, y, groups = annotator.model.write_vector_instances(corpus, annotator.pipeline.feature_set)
     X = annotator.model.preprocess.fit_transform(X)

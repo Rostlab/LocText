@@ -24,13 +24,13 @@ from sklearn.decomposition import PCA, TruncatedSVD
 from sklearn.linear_model import RandomizedLogisticRegression
 
 sentence_distance = int(sys.argv[1])
-use_pred = sys.argv[2].lower() == "true"
+predict_entities = sys.argv[2]
 
-print(sentence_distance, use_pred)
+print(sentence_distance, predict_entities)
 
 # ----------------------------------------------------------------------------------------------------
 
-annotator, X, y, groups = get_model_and_data(sentence_distance, use_pred)
+annotator, X, y, groups = get_model_and_data(sentence_distance, predict_entities)
 # X = X.toarray()
 print("SVC after preprocessing, #features: {} && max value: {}".format(X.shape[1], max(sklearn.utils.sparsefuncs.min_max_axis(X, axis=0)[1])))
 
@@ -81,7 +81,7 @@ for fsel_name, feature_selection in feature_selections:
     fsel_names, _ = print_selected_features(
         selected_feature_keys,
         annotator.pipeline.feature_set,
-        file_prefix=("_".join([str(sentence_distance), str(use_pred), fsel_name]))
+        file_prefix=("_".join([str(sentence_distance), str(predict_entities), fsel_name]))
     )
     print(fsel_names)
 

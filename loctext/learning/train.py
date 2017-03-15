@@ -336,7 +336,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=None, retur
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
 
     if isinstance(predict_entities, str):
-        predict_entities = predict_entities.split(",")
+        predict_entities = list(filter(None, predict_entities.split(",")))
 
     __corpora_dir = repo_path("resources", "corpora")
 
