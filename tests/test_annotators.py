@@ -144,7 +144,7 @@ def test_baseline_full(corpus_percentage):
     else:
         EXPECTED_F = None
 
-    corpus = read_corpus("LocText", corpus_percentage, predict_entities=True)
+    corpus = read_corpus("LocText", corpus_percentage, predict_entities="9606,3702,4932")
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, use_gold=False, use_pred=True).annotate)
 
