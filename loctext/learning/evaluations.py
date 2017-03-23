@@ -118,6 +118,7 @@ def is_in_loctree3(uniprot_ac, go, organism_id):
 
 LOCTREE3_ALL_RELATIONS[9606] = parse_loctree_relation_records(repo_path("resources", "evaluation", "9606_Homo_sapiens.euka.lc3"))
 LOCTREE3_ALL_RELATIONS[3702] = parse_loctree_relation_records(repo_path("resources", "evaluation", "3702_Arabidopsis_thaliana.euka.lc3"))
+LOCTREE3_ALL_RELATIONS[559292] = parse_loctree_relation_records(repo_path("resources", "evaluation", "559292_Saccharomyces_cerevisiae.euka.lc3"))
 
 
 # ----------------------------------------------------------------------------------------------------
