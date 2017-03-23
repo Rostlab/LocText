@@ -264,6 +264,10 @@ def write_external_evaluation_results(args, eval_corpus):
 
     organism_id = args.predict_entities[0]
 
+    if organism_id == 4932:
+        # All STRING Tagger yeast normalizations are to the strain 559292
+        organism_id = 559292
+
     macro_counter = Counter()
     micro_counter = {}
 
