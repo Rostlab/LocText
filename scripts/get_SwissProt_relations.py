@@ -24,7 +24,9 @@ with open(in_path) as f:
         all_relations[organism_id] = organism_relations
 
     print("Total uniprot entries:", sum(len(organism_relations) for organism_relations in all_relations.values()))
-    print("9606 unit prot entiries:", (len(all_relations[9606])))
+    print("4932 unit prot entries:", (len(all_relations[4932])))
+    print("9606 unit prot entries:", (len(all_relations[9606])))
+    print("Organisms:", set(all_relations.keys()))
 
     out_path = repo_path("resources", "features", "SwissProt_all_relations.pickle")
     with open(out_path, "wb") as f:
