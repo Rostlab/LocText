@@ -399,7 +399,7 @@ class StringTagger(Tagger):
                 norms.append(norm_id)
 
             elif norm["type"].startswith("string_id:"):
-                # Set e_class_id not to reject; this happens in the few cases the string id cannot be normalized to uniprot
+                # Set e_class_id thus not to reject the protein; this happens in the few cases the string id cannot be normalized to uniprot
                 e_class_id = self.protein_id
 
         if not e_class_id:
