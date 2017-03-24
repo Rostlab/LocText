@@ -2,8 +2,9 @@
 .*
 !.travis.yml
 
-# Full logs
+# Logs
 *.log
+!resources/evaluation/*.log
 !logs/training/*/loctext_best*.log
 
 # Byte-compiled / optimized / DLL files
