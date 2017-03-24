@@ -72,8 +72,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
                 tokenizer=TmVarTokenizer(),
                 edge_generator=edge_generator,
                 feature_set=self.feature_set,
-                feature_generators=feature_generators
-        )
+                feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
@@ -375,8 +374,7 @@ class StringTagger(Tagger):
 
             elif norm["type"] == "-22":
                 try:
-                    if any(are_go_parent_and_child(in_parent, norm_id) for in_parent in self.filter_in_go_localizations) \
-                        and not any(are_go_parent_and_child(out_parent, norm_id) for out_parent in self.filter_out_go_localizations):
+                    if any(are_go_parent_and_child(in_parent, norm_id) for in_parent in self.filter_in_go_localizations) and not any(are_go_parent_and_child(out_parent, norm_id) for out_parent in self.filter_out_go_localizations):
                         e_class_id = self.localization_id
                         n_class_id = self.go_norm_id
                         norms.append(norm_id)
