@@ -104,6 +104,8 @@ def evaluate_with_argv(argv=[]):
 
 def evaluate(args, training_corpus, eval_corpus):
 
+    start = time.time()
+
     submodels = _select_annotator_submodels(args)
     are_features_already_extracted = False
 
@@ -140,6 +142,9 @@ def evaluate(args, training_corpus, eval_corpus):
 
             else:
                 rel_evaluation = "Model saved into folder: " + args.save_model
+
+    end = time.time()
+    print("Time for total evaluation:", (end - start))
 
     return rel_evaluation
 
@@ -339,6 +344,8 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=None, retur
     from nalaf.utils.readers import HTMLReader
     from nalaf.utils.annotation_readers import AnnJsonAnnotationReader
 
+    start = time.time()
+
     if isinstance(predict_entities, str):
         predict_entities = list(filter(None, predict_entities.split(",")))
 
@@ -420,6 +427,9 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=None, retur
         STRING_TAGGER.annotate(corpus)
         if return_eval_corpus and eval_corpus:
             STRING_TAGGER.annotate(eval_corpus)
+
+    end = time.time()
+    print("Time for reading the corpus", corpus_name, (end - start))
 
     if return_eval_corpus:
         return (corpus, eval_corpus)
