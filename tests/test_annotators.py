@@ -122,6 +122,7 @@ def test_baseline_D0_D1(corpus_percentage):
 
     return rel_evaluation
 
+
 # Note: would be way better to be able to reuse the already trained models in the other tests methods
 def test_LocText_D0_D1(corpus_percentage):
 
