@@ -6,8 +6,8 @@ ORG_ID = 'e_3'
 REL_PRO_LOC_ID = 'r_5'
 
 UNIPROT_NORM_ID = 'n_7'
-GO_NORM_ID = 'n_8'
-TAXONOMY_NORM_ID = 'n_9'
+GO_NORM_ID = 'n_9'
+TAXONOMY_NORM_ID = 'n_8'
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
