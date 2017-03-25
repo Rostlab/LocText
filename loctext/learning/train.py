@@ -27,7 +27,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--save_model', default=None, help="Dir. path to save the trained model to")
     parser.add_argument('--load_model', default=None, help="File path to load a trained model from")
 
-    parser.add_argument('--training_corpus', default="LocText", choices=["LocText"])
+    parser.add_argument('--training_corpus', default="LocText", choices=["LocText", "LocText_FullTextsOnly"])
     parser.add_argument('--eval_corpus', required=False)
     parser.add_argument('--force_external_corpus_evaluation', default=False, action="store_true")
     parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
@@ -89,7 +89,7 @@ def evaluate_with_argv(argv=[]):
     training_corpus = None
     eval_corpus = None
 
-    if args.training_corpus:
+    if args.training_corpus and not args.load_model:
         training_corpus, eval_corpus = read_corpus(args.training_corpus, args.corpus_percentage, args.predict_entities, return_eval_corpus=True)
 
     if args.eval_corpus:
@@ -348,6 +348,10 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=None, retur
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations_latest_5_feb_2017/')
 
+    elif corpus_name == "LocText_FullTextsOnly":
+        dir_html = os.path.join(__corpora_dir, 'LocText/FullTextsOnly/')
+        dir_annjson = os.path.join(__corpora_dir, 'LocText/FullTextsOnly/')
+
     elif corpus_name == "LocText_v1":  # With normalizations; normalizations done in excel sheet
         dir_html = os.path.join(__corpora_dir, 'LocText/LocText_anndoc_original_without_normalizations/LocText_plain_html/pool/')
         dir_annjson = os.path.join(__corpora_dir, 'LocText/LocText_annjson_with_normalizations/')
@@ -388,7 +392,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=None, retur
     if dir_html is not None:
         corpus = HTMLReader(dir_html).read()
 
-        if corpus_name.startswith("LocText"):
+        if corpus_name == "LocText" or corpus_name.startswith("LocText_v"):
             # Remove PMCs, full-text
             del corpus.documents["PMC3596250"]
             del corpus.documents["PMC2192646"]
