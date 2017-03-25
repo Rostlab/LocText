@@ -22,7 +22,7 @@ TEST_MIN_CORPUS_PERCENTAGE = 0.4
 
 EVALUATION_LEVEL = 4
 
-EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft")
+EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="no")
 
 
 # -----------------------------------------------------------------------------------

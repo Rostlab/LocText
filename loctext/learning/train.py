@@ -424,7 +424,7 @@ def read_corpus(corpus_name, corpus_percentage=1.0, predict_entities=None, retur
         return corpus
 
 
-def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft"):
+def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="no"):
 
     if evaluation_level == 1:
         ENTITY_MAP_FUN = Entity.__repr__

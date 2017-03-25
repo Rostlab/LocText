@@ -52,7 +52,7 @@ def test_count_relations_dists_normalizations_without_repetitions(corpus_percent
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="soft"
+            penalize_unknown_normalizations="no"
         ),
         None,  # meaning: str.__eq__
         #
@@ -72,7 +72,7 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="soft"
+            penalize_unknown_normalizations="no"
         ),
         accept_relation_uniprot_go,
         #
