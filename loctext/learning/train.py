@@ -486,7 +486,8 @@ def print_corpus_hard_core_stats(name, corpus):
     if corpus:
         print(name + " corpus stats:")
         print("\t#documents: {}".format(len(corpus)))
-        print("\t#relations: {}".format(len(list(corpus.relations()))))
+        print("\t#relations total: {}".format(sum(1 for r in corpus.relations())))
+        print("\t#relations prot<-->loc: {}".format(sum(1 for r in corpus.relations() if r.class_id == REL_PRO_LOC_ID)))
         entity_counter = Counter()
         for e in corpus.entities():
             entity_counter.update([e.class_id])
