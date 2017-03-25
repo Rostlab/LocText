@@ -103,7 +103,6 @@ def evaluate_with_argv(argv=[]):
 
 
 def evaluate(args, training_corpus, eval_corpus):
-
     start = time.time()
 
     submodels = _select_annotator_submodels(args)
