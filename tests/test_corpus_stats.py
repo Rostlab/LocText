@@ -29,6 +29,7 @@ def test_count_relations_dists_with_repetitions(corpus_percentage):
         Counter({'D0': 0.6381818181818182, 'D1': 0.17272727272727273, 'D2': 0.09636363636363636, 'D3': 0.04181818181818182, 'D5': 0.016363636363636365, 'D6': 0.014545454545454545, 'D4': 0.012727272727272728, 'D9': 0.0036363636363636364, 'D7': 0.0036363636363636364})
     )
 
+
 def test_count_relations_dists_without_repetitions(corpus_percentage):
     _test(
         corpus_percentage,
