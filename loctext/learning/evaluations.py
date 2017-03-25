@@ -155,6 +155,10 @@ def _accept_taxonomy_ids_single(gold, pred):
     return gold == pred
 
 
+def __split_norms(normalization_string):
+    return list(filter(len, (x.strip() for x in normalization_string.split(','))))
+
+
 def _accept_uniprot_ids_multiple(gold, pred):
     """
     If all golds are UNKNOWN normalization, return None (reject) else accept if any pair match is equals
@@ -163,9 +167,8 @@ def _accept_uniprot_ids_multiple(gold, pred):
     if gold == pred:
         return True
 
-    # see (nalaf) evaluators::_normalized_fun
-    golds = [g for g in gold.split(',') if not g.startswith("UNKNOWN:")]
-    preds = [p for p in pred.split(',')]
+    golds = [x for x in __split_norms(gold) if not x.startswith("UNKNOWN:")]  # see (nalaf) evaluators::_normalized_fun
+    preds = __split_norms(pred)
 
     if not golds:
         return None
@@ -181,9 +184,8 @@ def _accept_go_ids_multiple(gold, pred):
     if gold == pred:
         return True
 
-    # see (nalaf) evaluators::_normalized_fun
-    golds = [g for g in gold.split(',') if not g.startswith("UNKNOWN:")]
-    preds = [p for p in pred.split(',')]
+    golds = [x for x in __split_norms(gold) if not x.startswith("UNKNOWN:")]  # see (nalaf) evaluators::_normalized_fun
+    preds = __split_norms(pred)
 
     if not golds:
         return None
