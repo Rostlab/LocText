@@ -22,7 +22,7 @@ def parse_arguments(argv=[]):
     parser = argparse.ArgumentParser(description='dooh')
 
     parser.add_argument('--model', required=True, choices=["D0", "D1", "D0,D1", "D1,D0"])
-    parser.add_argument('--predict_entities', default=None)
+    parser.add_argument('--predict_entities', default=None, choices=["9606,3702,4932", "9606", "3702", "4932"])
     parser.add_argument('--feature_generators', default='LocText', choices=["LocText", "default"])
     parser.add_argument('--save_model', default=None, help="Dir. path to save the trained model to")
     parser.add_argument('--load_model', default=None, help="File path to load a trained model from")
