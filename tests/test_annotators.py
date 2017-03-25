@@ -41,6 +41,7 @@ def test_baseline_D0(evaluation_level, corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
+    print(rel_evaluation)
     print(evaluations)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
 
