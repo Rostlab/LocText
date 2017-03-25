@@ -277,7 +277,7 @@ def accept_entity_uniprot_go_taxonomy(gold, pred):
         elif g_norm_id == TAXONOMY_NORM_ID:
             return _accept_taxonomy_ids_single(g_norm_value, p_norm_value)
         else:
-            raise AssertionError
+            raise AssertionError(("Unexpected: ", g_norm_id))
 
     else:
         return False
