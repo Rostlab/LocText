@@ -6,6 +6,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 
 from pytest import raises
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
+from loctext.util.ncbi_global_align import global_align
 from loctext.learning.evaluations import accept_relation_uniprot_go, GO_TREE
 from nalaf import print_verbose, print_debug
 
@@ -101,7 +102,7 @@ def test_accept_relation_uniprot_go_exceptions():
 
 
 def test_accept_relation_uniprot_go_direct_children_ORDER_DOES_MATTER():
-     # gold must be parecent to accept the prediction, not the other way around
+    # gold must be parecent to accept the prediction, not the other way around
 
     # see: http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0000123#term=ancchart
 
@@ -342,6 +343,34 @@ def test_accept_relation_uniprot_go_uniprots_do_not_create_spurious_ignores_None
     assert None is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_8|GO:0005737",
         "r_5|n_7|xxx|n_8|GO:0005622")
+
+
+def test_sequences_identity():
+    assert float(global_align("P35638", "P10145", column=2)) < 15  # 10.651, last time I checked
+    assert float(global_align("P08100", "P02699", column=2)) > 90  # 93.391, last time I checked
+
+
+def test_accept_relation_uniprot_go_if_similar_sequence():
+
+    assert False is accept_relation_uniprot_go(
+        "r_5|n_7|P35638|n_8|GO:0005737",
+        "r_5|n_7|P10145|n_8|GO:0005737")
+
+    assert True is accept_relation_uniprot_go(
+        "r_5|n_7|P08100|n_8|GO:0005737",
+        "r_5|n_7|P02699|n_8|GO:0005737",
+        # relies on default being near > 90
+    )
+
+    assert True is accept_relation_uniprot_go(
+        "r_5|n_7|P08100|n_8|GO:0005737",
+        "r_5|n_7|P02699|n_8|GO:0005737",
+        min_seq_identity=90)
+
+    assert False is accept_relation_uniprot_go(
+        "r_5|n_7|P08100|n_8|GO:0005737",
+        "r_5|n_7|P02699|n_8|GO:0005737",
+        min_seq_identity=95)  # 95, too much
 
 
 if __name__ == "__main__":
