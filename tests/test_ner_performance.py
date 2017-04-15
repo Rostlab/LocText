@@ -57,7 +57,7 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="no",
+            penalize_unknown_normalizations="agnostic",
             add_entity_text=True,
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['exact']
@@ -69,7 +69,7 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="no",
+            penalize_unknown_normalizations="agnostic",
             add_entity_text=True,
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['overlapping']
