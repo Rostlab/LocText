@@ -164,13 +164,13 @@ def test_loctext_full(corpus_percentage):
     else:
         EXPECTED_F = 0.6779
 
-    _test_LocText(corpus_percentage, model='D0', EXPECTED_F=EXPECTED_F, predict_entities=True)
+    _test_LocText(corpus_percentage, model='D0', EXPECTED_F=EXPECTED_F, predict_entities="9606,3702,4932")
 
 
 # -----------------------------------------------------------------------------------
 
 
-def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=False, EXPECTED_F_SE=0.001):
+def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=None, EXPECTED_F_SE=0.001):
     # Note: EXPECTED_F=None will make the test fail for non-yet verified evaluations
     # Note: the real StdErr's are around ~0.0027-0.0095. Decrease them by default to be more strict with tests
 
@@ -178,7 +178,11 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=Fa
 
     corpus = read_corpus("LocText", corpus_percentage, predict_entities)
 
-    rel_evaluation = evaluate_with_argv(['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL), '--predict_entities', 'true'])
+    args = ['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL)]
+    if predict_entities:
+        args += ['--predict_entities', predict_entities]
+
+    rel_evaluation = evaluate_with_argv(args)
 
     print("LocText " + model, rel_evaluation)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
