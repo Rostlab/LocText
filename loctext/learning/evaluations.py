@@ -2,6 +2,7 @@ import pickle
 from itertools import product
 from loctext.util import repo_path, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from loctext.util import simple_parse_GO
+from loctext.util.ncbi_global_align import global_align
 
 
 GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-basic.cellular_component.latest.obo"))
@@ -177,7 +178,10 @@ def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
     if not golds:
         return None
 
-    return any(g == p for (g, p) in product(golds, preds))
+    def accept(g, p):
+        return g == p or float(global_align(g, p, column=2)) > min_seq_identity
+
+    return any(accept(g, p) for (g, p) in product(golds, preds))
 
 
 def _accept_go_ids_multiple(gold, pred):
