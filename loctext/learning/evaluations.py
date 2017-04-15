@@ -179,7 +179,10 @@ def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
         return None
 
     def accept(g, p):
-        return g == p or float(global_align(g, p, column=2)) > min_seq_identity
+        try:
+            return g == p or float(global_align(g, p, column=2)) > min_seq_identity
+        except AssertionError:  # assertion error possibly raised in global_align
+            return False
 
     return any(accept(g, p) for (g, p) in product(golds, preds))
 
