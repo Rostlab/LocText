@@ -306,8 +306,8 @@ def accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=None):
 
 
 def _overlap_entities_offsets(g_offsets, p_offsets):
-    g_start_offset, g_end_offset = g_offsets.split(',')
-    p_start_offset, p_end_offset = p_offsets.split(',')
+    g_start_offset, g_end_offset, *_ = g_offsets.split(',')
+    p_start_offset, p_end_offset, *_ = p_offsets.split(',')
 
     return int(g_start_offset) < int(p_end_offset) and int(g_end_offset) > int(p_start_offset)
 

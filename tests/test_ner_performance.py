@@ -58,6 +58,7 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations="no",
+            add_entity_text=True,
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['exact']
 
@@ -69,6 +70,7 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations="no",
+            add_entity_text=True,
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['overlapping']
 
@@ -80,6 +82,7 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations="no",
+            add_entity_text=False,
         )
         ENTITY_ACCEPT_FUN = accept_entity_uniprot_go_taxonomy
 
@@ -91,10 +94,11 @@ def _get_entity_evaluator(evaluation_level):
                 ORG_ID: TAXONOMY_NORM_ID,
             },
             penalize_unknown_normalizations="no",
+            add_entity_text=False,
         )
 
         def accept_checking_sequence_identity(gold, pred):
-            return accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=10)
+            return accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=90)
 
         ENTITY_ACCEPT_FUN = accept_checking_sequence_identity
 
