@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 import sys
-import requests
+import os
 import re
+try:
+    import requests
+    import requests_cache
+except Exception as e:
+    print("ERROR", "- You need to install missing dependencies: pip install requests requests-cache\n")
+    raise
 
 assert sys.version_info.major == 3, "the script requires Python 3"
 
@@ -9,7 +15,8 @@ __author__ = "Juan Miguel Cejuela (@juanmirocks)"
 
 __help__ = """
             A bit of a hack that uses the NCBI Global Alignment API to align two proteins (Needleman-Wunsch algorithm)
-            Also (optionally) parse out a column of the tabular output, e.g. column 2 == sequence identity percentage
+            Also (optionally) parse out a column of the tabular output, e.g. column 2 == sequence identity percentage.
+            Http requests are cached; a cache file is saved into the user's home folder.
 
             Example call: ./ncbi_global_align.py P08100 P02699 2
 
@@ -18,6 +25,21 @@ __help__ = """
 
             WARNING: this script uses options that are not documented in the API; will likely break. Tested as of: 2017-04-14
            """
+
+# ----------------------------------------------------------------------------
+
+
+CACHE_FILE_NAME = os.path.join(os.path.expanduser('~'), "TMP_CACHE_NCBI_GLOBAL_ALIGN")  # home folder
+
+requests_cache.install_cache(
+    cache_name=CACHE_FILE_NAME,
+    backend="sqlite",
+    expire_after=(24 * 60 * 60),  # 1 day, just like the NCBI expiration date
+    allowable_methods=('GET', "POST"))
+
+
+# ----------------------------------------------------------------------------
+
 
 POST_URL = "https://blast.ncbi.nlm.nih.gov/BlastAlign.cgi?CMD=Put&PROGRAM=blastp&BLAST_SPEC=GlobalAln"
 GET_URL = "https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=Tabular"
