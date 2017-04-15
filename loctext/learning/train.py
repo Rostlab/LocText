@@ -32,7 +32,7 @@ def parse_arguments(argv=[]):
     parser.add_argument('--force_external_corpus_evaluation', default=False, action="store_true")
     parser.add_argument('--corpus_percentage', type=float, default=1.0, help='e.g. 1 == full corpus; 0.5 == 50% of corpus')
 
-    parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4])
+    parser.add_argument('--evaluation_level', required=False, type=int, default=4, choices=[1, 2, 3, 4, 5])
     parser.add_argument('--evaluate_only_on_edges_plausible_relations', default=False, action='store_true')
     parser.add_argument('--cv_with_test_set', default=False, action='store_true')
     parser.add_argument('--k_num_folds', type=int, default=5)
@@ -470,6 +470,22 @@ def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=F
             penalize_unknown_normalizations=normalization_penalization
         )
         RELATION_ACCEPT_FUN = accept_relation_uniprot_go
+
+    elif evaluation_level == 5:
+        ENTITY_MAP_FUN = DocumentLevelRelationEvaluator.COMMON_ENTITY_MAP_FUNS['normalized_fun'](
+            # WARN: we should read the class ids from the corpus
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations=normalization_penalization
+        )
+
+        def accept_checking_sequence_identity(gold, pred):
+            return accept_relation_uniprot_go(gold, pred, min_seq_identity=90)
+
+        RELATION_ACCEPT_FUN = accept_checking_sequence_identity
 
     else:
         raise AssertionError(evaluation_level)
