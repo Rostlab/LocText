@@ -21,21 +21,21 @@ def test_accept_relation_uniprot_go_basic_eq():
     accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|yyy",
-        "r_5|n_7|xxx|n_8|yyy")
+        "r_5|n_7|xxx|n_9|yyy",
+        "r_5|n_7|xxx|n_9|yyy")
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     assert accept_prediction(
-        "r_5|n_7|P04637|n_8|yyy",
-        "r_5|n_7|P04637|n_8|yyy")
+        "r_5|n_7|P04637|n_9|yyy",
+        "r_5|n_7|P04637|n_9|yyy")
 
     # Note, the following is a stub test relation and does not have to be biologically true
     assert accept_prediction(
-        "r_5|n_7|P04637|n_8|GO:0000123",
-        "r_5|n_7|P04637|n_8|GO:0000123")
+        "r_5|n_7|P04637|n_9|GO:0000123",
+        "r_5|n_7|P04637|n_9|GO:0000123")
 
 
 def test_accept_relation_uniprot_go_basic_ne():
@@ -43,18 +43,18 @@ def test_accept_relation_uniprot_go_basic_ne():
     accept_prediction = accept_relation_uniprot_go
 
     assert not accept_prediction(
-        "r_5|n_7|xxx|n_8|yyy",
-        "r_5|n_7|xxx_DIFFERENT|n_8|yyy")
+        "r_5|n_7|xxx|n_9|yyy",
+        "r_5|n_7|xxx_DIFFERENT|n_9|yyy")
 
     with raises(KeyError):
         assert not accept_prediction(
-            "r_5|n_7|xxx|n_8|yyy",
-            "r_5|n_7|xxx|n_8|yyy_DIFERENT")
+            "r_5|n_7|xxx|n_9|yyy",
+            "r_5|n_7|xxx|n_9|yyy_DIFERENT")
 
     with raises(KeyError):
         assert not accept_prediction(
-            "r_5|n_7|xxx|n_8|yyy",
-            "r_5|n_7|xxx_DIFFERENT|n_8|yyy_DIFERENT")
+            "r_5|n_7|xxx|n_9|yyy",
+            "r_5|n_7|xxx_DIFFERENT|n_9|yyy_DIFERENT")
 
 
 def test_relation_accept_uniprot_rel_type_is_not_compared():
@@ -62,8 +62,8 @@ def test_relation_accept_uniprot_rel_type_is_not_compared():
     accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|yyy",
-        "r_DIFFERENT|n_7|xxx|n_8|yyy")
+        "r_5|n_7|xxx|n_9|yyy",
+        "r_DIFFERENT|n_7|xxx|n_9|yyy")
 
 
 def test_accept_relation_uniprot_go_exceptions():
@@ -77,28 +77,28 @@ def test_accept_relation_uniprot_go_exceptions():
 
     with raises(Exception):
         assert accept_prediction(
-            "r_5|n_7|xxx|n_8|yyy",
-            "r_5|n_INVALID|xxx|n_8|yyy")
+            "r_5|n_7|xxx|n_9|yyy",
+            "r_5|n_INVALID|xxx|n_9|yyy")
 
     with raises(Exception):
         assert accept_prediction(
-            "r_5|n_7|xxx|n_8|yyy",
-            "r_5|n_INVALID|xxx|n_8|yyy")
+            "r_5|n_7|xxx|n_9|yyy",
+            "r_5|n_INVALID|xxx|n_9|yyy")
 
     with raises(Exception):
         assert accept_prediction(
-            "r_5|n_7|xxx|n_8|yyy",
+            "r_5|n_7|xxx|n_9|yyy",
             "r_5|n_7|xxx|n_INVALID|yyy")
 
     with raises(Exception):
         assert accept_prediction(
-            "r_5|n_INVALID|xxx|n_8|yyy",
-            "r_5|n|xxx|n_8|yyy")
+            "r_5|n_INVALID|xxx|n_9|yyy",
+            "r_5|n|xxx|n_9|yyy")
 
     with raises(Exception):
         assert accept_prediction(
             "r_5|n_7|xxx|n_INVALID|yyy",
-            "r_5|n|xxx|n_8|yyy")
+            "r_5|n|xxx|n_9|yyy")
 
 
 def test_accept_relation_uniprot_go_direct_children_ORDER_DOES_MATTER():
@@ -113,32 +113,32 @@ def test_accept_relation_uniprot_go_direct_children_ORDER_DOES_MATTER():
     accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0044451",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0044451",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0031248",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0031248",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     # but...
 
     assert not accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0044451")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0044451")
 
     assert not accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0031248")
 
     # and not related at all with with one another as parent or child...
 
     assert not accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0031248",
-        "r_5|n_7|xxx|n_8|GO:0044451")
+        "r_5|n_7|xxx|n_9|GO:0031248",
+        "r_5|n_7|xxx|n_9|GO:0044451")
 
     assert not accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0044451",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_9|GO:0044451",
+        "r_5|n_7|xxx|n_9|GO:0031248")
 
 
 def test_accept_relation_uniprot_go_indirect_children():
@@ -159,46 +159,46 @@ def test_accept_relation_uniprot_go_indirect_children():
     # Accept when the prediciton is more detailed than gold (that is, the prediction is an in-/direct child of gold)
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0044451",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0044451",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0031248",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0031248",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0031248",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0031248",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0031248",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0031248",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0005575",
-        "r_5|n_7|xxx|n_8|GO:0000123")
+        "r_5|n_7|xxx|n_9|GO:0005575",
+        "r_5|n_7|xxx|n_9|GO:0000123")
 
     # Ignore when the prediciton is above gold (that is, the prediction is an in-/direct parent of gold)
 
     assert ignore_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0044451")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0044451")
 
     assert ignore_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0031248")
 
     assert ignore_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0031248")
 
     assert ignore_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0031248")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0031248")
 
     assert ignore_prediction(
-        "r_5|n_7|xxx|n_8|GO:0000123",
-        "r_5|n_7|xxx|n_8|GO:0005575")
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0005575")
 
 
 def test_accept_relation_uniprot_go_all_children_of_root():
@@ -221,33 +221,33 @@ def test_accept_relation_uniprot_go_all_children_of_root():
         # or not_in_ontology, go_term + " < " + ','.join(pred_parents)
 
         assert accept_prediction(
-            "r_5|n_7|xxx|n_8|GO:0005575",
-            "r_5|n_7|xxx|n_8|" + go_term), go_term + " < " + ','.join(pred_parents)
+            "r_5|n_7|xxx|n_9|GO:0005575",
+            "r_5|n_7|xxx|n_9|" + go_term), go_term + " < " + ','.join(pred_parents)
 
         if not go_term == "GO:0005575":
             assert None is accept_relation_uniprot_go(
-                "r_5|n_7|xxx|n_8|" + go_term,
-                "r_5|n_7|xxx|n_8|GO:0005575"), (go_term, GO_TREE[go_term])
+                "r_5|n_7|xxx|n_9|" + go_term,
+                "r_5|n_7|xxx|n_9|GO:0005575"), (go_term, GO_TREE[go_term])
 
     # The following tests the root with itself
 
     assert accept_prediction(
-        "r_5|n_7|xxx|n_8|GO:0005575",
-        "r_5|n_7|xxx|n_8|GO:0005575")
+        "r_5|n_7|xxx|n_9|GO:0005575",
+        "r_5|n_7|xxx|n_9|GO:0005575")
 
     # The following tests check that the root is appropriately handled without being an arbitrary/random/fake string
 
     # Note, here the gold fake go term IS checked and that's why the expected error
     with raises(KeyError):
         assert not accept_prediction(
-            "r_5|n_7|xxx|n_8|GO:0005575",
-            "r_5|n_7|xxx|n_8|FAKE")
+            "r_5|n_7|xxx|n_9|GO:0005575",
+            "r_5|n_7|xxx|n_9|FAKE")
 
     # Note, here the gold fake go term IS checked and that's why the expected error
     with raises(KeyError):
         assert not accept_prediction(
-            "r_5|n_7|xxx|n_8|FAKE",
-            "r_5|n_7|xxx|n_8|GO:0005575")
+            "r_5|n_7|xxx|n_9|FAKE",
+            "r_5|n_7|xxx|n_9|GO:0005575")
 
 
 def test_accept_relation_uniprot_go_uniprots_as_list():
@@ -256,33 +256,33 @@ def test_accept_relation_uniprot_go_uniprots_as_list():
 
     # Note, the following is a stub test relation and does not have to be biologically true
     assert accept_prediction(
-        "r_5|n_7|P04637|n_8|yyy",
-        "r_5|n_7|P04637,P02340|n_8|yyy")
+        "r_5|n_7|P04637|n_9|yyy",
+        "r_5|n_7|P04637,P02340|n_9|yyy")
 
     # Note, the following is stub test relation and does not have to be biologically true
     assert accept_prediction(
-        "r_5|n_7|P04637|n_8|yyy",
-        "r_5|n_7|P02340,P04637|n_8|yyy")
+        "r_5|n_7|P04637|n_9|yyy",
+        "r_5|n_7|P02340,P04637|n_9|yyy")
 
     # Note, the following is a stub test relation and does not have to be biologically true
     assert accept_prediction(
-        "r_5|n_7|P04637|n_8|yyy",
-        "r_5|n_7|in_the_middle:,P04637,P02340|n_8|yyy")
+        "r_5|n_7|P04637|n_9|yyy",
+        "r_5|n_7|in_the_middle:,P04637,P02340|n_9|yyy")
 
     # Note, the following is stub test relation and does not have to be biologically true
     assert accept_prediction(
-        "r_5|n_7|P04637,P02340|n_8|yyy",
-        "r_5|n_7|P04637|n_8|yyy")
+        "r_5|n_7|P04637,P02340|n_9|yyy",
+        "r_5|n_7|P04637|n_9|yyy")
 
     # Note, the following is stub test relation and does not have to be biologically true
     assert accept_prediction(
-        "r_5|n_7|P02340,P04637|n_8|yyy",
-        "r_5|n_7|P04637|n_8|yyy")
+        "r_5|n_7|P02340,P04637|n_9|yyy",
+        "r_5|n_7|P04637|n_9|yyy")
 
     # Note, the following is stub test relation and does not have to be biologically true
     assert accept_prediction(
-        "r_5|n_7|P02340,P04637,:in_the_middle|n_8|yyy",
-        "r_5|n_7|P04637|n_8|yyy")
+        "r_5|n_7|P02340,P04637,:in_the_middle|n_9|yyy",
+        "r_5|n_7|P04637|n_9|yyy")
 
 
 def test_accept_relation_uniprot_go_uniprots_as_list_do_not_have_to_be_valid():
@@ -290,20 +290,20 @@ def test_accept_relation_uniprot_go_uniprots_as_list_do_not_have_to_be_valid():
     accept_prediction = accept_relation_uniprot_go
 
     assert accept_prediction(
-        "r_5|n_7|a|n_8|yyy",
-        "r_5|n_7|a,b|n_8|yyy")
+        "r_5|n_7|a|n_9|yyy",
+        "r_5|n_7|a,b|n_9|yyy")
 
     assert accept_prediction(
-        "r_5|n_7|a,b|n_8|yyy",
-        "r_5|n_7|a|n_8|yyy")
+        "r_5|n_7|a,b|n_9|yyy",
+        "r_5|n_7|a|n_9|yyy")
 
     assert accept_prediction(
-        "r_5|n_7| a ,b,,|n_8|yyy",
-        "r_5|n_7| a |n_8|yyy")
+        "r_5|n_7| a ,b,,|n_9|yyy",
+        "r_5|n_7| a |n_9|yyy")
 
     assert accept_prediction(
-        "r_5|n_7| a |n_8|yyy",
-        "r_5|n_7| a ,b,,|n_8|yyy")
+        "r_5|n_7| a |n_9|yyy",
+        "r_5|n_7| a ,b,,|n_9|yyy")
 
 
 def test_accept_relation_uniprot_go_uniprots_do_not_create_spurious_ignores_Nones():
@@ -317,32 +317,32 @@ def test_accept_relation_uniprot_go_uniprots_do_not_create_spurious_ignores_None
     # https://www.ebi.ac.uk/QuickGO/GTerm?id=GO:0005622#term=ancchart
 
     assert True is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0005737")
+        "r_5|n_7|xxx|n_9|GO:0005737",
+        "r_5|n_7|xxx|n_9|GO:0005737")
 
     assert True is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0044444")
+        "r_5|n_7|xxx|n_9|GO:0005737",
+        "r_5|n_7|xxx|n_9|GO:0044444")
 
     assert True is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0005783")
+        "r_5|n_7|xxx|n_9|GO:0005737",
+        "r_5|n_7|xxx|n_9|GO:0005783")
 
     assert False is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0043231")
+        "r_5|n_7|xxx|n_9|GO:0005737",
+        "r_5|n_7|xxx|n_9|GO:0043231")
 
     assert False is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0012505")
+        "r_5|n_7|xxx|n_9|GO:0005737",
+        "r_5|n_7|xxx|n_9|GO:0012505")
 
     assert None is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0044424")
+        "r_5|n_7|xxx|n_9|GO:0005737",
+        "r_5|n_7|xxx|n_9|GO:0044424")
 
     assert None is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_8|GO:0005737",
-        "r_5|n_7|xxx|n_8|GO:0005622")
+        "r_5|n_7|xxx|n_9|GO:0005737",
+        "r_5|n_7|xxx|n_9|GO:0005622")
 
 
 def test_sequences_identity():
@@ -353,23 +353,23 @@ def test_sequences_identity():
 def test_accept_relation_uniprot_go_if_similar_sequence():
 
     assert False is accept_relation_uniprot_go(
-        "r_5|n_7|P35638|n_8|GO:0005737",
-        "r_5|n_7|P10145|n_8|GO:0005737")
+        "r_5|n_7|P35638|n_9|GO:0005737",
+        "r_5|n_7|P10145|n_9|GO:0005737")
 
     assert True is accept_relation_uniprot_go(
-        "r_5|n_7|P08100|n_8|GO:0005737",
-        "r_5|n_7|P02699|n_8|GO:0005737",
+        "r_5|n_7|P08100|n_9|GO:0005737",
+        "r_5|n_7|P02699|n_9|GO:0005737",
         # relies on default being near > 90
     )
 
     assert True is accept_relation_uniprot_go(
-        "r_5|n_7|P08100|n_8|GO:0005737",
-        "r_5|n_7|P02699|n_8|GO:0005737",
+        "r_5|n_7|P08100|n_9|GO:0005737",
+        "r_5|n_7|P02699|n_9|GO:0005737",
         min_seq_identity=90)
 
     assert False is accept_relation_uniprot_go(
-        "r_5|n_7|P08100|n_8|GO:0005737",
-        "r_5|n_7|P02699|n_8|GO:0005737",
+        "r_5|n_7|P08100|n_9|GO:0005737",
+        "r_5|n_7|P02699|n_9|GO:0005737",
         min_seq_identity=95)  # 95, too much
 
 
