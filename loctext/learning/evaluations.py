@@ -124,7 +124,10 @@ LOCTREE3_ALL_RELATIONS[559292] = parse_loctree_relation_records(repo_path("resou
 # ----------------------------------------------------------------------------------------------------
 
 
-def accept_relation_uniprot_go(gold, pred):
+def accept_relation_uniprot_go(gold, pred, min_seq_identity=90):
+    """
+    Decide to accept (as per nalaf evaluators) the predicted relation given the gold one
+    """
 
     if gold == pred and gold != "":
         return True
@@ -139,7 +142,7 @@ def accept_relation_uniprot_go(gold, pred):
     assert p_pro_key == UNIPROT_NORM_ID, pred
     assert p_loc_key == GO_NORM_ID, pred
 
-    uniprot_accept = _accept_uniprot_ids_multiple(g_n_7, p_n_7)
+    uniprot_accept = _accept_uniprot_ids_multiple(g_n_7, p_n_7, min_seq_identity)
     go_accept = _accept_go_ids_multiple(g_n_8, p_n_8)
     combined = {uniprot_accept, go_accept}
 
@@ -159,9 +162,10 @@ def __split_norms(normalization_string):
     return list(filter(len, (x.strip() for x in normalization_string.split(','))))
 
 
-def _accept_uniprot_ids_multiple(gold, pred):
+def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
     """
-    If all golds are UNKNOWN normalization, return None (reject) else accept if any pair match is equals
+    If all golds are UNKNOWN normalization, return None (reject)
+    else accept if any pair match is equal or the sequences have a sequence identity > `min_seq_identity`
     """
 
     if gold == pred:
