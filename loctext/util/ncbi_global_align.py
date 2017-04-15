@@ -55,10 +55,17 @@ def get(rid, column=None):
         elif in_pre and not line.startswith("#"):
             real_body += line
 
-    if not column:
-        return real_body
-    else:
-        return real_body.split("\t")[column]
+    try:
+        assert len(real_body) > 0
+        if column is None:
+            return real_body
+        else:
+            return real_body.split("\t")[column]
+
+    except Exception as e:
+        raise AssertionError(("No valid response output", response.text), e)
+
+
 
 
 def global_align(seq1, seq2, column=None):
