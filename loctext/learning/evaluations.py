@@ -275,7 +275,7 @@ def _go_ids_accept_single_recursive(a, b, b_parents):
 # --------------------------------------------------------------------------------------------------
 
 
-def accept_entity_uniprot_go_taxonomy(gold, pred):
+def accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=None):
 
     if gold == pred and gold != "":
         return True
@@ -293,7 +293,7 @@ def accept_entity_uniprot_go_taxonomy(gold, pred):
             return True
 
         if g_norm_id == UNIPROT_NORM_ID:
-            return _accept_uniprot_ids_multiple(g_norm_value, p_norm_value)
+            return _accept_uniprot_ids_multiple(g_norm_value, p_norm_value, min_seq_identity)
         elif g_norm_id == GO_NORM_ID:
             return _accept_go_ids_multiple(g_norm_value, p_norm_value)
         elif g_norm_id == TAXONOMY_NORM_ID:
