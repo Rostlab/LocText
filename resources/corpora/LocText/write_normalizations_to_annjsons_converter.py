@@ -101,10 +101,10 @@ for file_name in os.listdir(locText_json_files_path):
                                 obj_type = GO_NORM_ID
                                 name = "GO"
 
-                            elif row[2] == TAXONOMY_NORM_ID:
+                            elif row[2] == "Organism":
                                 # Remove unnecessary spaces between ID's
                                 obj_id = row[3].replace(" ", "")
-                                obj_type = "n_9"
+                                obj_type = TAXONOMY_NORM_ID
                                 name = "Taxonomy"
 
                             normalization_obj = {
