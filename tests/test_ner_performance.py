@@ -83,6 +83,21 @@ def _get_entity_evaluator(evaluation_level):
         )
         ENTITY_ACCEPT_FUN = accept_entity_uniprot_go_taxonomy
 
+    elif evaluation_level == 5:
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="no",
+        )
+
+        def accept_checking_sequence_identity(gold, pred):
+            return accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=10)
+
+        ENTITY_ACCEPT_FUN = accept_checking_sequence_identity
+
     else:
         raise AssertionError(evaluation_level)
 
