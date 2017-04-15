@@ -346,8 +346,15 @@ def test_accept_relation_uniprot_go_uniprots_do_not_create_spurious_ignores_None
 
 
 def test_sequences_identity():
-    assert float(global_align("P35638", "P10145", column=2)) < 15  # 10.651, last time I checked
-    assert float(global_align("P08100", "P02699", column=2)) > 90  # 93.391, last time I checked
+    a = float(global_align("P35638", "P10145", column=2))
+    b = float(global_align("P10145", "P35638", column=2))
+    assert a < 15  # 10.651, last time I checked
+    assert a == b  # order should not matter
+
+    a = float(global_align("P08100", "P02699", column=2))
+    b = float(global_align("P02699", "P08100", column=2))
+    assert a > 90  # 93.391, last time I checked
+    assert a == b  # order should not matter
 
 
 def test_accept_relation_uniprot_go_if_similar_sequence():
