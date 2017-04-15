@@ -363,10 +363,10 @@ def test_accept_relation_uniprot_go_if_similar_sequence():
         "r_5|n_7|P35638|n_9|GO:0005737",
         "r_5|n_7|P10145|n_9|GO:0005737")
 
-    assert True is accept_relation_uniprot_go(
+    assert False is accept_relation_uniprot_go(
         "r_5|n_7|P08100|n_9|GO:0005737",
         "r_5|n_7|P02699|n_9|GO:0005737",
-        # relies on default being near > 90
+        # default, we do not check sequence similarity, so fails
     )
 
     assert True is accept_relation_uniprot_go(

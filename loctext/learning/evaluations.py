@@ -125,7 +125,7 @@ LOCTREE3_ALL_RELATIONS[559292] = parse_loctree_relation_records(repo_path("resou
 # ----------------------------------------------------------------------------------------------------
 
 
-def accept_relation_uniprot_go(gold, pred, min_seq_identity=90):
+def accept_relation_uniprot_go(gold, pred, min_seq_identity=None):
     """
     Decide to accept (as per nalaf evaluators) the predicted relation given the gold one
     """
@@ -175,7 +175,7 @@ def __split_norms(normalization_string):
 def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
     """
     If all golds are UNKNOWN normalization, return None (reject)
-    else accept if any pair match is equal or the sequences have a sequence identity > `min_seq_identity`
+    else accept if any pair match is equal or (if parameter given) the sequences have a sequence identity >= `min_seq_identity`
     """
 
     if gold == pred:
@@ -189,7 +189,7 @@ def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
 
     def accept(g, p):
         try:
-            return g == p or float(global_align(g, p, column=2)) > min_seq_identity
+            return g == p or (min_seq_identity and float(global_align(g, p, column=2)) > min_seq_identity)
         except AssertionError:  # assertion error possibly raised in global_align
             return False
 
