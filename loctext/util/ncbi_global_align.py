@@ -45,8 +45,12 @@ POST_URL = "https://blast.ncbi.nlm.nih.gov/BlastAlign.cgi?CMD=Put&PROGRAM=blastp
 GET_URL = "https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=Tabular"
 
 
-def post(seq1, seq2):
+def post(seq1, seq2, is_alignment_commutative=True):
     params = {}
+
+    if is_alignment_commutative and seq2 < seq1:
+        seq1, seq2 = seq2, seq1  # Order parameters to benefit more from cache
+
     params["QUERY"] = seq1
     params["SUBJECTS"] = seq2
 
@@ -57,6 +61,9 @@ def post(seq1, seq2):
 
     assert rid_search, "No RID found (job id / result id)"
     rid = rid_search.group(1)
+    if not response.from_cache:
+        print("Called NCBI API -- RID:", rid, params)
+
     return rid
 
 
