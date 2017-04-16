@@ -7,7 +7,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 from pytest import raises
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
 from loctext.util.ncbi_global_align import global_align
-from loctext.learning.evaluations import accept_relation_uniprot_go, accept_entity_uniprot_go_taxonomy, GO_TREE
+from loctext.learning.evaluations import accept_relation_uniprot_go, accept_entity_uniprot_go_taxonomy, GO_TREE, _accept_go_ids_multiple
 from nalaf import print_verbose, print_debug
 
 
@@ -55,6 +55,38 @@ def test_accept_relation_uniprot_go_basic_ne():
         assert not accept_prediction(
             "r_5|n_7|xxx|n_9|yyy",
             "r_5|n_7|bbb|n_9|yyy_DIFERENT")
+
+
+def test_unknowns_on_accept_relation_uniprot_go():
+
+    assert None is accept_relation_uniprot_go(
+        "r_5|n_7|UNKNOWN:|n_9|GO:0000123",
+        "r_5|n_7|xxx|n_9|GO:0000123")
+
+    assert None is accept_relation_uniprot_go(
+        "r_5|n_7|xxx|n_9|UNKNOWN:",
+        "r_5|n_7|xxx|n_9|GO:0000123")
+
+    assert False is _accept_go_ids_multiple(
+        "GO:0031248",
+        "GO:0044451")
+
+    assert None is accept_relation_uniprot_go(
+        "r_5|n_7|UNKNOWN:|n_9|GO:0031248",
+        "r_5|n_7|zzz|n_9|GO:0044451")
+
+    assert None is accept_relation_uniprot_go(
+        "r_5|n_7|xxx|n_9|UNKNOWN:",
+        "r_5|n_7|zzz|n_9|GO:0000123")
+
+    assert None is accept_relation_uniprot_go(
+        "r_5|n_7|UNKNOWN:|n_9|UNKNOWN:",
+        "r_5|n_7|xxx|n_9|GO:0000123")
+
+    # More basic, always false if gold is known but not predicted
+    assert False is accept_relation_uniprot_go(
+        "r_5|n_7|xxx|n_9|GO:0000123",
+        "r_5|n_7|UNKNOWN:|n_9|GO:0000123")
 
 
 def test_relation_accept_uniprot_rel_type_is_not_compared():
@@ -122,21 +154,21 @@ def test_accept_relation_uniprot_go_direct_children_ORDER_DOES_MATTER():
 
     # but...
 
-    assert not accept_prediction(
+    assert None is accept_prediction(
         "r_5|n_7|xxx|n_9|GO:0000123",
         "r_5|n_7|xxx|n_9|GO:0044451")
 
-    assert not accept_prediction(
+    assert None is accept_prediction(
         "r_5|n_7|xxx|n_9|GO:0000123",
         "r_5|n_7|xxx|n_9|GO:0031248")
 
     # and not related at all with with one another as parent or child...
 
-    assert not accept_prediction(
+    assert False is accept_prediction(
         "r_5|n_7|xxx|n_9|GO:0031248",
         "r_5|n_7|xxx|n_9|GO:0044451")
 
-    assert not accept_prediction(
+    assert False is accept_prediction(
         "r_5|n_7|xxx|n_9|GO:0044451",
         "r_5|n_7|xxx|n_9|GO:0031248")
 
