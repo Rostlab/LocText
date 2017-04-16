@@ -7,7 +7,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
 from pytest import raises
 from loctext.util import PRO_ID, LOC_ID, REL_PRO_LOC_ID, repo_path, UNIPROT_NORM_ID, GO_NORM_ID
 from loctext.util.ncbi_global_align import global_align
-from loctext.learning.evaluations import accept_relation_uniprot_go, GO_TREE
+from loctext.learning.evaluations import accept_relation_uniprot_go, accept_entity_uniprot_go_taxonomy, GO_TREE
 from nalaf import print_verbose, print_debug
 
 
@@ -378,6 +378,84 @@ def test_accept_relation_uniprot_go_if_similar_sequence():
         "r_5|n_7|P08100|n_9|GO:0005737",
         "r_5|n_7|P02699|n_9|GO:0005737",
         min_seq_identity=95)  # 95, too much
+
+
+def test_overlapping_cases_for_proteins_on_accept_entity_uniprot_go_taxonomy():
+
+    assert False is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P08100",
+        "e_1|1,2|n_7|P08100")
+
+    assert True is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P08100",
+        "e_1|0,1|n_7|P08100")
+
+    assert True is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P08100",
+        "e_1|0,2|n_7|P08100")
+
+
+def test_seq_identity_for_proteins_on_accept_entity_uniprot_go_taxonomy():
+
+    assert False is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P08100",
+        "e_1|0,1|n_7|P02699")
+
+    assert True is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P08100",
+        "e_1|0,1|n_7|P02699",
+        min_seq_identity=90)
+
+    assert True is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P02699",
+        "e_1|0,1|n_7|P08100",
+        min_seq_identity=90)
+
+    assert False is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P08100",
+        "e_1|0,1|n_7|P02699",
+        min_seq_identity=95)
+
+
+def test_overlapping_unnormalizations_for_proteins_on_accept_entity_uniprot_go_taxonomy():
+
+    # Must always be false if gold is known but not the prediction
+    assert False is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|P08100",
+        "e_1|0,1|n_7|UNKNOWN:")
+
+    # Gold UNKNOWN AND overlapping --> None
+    assert None is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|UNKNOWN:",
+        "e_1|0,1|n_7|P08100")
+
+    # Gold UNKNOWN AND overlapping --> None
+    assert None is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|UNKNOWN:",
+        "e_1|0,1|n_7|UNKNOWN:")
+
+    # One gold is known and matches the prediction --> True
+    assert None is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|UNKNOWN:,P08100",
+        "e_1|0,1|n_7|P08100")
+
+    # One gold is known and does not matche the prediction --> False
+    assert False is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|UNKNOWN:,P08100",
+        "e_1|0,1|n_7|xxx")
+
+
+def test_nonoverlapping_unnormalizations_for_proteins_on_accept_entity_uniprot_go_taxonomy():
+
+    # Gold UNKNOWN BUT NO overlapping --> False
+    assert None is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|UNKNOWN:",
+        "e_1|1,2|n_7|P08100")
+
+    # Gold UNKNOWN BUT NO overlapping --> False
+    assert None is accept_entity_uniprot_go_taxonomy(
+        "e_1|0,1|n_7|UNKNOWN:",
+        "e_1|1,2|n_7|UNKNOWN:")
 
 
 if __name__ == "__main__":
