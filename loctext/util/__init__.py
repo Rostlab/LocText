@@ -41,8 +41,10 @@ def print_selected_features(selected_feat_keys, feature_set, file_prefix, file_d
     def _pickle_beautified_file(name, feats):
         file_name = all_filenames_prefix + name + ".log"
         with open(file_name, 'w') as f:
+
             def _print(string=""):
                 print(string, file=f)
+
             def _print_feat(feat, index):
                 if name == "KEYS":  # --> int ; without quotes
                     format_str = '    {},  # {}'.format(feat, index)
