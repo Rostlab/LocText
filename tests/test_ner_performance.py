@@ -81,7 +81,7 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="no",
+            penalize_unknown_normalizations="softest",
             add_entity_text=False,
         )
         ENTITY_ACCEPT_FUN = accept_entity_uniprot_go_taxonomy
@@ -93,7 +93,7 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="no",
+            penalize_unknown_normalizations="softest",
             add_entity_text=False,
         )
 
