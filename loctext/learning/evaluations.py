@@ -174,7 +174,7 @@ def __split_norms(normalization_string):
 
 def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
     """
-    If all golds are UNKNOWN normalization, return None (reject)
+    If all golds are UNKNOWN normalization, return None (ignore)
     else accept if any pair match is equal or (if parameter given) the sequences have a sequence identity >= `min_seq_identity`
     """
 
