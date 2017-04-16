@@ -75,6 +75,10 @@ def test_unknowns_on_accept_relation_uniprot_go():
         "r_5|n_7|UNKNOWN:|n_9|GO:0031248",
         "r_5|n_7|zzz|n_9|GO:0044451")
 
+    assert False is accept_relation_uniprot_go(
+        "r_5|n_7|yyy|n_9|GO:0031248",
+        "r_5|n_7|zzz|n_9|GO:0044451")
+
     assert None is accept_relation_uniprot_go(
         "r_5|n_7|xxx|n_9|UNKNOWN:",
         "r_5|n_7|zzz|n_9|GO:0000123")
