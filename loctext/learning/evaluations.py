@@ -178,7 +178,7 @@ def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
     else accept if any pair match is equal or (if parameter given) the sequences have a sequence identity >= `min_seq_identity`
     """
 
-    if gold == pred:
+    if gold == pred:  # Arbitrarily, we do not test wether both are equal being UNKNOWN:
         return True
 
     golds = [x for x in __split_norms(gold) if not x.startswith("UNKNOWN:")]  # see (nalaf) evaluators::_normalized_fun
