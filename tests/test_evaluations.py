@@ -431,15 +431,15 @@ def test_overlapping_unnormalizations_for_proteins_on_accept_entity_uniprot_go_t
 
     # Gold UNKNOWN AND overlapping --> None
     assert None is accept_entity_uniprot_go_taxonomy(
-        "e_1|0,1|n_7|UNKNOWN:",
-        "e_1|0,1|n_7|UNKNOWN:")
+        "e_1|0,1|n_7|UNKNOWN:aaa",
+        "e_1|0,1|n_7|UNKNOWN:bbb")
 
     # One gold is known and matches the prediction --> True
-    assert None is accept_entity_uniprot_go_taxonomy(
+    assert True is accept_entity_uniprot_go_taxonomy(
         "e_1|0,1|n_7|UNKNOWN:,P08100",
         "e_1|0,1|n_7|P08100")
 
-    # One gold is known and does not matche the prediction --> False
+    # One gold is known and does not match the prediction --> False
     assert False is accept_entity_uniprot_go_taxonomy(
         "e_1|0,1|n_7|UNKNOWN:,P08100",
         "e_1|0,1|n_7|xxx")
