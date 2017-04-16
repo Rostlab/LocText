@@ -16,13 +16,13 @@ cache:
 before_install:
   - printenv  # Just for debugging purposes
   - pip install --no-clean git+https://github.com/Rostlab/nalaf.git@feature/Experimental
-  - printf 'nalaf commit: ' && cd /tmp/pip-*-build && git rev-parse HEAD  # **nalaf**: log the exact commit for debugging purposes
+  - printf 'nalaf commit --> ' && cd /tmp/pip-*-build && git rev-parse HEAD  # **nalaf**: log the exact commit for debugging purposes
   - python -m nalaf.download_corpora
   - pip install codecov pytest-cov
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - printf 'LocText commit: ' && git rev-parse HEAD  # **LocText**: log the exact commit for debugging purposes
+  - printf 'LocText commit --> ' && git rev-parse HEAD  # **LocText**: log the exact commit for debugging purposes
   - pip install .
   - python -m loctext.download_data
 
