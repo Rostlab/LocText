@@ -135,7 +135,7 @@ def accept_relation_uniprot_go(gold, pred, min_seq_identity=None):
 
     * if both uniprot and go tests are True --> True
     * if uniprot is None or uniprot is True and go is None --> None
-    * else --> None
+    * else --> False
     """
 
     if gold == pred and gold != "":
