@@ -135,15 +135,15 @@ def accept_relation_uniprot_go(gold, pred, min_seq_identity=None):
 
     # Note: the | separator is defined by and depends on nalaf
 
-    [_, g_pro_key, g_n_7, g_loc_key, g_n_8] = gold.split("|")
+    [_, g_pro_key, g_n_7, g_loc_key, g_n_9] = gold.split("|")
     assert g_pro_key == UNIPROT_NORM_ID, gold
     assert g_loc_key == GO_NORM_ID, gold
 
-    [_, p_pro_key, p_n_7, p_loc_key, p_n_8] = pred.split("|")
+    [_, p_pro_key, p_n_7, p_loc_key, p_n_9] = pred.split("|")
     assert p_pro_key == UNIPROT_NORM_ID, pred
     assert p_loc_key == GO_NORM_ID, pred
 
-    go_accept = _accept_go_ids_multiple(g_n_8, p_n_8)
+    go_accept = _accept_go_ids_multiple(g_n_9, p_n_9)
 
     if go_accept is False:
         return False
