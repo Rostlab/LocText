@@ -236,7 +236,8 @@ class StringTagger(Tagger):
         send_whole_once=True,
         filter_in_go_localizations=None,
         filter_out_go_localizations=None,
-        host='http://127.0.0.1:5000'
+        host='http://127.0.0.1:5000',
+        remove_ambiguous_proteins=False,
     ):
 
         super().__init__([protein_id, localization_id, organism_id])
@@ -277,6 +278,7 @@ class StringTagger(Tagger):
             self.filter_out_go_localizations = set(filter_out_go_localizations)
 
         self.host = host
+        self.remove_ambiguous_proteins = remove_ambiguous_proteins
 
 
     def annotate(self, dataset):
@@ -406,11 +408,12 @@ class StringTagger(Tagger):
         else:
             norms = set(norms)  # convert to set first just in case the original tagger returns repeated ids (happened)
 
-            # Remove ambiguous ids; heuristic: different normalizations for a same organism are considered ambiguous
-            for organism, proteins in organisms_proteins.items():
-                if len(proteins) > 1:
-                    for ambiguous_protein in proteins:
-                        norms.remove(ambiguous_protein)
+            if self.remove_ambiguous_proteins:
+                # Remove ambiguous ids; heuristic: different normalizations for a same organism are considered ambiguous
+                for organism, proteins in organisms_proteins.items():
+                    if len(proteins) > 1:
+                        for ambiguous_protein in proteins:
+                            norms.remove(ambiguous_protein)
 
             if not norms:
                 norms = None
