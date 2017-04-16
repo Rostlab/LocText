@@ -14,7 +14,7 @@ cache:
     - $HOME/nltk_data
 
 before_install:
-  - printenv # Just for debugging purposes
+  - printenv  # Just for debugging purposes
   - pip install --no-clean git+https://github.com/Rostlab/nalaf.git@feature/Experimental
   - printf 'nalaf commit: ' && cd /tmp/pip-*-build && git rev-parse HEAD  # **nalaf**: log the exact commit for debugging purposes
   - python -m nalaf.download_corpora
