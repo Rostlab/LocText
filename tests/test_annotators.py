@@ -31,7 +31,7 @@ EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_rel
 
 def test_baseline_D0(evaluation_level, corpus_percentage):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.7446
+        EXPECTED_F = 0.7421
     else:
         EXPECTED_F = None
 
@@ -67,7 +67,7 @@ def test_baseline_D1(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
-        EXPECTED_F = 0.6589
+        EXPECTED_F = 0.6421
     else:
         EXPECTED_F = None
 
@@ -102,7 +102,7 @@ def test_baseline_D0_D1(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
-        EXPECTED_F = 0.7231
+        EXPECTED_F = 0.7060
     else:
         EXPECTED_F = None
 
