@@ -147,7 +147,7 @@ def test_LocText_D0_D1(corpus_percentage):
 @pytest.mark.skip(reason="Do not require tagger running docker container")
 def test_baseline_full(corpus_percentage):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.4930
+        EXPECTED_F = 0.5050
     else:
         EXPECTED_F = None
 
