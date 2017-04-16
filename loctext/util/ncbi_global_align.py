@@ -34,7 +34,7 @@ CACHE_FILE_NAME = os.path.join(os.path.expanduser('~'), "TMP_CACHE_NCBI_GLOBAL_A
 requests_cache.install_cache(
     cache_name=CACHE_FILE_NAME,
     backend="sqlite",
-    expire_after=(24 * 60 * 60),  # 1 day, just like the NCBI expiration date
+    expire_after=(7 * 24 * 60 * 60),  # 1 week
     allowable_methods=('GET', "POST"))
 
 
