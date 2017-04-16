@@ -63,9 +63,9 @@ def test_unknowns_on_accept_relation_uniprot_go():
         "r_5|n_7|UNKNOWN:|n_9|GO:0000123",
         "r_5|n_7|xxx|n_9|GO:0000123")
 
-    assert None is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_9|UNKNOWN:",
-        "r_5|n_7|xxx|n_9|GO:0000123")
+    # assert None is accept_relation_uniprot_go(
+    #     "r_5|n_7|xxx|n_9|UNKNOWN:",
+    #     "r_5|n_7|xxx|n_9|GO:0000123")
 
     assert False is _accept_go_ids_multiple(
         "GO:0031248",
@@ -77,15 +77,19 @@ def test_unknowns_on_accept_relation_uniprot_go():
 
     assert False is accept_relation_uniprot_go(
         "r_5|n_7|yyy|n_9|GO:0031248",
+        "r_5|n_7|zzz|n_9|GO:0005575")
+
+    assert False is accept_relation_uniprot_go(
+        "r_5|n_7|yyy|n_9|GO:0031248",
         "r_5|n_7|zzz|n_9|GO:0044451")
 
-    assert None is accept_relation_uniprot_go(
-        "r_5|n_7|xxx|n_9|UNKNOWN:",
-        "r_5|n_7|zzz|n_9|GO:0000123")
+    # assert None is accept_relation_uniprot_go(
+    #     "r_5|n_7|xxx|n_9|UNKNOWN:",
+    #     "r_5|n_7|zzz|n_9|GO:0000123")
 
-    assert None is accept_relation_uniprot_go(
-        "r_5|n_7|UNKNOWN:|n_9|UNKNOWN:",
-        "r_5|n_7|xxx|n_9|GO:0000123")
+    # assert None is accept_relation_uniprot_go(
+    #     "r_5|n_7|UNKNOWN:|n_9|UNKNOWN:",
+    #     "r_5|n_7|xxx|n_9|GO:0000123")
 
     # More basic, always false if gold is known but not predicted
     assert False is accept_relation_uniprot_go(

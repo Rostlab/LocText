@@ -128,6 +128,14 @@ LOCTREE3_ALL_RELATIONS[559292] = parse_loctree_relation_records(repo_path("resou
 def accept_relation_uniprot_go(gold, pred, min_seq_identity=None):
     """
     Decide to accept (as per nalaf evaluators) the predicted relation given the gold one
+
+    **WE ASSUME GO IS ALWAYS NORMALIZED**
+
+    3 outcomes:
+
+    * if both uniprot and go tests are True --> True
+    * if uniprot is None or uniprot is True and go is None --> None
+    * else --> None
     """
 
     if gold == pred and gold != "":
@@ -143,25 +151,19 @@ def accept_relation_uniprot_go(gold, pred, min_seq_identity=None):
     assert p_pro_key == UNIPROT_NORM_ID, pred
     assert p_loc_key == GO_NORM_ID, pred
 
+    uniprot_accept = _accept_uniprot_ids_multiple(g_n_7, p_n_7, min_seq_identity)
     go_accept = _accept_go_ids_multiple(g_n_9, p_n_9)
 
-    if go_accept is False:
-        return False
-    elif go_accept is None:
+    combined = {uniprot_accept, go_accept}
+
+    if combined == {True}:
+        return True
+    elif uniprot_accept is None or (uniprot_accept is True and go_accept is None):
         return None
     else:
-        # Compute first go_accept to quickly reject before calling NCBI API for global alignment
-
-        uniprot_accept = _accept_uniprot_ids_multiple(g_n_7, p_n_7, min_seq_identity)
-
-        combined = {uniprot_accept, go_accept}
-
-        if combined == {True}:
-            return True
-        elif False in combined:
-            return False
-        else:
-            return None
+        assert uniprot_accept in {True, False}
+        assert go_accept in {False, None, True}
+        return False
 
 
 def _accept_taxonomy_ids_single(gold, pred):
@@ -204,7 +206,8 @@ def _accept_go_ids_multiple(gold, pred):
     if gold == pred:
         return True
 
-    golds = [x for x in __split_norms(gold) if not x.startswith("UNKNOWN:")]  # see (nalaf) evaluators::_normalized_fun
+    golds = __split_norms(gold)
+    assert len(golds) == len([x for x in golds if not x.startswith("UNKNOWN:")])  # **WE ASSUME GO IS ALWAYS NORMALIZED** # see (nalaf) evaluators::_normalized_fun
     preds = __split_norms(pred)
 
     if not golds:
