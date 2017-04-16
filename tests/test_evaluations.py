@@ -448,12 +448,12 @@ def test_overlapping_unnormalizations_for_proteins_on_accept_entity_uniprot_go_t
 def test_nonoverlapping_unnormalizations_for_proteins_on_accept_entity_uniprot_go_taxonomy():
 
     # Gold UNKNOWN BUT NO overlapping --> False
-    assert None is accept_entity_uniprot_go_taxonomy(
+    assert False is accept_entity_uniprot_go_taxonomy(
         "e_1|0,1|n_7|UNKNOWN:",
         "e_1|1,2|n_7|P08100")
 
     # Gold UNKNOWN BUT NO overlapping --> False
-    assert None is accept_entity_uniprot_go_taxonomy(
+    assert False is accept_entity_uniprot_go_taxonomy(
         "e_1|0,1|n_7|UNKNOWN:",
         "e_1|1,2|n_7|UNKNOWN:")
 

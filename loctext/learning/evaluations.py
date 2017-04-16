@@ -286,9 +286,10 @@ def accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=None):
     if g_class_id != p_class_id or g_norm_id != p_norm_id:
         return False
 
-    # Check if the offsets overlap
-    if _overlap_entities_offsets(g_offsets, p_offsets):
+    if not _overlap_entities_offsets(g_offsets, p_offsets):
+        return False
 
+    else:
         if g_norm_value != "" and g_norm_value == p_norm_value:
             return True
 
@@ -300,9 +301,6 @@ def accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=None):
             return _accept_taxonomy_ids_single(g_norm_value, p_norm_value)
         else:
             raise AssertionError(("Unexpected: ", g_norm_id))
-
-    else:
-        return False
 
 
 def _overlap_entities_offsets(g_offsets, p_offsets):
