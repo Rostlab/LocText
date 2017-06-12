@@ -12,6 +12,7 @@ except SystemError:  # Parent module '' not loaded, cannot perform relative impo
     # pass
 
 
+@pytest.mark.skip(reason="Server may not be running")
 def test_get_evaluation_result_of_corpus(evaluation_level):
     """
     Evaluates the performance of corpus entities [e_1 (Protein), e_2 (Localization) and e_3 (Organism)]
