@@ -2,6 +2,7 @@ import pickle
 from itertools import product
 from loctext.util import repo_path, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID
 from loctext.util import simple_parse_GO
+from loctext.util.ncbi_global_align import global_align
 
 
 GO_TREE = simple_parse_GO.simple_parse(repo_path("resources", "ontologies", "go-basic.cellular_component.latest.obo"))
@@ -28,33 +29,43 @@ def are_go_parent_and_child(parent, child):
 
 # ----------------------------------------------------------------------------------------------------
 
-SWISSPROT_RELATIONS = None
+SWISSPROT_ALL_RELATIONS = None
 """
 GO Localization/Component annotations written in SwissProt
 
-Dictionary UniProt AC --> set[GO] (set of GO ids explicitly written in SwissProt)
+Dictionary: {Organism ID -> {UniProt AC --> set[GO]} (set of GO ids explicitly written in SwissProt)
 """
 
-with open(repo_path("resources", "features", "SwissProt_relations.pickle"), "rb") as f:
-    SWISSPROT_RELATIONS = pickle.load(f)
+with open(repo_path("resources", "features", "SwissProt_all_relations.pickle"), "rb") as f:
+    SWISSPROT_ALL_RELATIONS = pickle.load(f)
 
 
-def is_in_swiss_prot(uniprot_ac, go):
-    explicitly_written = go in SWISSPROT_RELATIONS.get(uniprot_ac, set())
-
-    return explicitly_written or is_parent_of_swiss_prot_annotation(uniprot_ac, go)
+def is_protein_in_swissprot(uniprot_ac, organism_id):
+    return uniprot_ac in SWISSPROT_ALL_RELATIONS[organism_id]
 
 
-def is_parent_of_swiss_prot_annotation(uniprot_ac, go):
+def is_in_swissprot(uniprot_ac, go, organism_id):
+    return is_in_swissprot_explicitly_written(uniprot_ac, go, organism_id) or \
+        is_parent_of_swissprot_annotation(uniprot_ac, go, organism_id)
+
+
+def is_in_swissprot_explicitly_written(uniprot_ac, go, organism_id):
+    organism_relations = SWISSPROT_ALL_RELATIONS[organism_id]  # fails with non-supported organisms
+    return go in organism_relations.get(uniprot_ac, set())
+
+
+def is_parent_of_swissprot_annotation(uniprot_ac, go, organism_id):
+    organism_relations = SWISSPROT_ALL_RELATIONS[organism_id]  # fails with non-supported organisms
     try:
-        return any(are_go_parent_and_child(go, swissprot) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+        return any(are_go_parent_and_child(go, swissprot) for swissprot in organism_relations.get(uniprot_ac, set()))
     except KeyError:
         return False
 
 
-def is_child_of_swiss_prot_annotation(uniprot_ac, go):
+def is_child_of_swissprot_annotation(uniprot_ac, go, organism_id):
+    organism_relations = SWISSPROT_ALL_RELATIONS[organism_id]  # fails with non-supported organisms
     try:
-        return any(are_go_parent_and_child(swissprot, go) for swissprot in SWISSPROT_RELATIONS.get(uniprot_ac, set()))
+        return any(are_go_parent_and_child(swissprot, go) for swissprot in organism_relations.get(uniprot_ac, set()))
     except KeyError:
         return False
 
@@ -62,53 +73,129 @@ def is_child_of_swiss_prot_annotation(uniprot_ac, go):
 # ----------------------------------------------------------------------------------------------------
 
 
-def accept_relation_uniprot_go(gold, pred):
+LOCTREE3_ALL_RELATIONS = {}
+"""
+GO Localization/Component annotations predicted from LocTree3, https://rostlab.org/services/loctree3/proteomes
+
+Dictionary: {Organism ID -> {UniProt AC --> set[GO]}
+"""
+
+
+def parse_loctree_relation_records(filepath):
+    import re
+    regex_go_id = re.compile('GO:[0-9]+')
+
+    with open(filepath) as f:
+        relations = {}
+
+        # A record from LocTree is like:
+        # sp|P48200|IREB2_HUMAN	100	cytoplasm	cytoplasm GO:0005737(NAS); cytosol GO:0005829(IEA); mitochondrion GO:0005739(IEA);
+        for line in f:
+            if not line.startswith("#"):  # ignore comments
+                protein_id, score, localization, gene_ontology_terms = line.split("\t")
+
+                uniprot_ac = protein_id.split("|")[1]
+                go_terms = regex_go_id.findall(gene_ontology_terms)
+                relations[uniprot_ac] = set(go_terms)
+
+        return relations
+
+
+def is_in_loctree3(uniprot_ac, go, organism_id):
+    """
+    True, False, or None if uniprot_ac not all in LocTree3 data
+    """
+
+    org = LOCTREE3_ALL_RELATIONS.get(organism_id, None)
+    if not org:
+        return None
+    else:
+        gos = org.get(uniprot_ac, set())
+        if not gos:
+            return None
+        else:
+            return go in gos
+
+
+LOCTREE3_ALL_RELATIONS[9606] = parse_loctree_relation_records(repo_path("resources", "evaluation", "9606_Homo_sapiens.euka.lc3"))
+LOCTREE3_ALL_RELATIONS[3702] = parse_loctree_relation_records(repo_path("resources", "evaluation", "3702_Arabidopsis_thaliana.euka.lc3"))
+LOCTREE3_ALL_RELATIONS[559292] = parse_loctree_relation_records(repo_path("resources", "evaluation", "559292_Saccharomyces_cerevisiae.euka.lc3"))
+
+
+# ----------------------------------------------------------------------------------------------------
+
+
+def accept_relation_uniprot_go(gold, pred, min_seq_identity=None):
+    """
+    Decide to accept (as per nalaf evaluators) the predicted relation given the gold one
+
+    **WE ASSUME GO IS ALWAYS NORMALIZED**
+
+    3 outcomes:
+
+    * if both uniprot and go tests are True --> True
+    * if uniprot is None or uniprot is True and go is None --> None
+    * else --> False
+    """
 
     if gold == pred and gold != "":
         return True
 
     # Note: the | separator is defined by and depends on nalaf
 
-    [_, g_pro_key, g_n_7, g_loc_key, g_n_8] = gold.split("|")
+    [_, g_pro_key, g_n_7, g_loc_key, g_n_9] = gold.split("|")
     assert g_pro_key == UNIPROT_NORM_ID, gold
     assert g_loc_key == GO_NORM_ID, gold
 
-    [_, p_pro_key, p_n_7, p_loc_key, p_n_8] = pred.split("|")
+    [_, p_pro_key, p_n_7, p_loc_key, p_n_9] = pred.split("|")
     assert p_pro_key == UNIPROT_NORM_ID, pred
     assert p_loc_key == GO_NORM_ID, pred
 
-    uniprot_accept = _accept_uniprot_ids_multiple(g_n_7, p_n_7)
-    go_accept = _accept_go_ids_multiple(g_n_8, p_n_8)
+    uniprot_accept = _accept_uniprot_ids_multiple(g_n_7, p_n_7, min_seq_identity)
+    go_accept = _accept_go_ids_multiple(g_n_9, p_n_9)
+
     combined = {uniprot_accept, go_accept}
 
     if combined == {True}:
         return True
-    elif False in combined:
-        return False
-    else:
+    elif uniprot_accept is None or (uniprot_accept is True and go_accept is None):
         return None
+    else:
+        assert uniprot_accept in {True, False}
+        assert go_accept in {False, None, True}
+        return False
 
 
 def _accept_taxonomy_ids_single(gold, pred):
     return gold == pred
 
 
-def _accept_uniprot_ids_multiple(gold, pred):
+def __split_norms(normalization_string):
+    return list(filter(len, (x.strip() for x in normalization_string.split(','))))
+
+
+def _accept_uniprot_ids_multiple(gold, pred, min_seq_identity):
     """
-    If all golds are UNKNOWN normalization, return None (reject) else accept if any pair match is equals
+    If all golds are UNKNOWN normalization, return None (ignore)
+    else accept if any pair match is equal or (if parameter given) the sequences have a sequence identity >= `min_seq_identity`
     """
 
-    if gold == pred:
+    if gold == pred:  # Arbitrarily, we do not test wether both are equal being UNKNOWN:
         return True
 
-    # see (nalaf) evaluators::_normalized_fun
-    golds = [g for g in gold.split(',') if not g.startswith("UNKNOWN:")]
-    preds = [p for p in pred.split(',')]
+    golds = [x for x in __split_norms(gold) if not x.startswith("UNKNOWN:")]  # see (nalaf) evaluators::_normalized_fun
+    preds = __split_norms(pred)
 
     if not golds:
         return None
 
-    return any(g == p for (g, p) in product(golds, preds))
+    def accept(g, p):
+        try:
+            return g == p or (min_seq_identity and float(global_align(g, p, column=2)) > min_seq_identity)
+        except AssertionError:  # assertion error possibly raised in global_align
+            return False
+
+    return any(accept(g, p) for (g, p) in product(golds, preds))
 
 
 def _accept_go_ids_multiple(gold, pred):
@@ -119,9 +206,9 @@ def _accept_go_ids_multiple(gold, pred):
     if gold == pred:
         return True
 
-    # see (nalaf) evaluators::_normalized_fun
-    golds = [g for g in gold.split(',') if not g.startswith("UNKNOWN:")]
-    preds = [p for p in pred.split(',')]
+    golds = __split_norms(gold)
+    assert len(golds) == len([x for x in golds if not x.startswith("UNKNOWN:")])  # **WE ASSUME GO IS ALWAYS NORMALIZED** # see (nalaf) evaluators::_normalized_fun
+    preds = __split_norms(pred)
 
     if not golds:
         return None
@@ -191,7 +278,7 @@ def _go_ids_accept_single_recursive(a, b, b_parents):
 # --------------------------------------------------------------------------------------------------
 
 
-def accept_entity_uniprot_go_taxonomy(gold, pred):
+def accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=None):
 
     if gold == pred and gold != "":
         return True
@@ -202,28 +289,26 @@ def accept_entity_uniprot_go_taxonomy(gold, pred):
     if g_class_id != p_class_id or g_norm_id != p_norm_id:
         return False
 
-    # Check if the offsets overlap
-    if _overlap_entities_offsets(g_offsets, p_offsets):
+    if not _overlap_entities_offsets(g_offsets, p_offsets):
+        return False
 
+    else:
         if g_norm_value != "" and g_norm_value == p_norm_value:
             return True
 
         if g_norm_id == UNIPROT_NORM_ID:
-            return _accept_uniprot_ids_multiple(g_norm_value, p_norm_value)
+            return _accept_uniprot_ids_multiple(g_norm_value, p_norm_value, min_seq_identity)
         elif g_norm_id == GO_NORM_ID:
             return _accept_go_ids_multiple(g_norm_value, p_norm_value)
         elif g_norm_id == TAXONOMY_NORM_ID:
             return _accept_taxonomy_ids_single(g_norm_value, p_norm_value)
         else:
-            raise AssertionError
-
-    else:
-        return False
+            raise AssertionError(("Unexpected: ", g_norm_id))
 
 
 def _overlap_entities_offsets(g_offsets, p_offsets):
-    g_start_offset, g_end_offset = g_offsets.split(',')
-    p_start_offset, p_end_offset = p_offsets.split(',')
+    g_start_offset, g_end_offset, *_ = g_offsets.split(',')
+    p_start_offset, p_end_offset, *_ = p_offsets.split(',')
 
     return int(g_start_offset) < int(p_end_offset) and int(g_end_offset) > int(p_start_offset)
 
@@ -231,5 +316,5 @@ def _overlap_entities_offsets(g_offsets, p_offsets):
 # --------------------------------------------------------------------------------------------------
 
 
-assert(is_in_swiss_prot("P51811", "GO:0016020"))
-assert(is_in_swiss_prot("Q53GL0", "GO:0005886"))
+assert(is_in_swissprot("P51811", "GO:0016020", 9606))
+assert(is_in_swissprot("Q53GL0", "GO:0005886", 9606))

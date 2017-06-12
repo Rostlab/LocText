@@ -45,6 +45,7 @@ def get_loctext_relation_records(loctree_relations, file_path, swissprot_says, m
                     is_positive_a = any(are_go_parent_and_child(loctext_go_id, loctree_go_id) for loctree_go_id in loctree_go_ids)  # loctree_go_id in loctext_go_ids
                     is_positive_b = any(are_go_parent_and_child(loctree_go_id, loctext_go_id) for loctree_go_id in loctree_go_ids)  # loctext_go_id in loctree_go_ids
                     is_positive = is_positive_a or is_positive_b
+
                 except:
                     # print("ONE IS DEPRECATED", loctree_go_ids)
                     is_positive = False

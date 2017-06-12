@@ -3,6 +3,7 @@ from nalaf.utils.graph import get_path, build_walks
 from nalaf import print_debug
 from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, GO_NORM_ID, UNIPROT_NORM_ID, repo_path
 from nalaf.features.stemming import ENGLISH_STEMMER
+from loctext.learning.evaluations import SWISSPROT_ALL_RELATIONS, is_in_swissprot_explicitly_written
 import pickle
 
 
@@ -72,6 +73,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         c_localization_norm_class=GO_NORM_ID,
         c_protein_enty_class=PRO_ID,
         c_protein_norm_class=UNIPROT_NORM_ID,
+        c_SwissProt_organisms_used=[9606],  # TODO perhaps use other organisms ?
         #
         # The following two were DOCUMENT-BASED features and not domain-specific
         #
@@ -95,21 +97,24 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
         with open(path, "rb") as f:
             self.c_corpus_unnormalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path("resources", "features", "corpus_normalized_total_background_loc_rels_ratios.pickle")
-        with open(path, "rb") as f:
-            self.c_corpus_normalized_total_background_loc_rels_ratios = pickle.load(f)
+        #
+        # Comment so far out as it doesn't provide benefits in performance
+        #
+        # path = repo_path("resources", "features", "corpus_normalized_total_background_loc_rels_ratios.pickle")
+        # with open(path, "rb") as f:
+        #     self.c_corpus_normalized_total_background_loc_rels_ratios = pickle.load(f)
+        #
+        # path = repo_path("resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle")
+        # with open(path, "rb") as f:
+        #     self.c_SwissProt_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
+        #
+        # path = repo_path("resources", "features", "SwissProt_normalized_total_background_loc_rels_ratios.pickle")
+        # with open(path, "rb") as f:
+        #     self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
 
-        path = repo_path("resources", "features", "SwissProt_normalized_total_absolute_loc_rels_ratios.pickle")
-        with open(path, "rb") as f:
-            self.c_SwissProt_normalized_total_absolute_loc_rels_ratios = pickle.load(f)
+        self.c_SwissProt_organisms_used = c_SwissProt_organisms_used
 
-        path = repo_path("resources", "features", "SwissProt_normalized_total_background_loc_rels_ratios.pickle")
-        with open(path, "rb") as f:
-            self.c_SwissProt_normalized_total_background_loc_rels_ratios = pickle.load(f)
-
-        path = repo_path("resources", "features", "SwissProt_relations.pickle")
-        with open(path, "rb") as f:
-            self.c_SwissProt_relations = pickle.load(f)
+        self.c_SwissProt_all_relations = SWISSPROT_ALL_RELATIONS
 
         #
 
@@ -143,23 +148,24 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
             ratio = self.c_corpus_unnormalized_total_background_loc_rels_ratios.get(loc_keyed_text, 0)
             add_f_ratio("f_corpus_unnormalized_total_background_loc_rels_ratios", ratio)
 
-            ratio = self.c_corpus_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
-            add_f_ratio("f_corpus_normalized_total_background_loc_rels_ratios", ratio)
-
-            ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(loc_norm, 0)
-            add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratios", ratio)
-
-            ratio = self.c_SwissProt_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
-            add_f_ratio("f_SwissProt_normalized_total_background_loc_rels_ratios", ratio)
+            #
+            # Comment so far out as it doesn't provide benefits in performance
+            #
+            # ratio = self.c_corpus_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
+            # add_f_ratio("f_corpus_normalized_total_background_loc_rels_ratios", ratio)
+            #
+            # ratio = self.c_SwissProt_normalized_total_absolute_loc_rels_ratios.get(loc_norm, 0)
+            # add_f_ratio("f_SwissProt_normalized_total_absolute_loc_rels_ratios", ratio)
+            #
+            # ratio = self.c_SwissProt_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
+            # add_f_ratio("f_SwissProt_normalized_total_background_loc_rels_ratios", ratio)
 
             pro_norm_ids_str = protein.normalisation_dict.get(self.c_protein_norm_class, None)
             if not pro_norm_ids_str:  # catches None or empty strings
                 pro_norm_ids = []
             else:
                 for pro_norm_id in pro_norm_ids_str.split(","):
-                    go_id_rels = self.c_SwissProt_relations.get(pro_norm_id, set())
-
-                    if loc_norm in go_id_rels:
+                    if is_in_swissprot_explicitly_written(pro_norm_id, loc_norm, 9606):
                         self.add(f_set, edge, "f_SwissProt_normalized_exists_relation")
 
 

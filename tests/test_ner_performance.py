@@ -21,7 +21,7 @@ def test_get_evaluation_result_of_corpus(evaluation_level):
     """
 
     # Gets both annotation and pred_annotation entities.
-    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities=True)
+    corpus = read_corpus("LocText", corpus_percentage=1.0, predict_entities="9606,3702,4932")
 
     (mention_evaluator, entity_evaluator) = _get_entity_evaluator(evaluation_level)
 
@@ -29,11 +29,11 @@ def test_get_evaluation_result_of_corpus(evaluation_level):
     print("EVALUATION LEVEL:", evaluation_level)
     print()
 
-    print("-----------------------------------------------------------------------------------")
-    print("MentionLevelEvaluator")
-    print(mention_evaluator.evaluate(corpus))
-    print("-----------------------------------------------------------------------------------")
-    print()
+    # print("-----------------------------------------------------------------------------------")
+    # print("MentionLevelEvaluator")
+    # print(mention_evaluator.evaluate(corpus))
+    # print("-----------------------------------------------------------------------------------")
+    # print()
     print()
     print("-----------------------------------------------------------------------------------")
     print("EntityEvaluator")
@@ -57,7 +57,8 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="no",
+            penalize_unknown_normalizations="agnostic",
+            add_entity_text=True,
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['exact']
 
@@ -68,7 +69,8 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="no",
+            penalize_unknown_normalizations="agnostic",
+            add_entity_text=True,
         )
         ENTITY_ACCEPT_FUN = EntityEvaluator.COMMON_ENTITY_ACCEPT_FUNS['overlapping']
 
@@ -79,9 +81,26 @@ def _get_entity_evaluator(evaluation_level):
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="soft",
+            penalize_unknown_normalizations="softest",
+            add_entity_text=False,
         )
         ENTITY_ACCEPT_FUN = accept_entity_uniprot_go_taxonomy
+
+    elif evaluation_level == 5:
+        ENTITY_MAP_FUN = EntityEvaluator.COMMON_ENTITY_MAP_FUNS['entity_normalized_fun'](
+            {
+                PRO_ID: UNIPROT_NORM_ID,
+                LOC_ID: GO_NORM_ID,
+                ORG_ID: TAXONOMY_NORM_ID,
+            },
+            penalize_unknown_normalizations="softest",
+            add_entity_text=False,
+        )
+
+        def accept_checking_sequence_identity(gold, pred):
+            return accept_entity_uniprot_go_taxonomy(gold, pred, min_seq_identity=90)
+
+        ENTITY_ACCEPT_FUN = accept_checking_sequence_identity
 
     else:
         raise AssertionError(evaluation_level)

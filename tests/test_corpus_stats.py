@@ -29,6 +29,7 @@ def test_count_relations_dists_with_repetitions(corpus_percentage):
         Counter({'D0': 0.6381818181818182, 'D1': 0.17272727272727273, 'D2': 0.09636363636363636, 'D3': 0.04181818181818182, 'D5': 0.016363636363636365, 'D6': 0.014545454545454545, 'D4': 0.012727272727272728, 'D9': 0.0036363636363636364, 'D7': 0.0036363636363636364})
     )
 
+
 def test_count_relations_dists_without_repetitions(corpus_percentage):
     _test(
         corpus_percentage,
@@ -51,14 +52,14 @@ def test_count_relations_dists_normalizations_without_repetitions(corpus_percent
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="soft"
+            penalize_unknown_normalizations="no"
         ),
         None,  # meaning: str.__eq__
         #
         0.81,
         #
-        Counter({'D0': 217, 'D1': 52, 'D2': 31, 'D3': 12, 'D5': 9, 'D6': 6, 'D9': 2, 'D4': 2}),
-        Counter({'D0': 0.6555891238670695, 'D1': 0.15709969788519637, 'D2': 0.09365558912386707, 'D3': 0.03625377643504532, 'D5': 0.027190332326283987, 'D6': 0.01812688821752266, 'D9': 0.006042296072507553, 'D4': 0.006042296072507553})
+        Counter({'D0': 199, 'D1': 46, 'D2': 31, 'D3': 11, 'D5': 9, 'D6': 6, 'D4': 1}),
+        Counter({'D0': 0.6567656765676567, 'D1': 0.15181518151815182, 'D2': 0.10231023102310231, 'D3': 0.036303630363036306, 'D5': 0.0297029702970297, 'D6': 0.019801980198019802, 'D4': 0.0033003300330033004})
     )
 
 
@@ -71,14 +72,14 @@ def test_count_relations_dists_normalizations_without_repetitions_considering_hi
                 LOC_ID: GO_NORM_ID,
                 ORG_ID: TAXONOMY_NORM_ID,
             },
-            penalize_unknown_normalizations="soft"
+            penalize_unknown_normalizations="no"
         ),
         accept_relation_uniprot_go,
         #
         0.89,
         #
-        Counter({'D0': 241, 'D1': 52, 'D3': 12, 'D2': 12, 'D5': 8, 'D6': 4, 'D9': 1, 'D4': 1}),
-        Counter({'D0': 0.7280966767371602, 'D1': 0.15709969788519637, 'D3': 0.03625377643504532, 'D2': 0.03625377643504532, 'D5': 0.02416918429003021, 'D6': 0.012084592145015106, 'D9': 0.0030211480362537764, 'D4': 0.0030211480362537764})
+        Counter({'D0': 223, 'D1': 46, 'D2': 12, 'D3': 10, 'D5': 8, 'D6': 4}),
+        Counter({'D0': 0.735973597359736, 'D1': 0.15181518151815182, 'D2': 0.039603960396039604, 'D3': 0.033003300330033, 'D5': 0.026402640264026403, 'D6': 0.013201320132013201})
     )
 
 

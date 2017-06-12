@@ -2,6 +2,8 @@ import json
 import os
 import csv
 
+from loctext.util import PRO_ID, LOC_ID, ORG_ID, REL_PRO_LOC_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, repo_path
+
 
 #
 # The script currently converts from the .tsv (prepared by Tanya), not from the PubAnnotation annotations as we found errors in those
@@ -84,8 +86,8 @@ for file_name in os.listdir(locText_json_files_path):
                                 else:
                                     # Remove unnecessary spaces between ID's
                                     obj_id = row[3].replace(" ", "")
-                                obj_type = "n_7"
-                                name = "UniProt"
+                                obj_type = UNIPROT_NORM_ID
+                                name = "UniProtKB"
 
                             elif row[2] == "Location":
                                 # For GO ID's, try to extract only the GO ID. Strip rest of the content
@@ -96,13 +98,13 @@ for file_name in os.listdir(locText_json_files_path):
                                 obj_id = obj_id_splitted[0]
                                 assert obj_id != "", pubMed_id + " -- " + original + " --- line: " + '\t'.join(row)
 
-                                obj_type = "n_8"
+                                obj_type = GO_NORM_ID
                                 name = "GO"
 
                             elif row[2] == "Organism":
                                 # Remove unnecessary spaces between ID's
                                 obj_id = row[3].replace(" ", "")
-                                obj_type = "n_9"
+                                obj_type = TAXONOMY_NORM_ID
                                 name = "Taxonomy"
 
                             normalization_obj = {

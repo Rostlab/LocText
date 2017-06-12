@@ -1,4 +1,4 @@
-from loctext.learning.evaluations import is_in_swiss_prot, is_child_of_swiss_prot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
+from loctext.learning.evaluations import is_in_swissprot, is_child_of_swissprot_annotation, accept_relation_uniprot_go, are_go_parent_and_child, get_localization_name
 
 def parse(filepath, previous_annotations=None):
     ret = {}
@@ -20,7 +20,7 @@ def parse(filepath, previous_annotations=None):
                     ret[rel_key] = confirmed
             else:
                 confirmed = previous_annotations.get(rel_key, "")
-                inSwissProt = str(is_in_swiss_prot(uniprot_ac, go))
+                inSwissProt = str(is_in_swissprot(uniprot_ac, go))
                 childSwissProt = childSwissProt
                 row = [typ, uniprot_ac, go, loc_name, inSwissProt, childSwissProt, confirmed, num_docs] + docs
                 print('\t'.join(row))

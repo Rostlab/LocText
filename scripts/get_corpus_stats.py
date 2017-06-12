@@ -1,3 +1,4 @@
+import sys
 from nalaf.learning.lib.sklsvm import SklSVM
 from nalaf.structures.data import Dataset
 from nalaf.features.stemming import ENGLISH_STEMMER
@@ -9,9 +10,10 @@ import time
 from collections import Counter
 import pickle
 
-corpus = read_corpus("LocText")
+mode = sys.argv[1]  # "unnormalized" or "normalized"
+entity_class = sys.argv[2]  # "e_1" or "e_2" or "e_3"
 
-mode = "unnormalized"
+corpus = read_corpus("LocText")
 
 mention_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
 relation_mode_total_counter = {key: Counter() for key in [PRO_ID, LOC_ID, ORG_ID]}
@@ -56,7 +58,7 @@ for type_key, mention_counter in mention_mode_total_counter.items():
 #######################################################################################################################
 
 for type_key, ratio_counter in mention_mode_total_counter.items():
-    # if type_key == LOC_ID:
+    if type_key == entity_class:
         ratio_sorted = sorted(ratio_counter.items(), key=lambda pair: pair[1])
 
         print()
@@ -69,7 +71,7 @@ for type_key, ratio_counter in mention_mode_total_counter.items():
 
 
 for type_key, ratio_counter in ratio_mode_total_counter.items():
-    # if type_key == LOC_ID:
+    if type_key == entity_class:
         ratio_sorted = sorted(ratio_counter.items(), key=lambda pair: pair[1])
 
         print()
@@ -82,9 +84,9 @@ for type_key, ratio_counter in ratio_mode_total_counter.items():
 
 print()
 
-out_path = repo_path("resources", "features", "corpus_" + mode + "_total_background_loc_rels_ratios.pickle")
-with open(out_path, "wb") as f:
-    pickle.dump(ratio_mode_total_counter[LOC_ID], f)
+# out_path = repo_path("resources", "features", "corpus_" + mode + "_total_background_loc_rels_ratios.pickle")
+# with open(out_path, "wb") as f:
+#     pickle.dump(ratio_mode_total_counter[LOC_ID], f)
 
-for marker in {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2", "Snf7"}:
-    print(marker, ratio_mode_total_counter[PRO_ID].get(ENGLISH_STEMMER.stem(marker)))
+# for marker in {"GFP", "RFP", "CYH2", "ALG2", "MSB2", "KSS1", "KRE11", "SER2", "Snf7"}:
+#     print(marker, ratio_mode_total_counter[PRO_ID].get(ENGLISH_STEMMER.stem(marker)))

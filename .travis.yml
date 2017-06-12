@@ -8,29 +8,21 @@ branches:
     - master
     - develop
 
-env:
-  global:
-    - SVM_LIGHT=$HOME/svm_light
-    - PATH=$PATH:$SVM_LIGHT
-
 cache:
   pip: true
   directories:
     - $HOME/nltk_data
-    - $SVM_LIGHT
 
 before_install:
-  - printenv # Just for debugging purposes
+  - printenv  # Just for debugging purposes
   - pip install --no-clean git+https://github.com/Rostlab/nalaf.git@feature/Experimental
-  - printf 'nalaf commit: ' && cd /tmp/pip-*-build && git rev-parse HEAD  # **nalaf**: log the exact commit for debugging purposes
+  - printf 'nalaf commit --> ' && cd /tmp/pip-*-build && git rev-parse HEAD  # **nalaf**: log the exact commit for debugging purposes
   - python -m nalaf.download_corpora
   - pip install codecov pytest-cov
-  - (test -d $SVM_LIGHT && [ "$(ls -A $SVM_LIGHT)" ] && echo "Use cached non-empty svm_light") || (wget http://download.joachims.org/svm_light/current/svm_light.tar.gz -O /tmp/svm_light.tar.gz && mkdir -p $SVM_LIGHT && cd $SVM_LIGHT && tar -xvf /tmp/svm_light.tar.gz && make)
-  - svm_classify # Effectively test that svm_light was installed and is in the PATH. It should print version -> SVM-light V6.02 (14.08.08)
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - printf 'LocText commit: ' && git rev-parse HEAD  # **LocText**: log the exact commit for debugging purposes
+  - printf 'LocText commit --> ' && git rev-parse HEAD  # **LocText**: log the exact commit for debugging purposes
   - pip install .
   - python -m loctext.download_data
 
@@ -43,4 +35,4 @@ after_success:
 notifications:
   slack:
     rooms:
-      secure: ShqQTFocdt7C84mM/rqLDR8OeuTG3cYXLOUGe4p8REB3CrGJD8rZcUygmNbEOJjn/ImAztcYkVmcEpAjbyMcdZ73iRlGRJh6Dc2kJ/k3islj+UBhBe0oJGmcWazbXtqf7ZzsXAvtSH8By6KY9SxFuex8zCvZifAzWAu1opQYrLNLMpuYjkE7nTinINEwAkZ47Qn7wKsahkPFFBzPDcVVIyJwV62jOiZYDmZaFAS2wdKICxZDXQXknx2Qfyyp49hHG7YOOypMkoRMvz8Z5ApPluOvb7oPNVs+pPnPI0dIHcACcPdDoc+LqcSD3T5Wyft3Qagh1YmgGrv3R05MJ9knJCX577Z3kdSbQd+JcjHeKSIFsC3Evp58cK/NAHnu2x3NV+u589QhS9kaBibd16W0a2Bw2+qRXwmKqKS3AOkXQmMtaDuZCGZBqsxegmam/7uu4QTCpBQplz9881M9Fg8sPZhg6XLBepN/H2p7gS2IKQs6sUEaEkqw86P1OaREjVuTN+A3uGpG2egcITiTOARlNJDj1gWjWgVLIW2tGSxTm0jxk5OQyw4fIHG4mTFztxyrgRurOzCBhLv8QcYPFmWXMl/iieSw2VHFo7TQkXPyPLQkOf8ted4cbtq1OrGm0aZy+G7SCxe8uuHnZz/6yT8lijXOMuZZqjlGZPUf8CcZtoQ=
+      - secure: ShqQTFocdt7C84mM/rqLDR8OeuTG3cYXLOUGe4p8REB3CrGJD8rZcUygmNbEOJjn/ImAztcYkVmcEpAjbyMcdZ73iRlGRJh6Dc2kJ/k3islj+UBhBe0oJGmcWazbXtqf7ZzsXAvtSH8By6KY9SxFuex8zCvZifAzWAu1opQYrLNLMpuYjkE7nTinINEwAkZ47Qn7wKsahkPFFBzPDcVVIyJwV62jOiZYDmZaFAS2wdKICxZDXQXknx2Qfyyp49hHG7YOOypMkoRMvz8Z5ApPluOvb7oPNVs+pPnPI0dIHcACcPdDoc+LqcSD3T5Wyft3Qagh1YmgGrv3R05MJ9knJCX577Z3kdSbQd+JcjHeKSIFsC3Evp58cK/NAHnu2x3NV+u589QhS9kaBibd16W0a2Bw2+qRXwmKqKS3AOkXQmMtaDuZCGZBqsxegmam/7uu4QTCpBQplz9881M9Fg8sPZhg6XLBepN/H2p7gS2IKQs6sUEaEkqw86P1OaREjVuTN+A3uGpG2egcITiTOARlNJDj1gWjWgVLIW2tGSxTm0jxk5OQyw4fIHG4mTFztxyrgRurOzCBhLv8QcYPFmWXMl/iieSw2VHFo7TQkXPyPLQkOf8ted4cbtq1OrGm0aZy+G7SCxe8uuHnZz/6yT8lijXOMuZZqjlGZPUf8CcZtoQ=

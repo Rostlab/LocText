@@ -72,8 +72,7 @@ class LocTextDXModelRelationExtractor(RelationExtractor):
                 tokenizer=TmVarTokenizer(),
                 edge_generator=edge_generator,
                 feature_set=self.feature_set,
-                feature_generators=feature_generators
-        )
+                feature_generators=feature_generators)
 
         assert feature_generators == self.pipeline.feature_generators or feature_generators == [], str((feature_generators, self.pipeline.feature_generators))
 
@@ -229,7 +228,7 @@ class StringTagger(Tagger):
         uniprot_norm_id,
         go_norm_id,
         taxonomy_norm_id,
-        # Default: explicitly put all organisms in to force try to normalize all their proteins,
+        # Perhaps explicitly put all organisms in to force try to normalize all their proteins,
         # not only when their [organism] names appear together with a protein name
         # "-22,-3,9606,3702,4932,10090,4896,511145,6239,7227,7955",
         # Rather, put those organisms we know we collected documents from
@@ -237,7 +236,8 @@ class StringTagger(Tagger):
         send_whole_once=True,
         filter_in_go_localizations=None,
         filter_out_go_localizations=None,
-        host='http://127.0.0.1:5000'
+        host='http://127.0.0.1:5000',
+        remove_ambiguous_proteins=False,
     ):
 
         super().__init__([protein_id, localization_id, organism_id])
@@ -278,6 +278,7 @@ class StringTagger(Tagger):
             self.filter_out_go_localizations = set(filter_out_go_localizations)
 
         self.host = host
+        self.remove_ambiguous_proteins = remove_ambiguous_proteins
 
 
     def annotate(self, dataset):
@@ -375,8 +376,7 @@ class StringTagger(Tagger):
 
             elif norm["type"] == "-22":
                 try:
-                    if any(are_go_parent_and_child(in_parent, norm_id) for in_parent in self.filter_in_go_localizations) \
-                        and not any(are_go_parent_and_child(out_parent, norm_id) for out_parent in self.filter_out_go_localizations):
+                    if any(are_go_parent_and_child(in_parent, norm_id) for in_parent in self.filter_in_go_localizations) and not any(are_go_parent_and_child(out_parent, norm_id) for out_parent in self.filter_out_go_localizations):
                         e_class_id = self.localization_id
                         n_class_id = self.go_norm_id
                         norms.append(norm_id)
@@ -399,7 +399,7 @@ class StringTagger(Tagger):
                 norms.append(norm_id)
 
             elif norm["type"].startswith("string_id:"):
-                # Set e_class_id not to reject; this happens in the few cases the string id cannot be normalized to uniprot
+                # Set e_class_id thus not to reject the protein; this happens in the few cases the string id cannot be normalized to uniprot
                 e_class_id = self.protein_id
 
         if not e_class_id:
@@ -408,11 +408,12 @@ class StringTagger(Tagger):
         else:
             norms = set(norms)  # convert to set first just in case the original tagger returns repeated ids (happened)
 
-            # Remove ambiguous ids; heuristic: different normalizations for a same organism are considered ambiguous
-            for organism, proteins in organisms_proteins.items():
-                if len(proteins) > 1:
-                    for ambiguous_protein in proteins:
-                        norms.remove(ambiguous_protein)
+            if self.remove_ambiguous_proteins:
+                # Remove ambiguous ids; heuristic: different normalizations for a same organism are considered ambiguous
+                for organism, proteins in organisms_proteins.items():
+                    if len(proteins) > 1:
+                        for ambiguous_protein in proteins:
+                            norms.remove(ambiguous_protein)
 
             if not norms:
                 norms = None

@@ -3,7 +3,7 @@ import urllib.request
 
 from nalaf.utils.download import DownloadArticle
 
-in_path = sys.argv[1]  # in_path = "resources/features/human_localization_all_PMIDs_only__2016-11-20.tsv"
+in_path = sys.argv[1]
 call_online_string_tagger = False  # bool(sys.argv[2])
 
 print(in_path, call_online_string_tagger)

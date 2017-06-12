@@ -11,6 +11,7 @@ from nalaf.learning.taggers import StubSameSentenceRelationExtractor, StubRelati
 from loctext.learning.train import read_corpus, evaluate_with_argv, get_evaluator
 from nalaf import print_verbose, print_debug
 from nalaf.preprocessing.edges import SentenceDistanceEdgeGenerator, CombinatorEdgeGenerator
+import pytest
 import math
 import sys
 from loctext.learning.evaluations import accept_relation_uniprot_go
@@ -22,7 +23,7 @@ TEST_MIN_CORPUS_PERCENTAGE = 0.4
 
 EVALUATION_LEVEL = 4
 
-EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft")
+EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="no")
 
 
 # -----------------------------------------------------------------------------------
@@ -30,25 +31,25 @@ EVALUATOR = get_evaluator(EVALUATION_LEVEL, evaluate_only_on_edges_plausible_rel
 
 def test_baseline_D0(evaluation_level, corpus_percentage):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.7248
+        EXPECTED_F = 0.7421
     else:
-        EXPECTED_F = 0.7113
+        EXPECTED_F = None
 
     corpus = read_corpus("LocText", corpus_percentage)
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID).annotate)
 
-    EVALUATOR = get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=False, normalization_penalization="soft")
-
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
+    print(rel_evaluation)
     print(evaluations)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
 
     return evaluations
 
 
+@pytest.mark.skip(reason="May take too long")
 def test_LocText_D0(corpus_percentage):
 
     if (corpus_percentage == 1.0):
@@ -66,9 +67,9 @@ def test_baseline_D1(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
-        EXPECTED_F = 0.6137
+        EXPECTED_F = 0.6421
     else:
-        EXPECTED_F = 0.6483
+        EXPECTED_F = None
 
     edge_generator = SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=1)
     annotator_gen_fun = (lambda _: StubRelationExtractor(edge_generator).annotate)
@@ -76,12 +77,14 @@ def test_baseline_D1(corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
-    assert math.isclose(evaluations.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
     print(rel_evaluation)
+    print(evaluations)
+    assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
 
     return evaluations
 
 
+@pytest.mark.skip(reason="D1 model not well defined")
 def test_LocText_D1(corpus_percentage):
 
     if (corpus_percentage == 1.0):
@@ -99,9 +102,9 @@ def test_baseline_D0_D1(corpus_percentage):
     corpus = read_corpus("LocText", corpus_percentage)
 
     if corpus_percentage == 1.0:
-        EXPECTED_F = 0.6652
+        EXPECTED_F = 0.7060
     else:
-        EXPECTED_F = 0.6918
+        EXPECTED_F = None
 
     edge_generator = CombinatorEdgeGenerator(
         SentenceDistanceEdgeGenerator(PRO_ID, LOC_ID, REL_PRO_LOC_ID, distance=0, rewrite_edges=False),
@@ -118,12 +121,15 @@ def test_baseline_D0_D1(corpus_percentage):
     evaluations = Evaluations.cross_validate(annotator_gen_fun, corpus, EVALUATOR, k_num_folds=5, use_validation_set=True)
     rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
+    print(rel_evaluation)
+    print(evaluations)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=0.001 * 1.1), rel_evaluation.f_measure
-    print("D1 Baseline", rel_evaluation)
 
     return rel_evaluation
 
+
 # Note: would be way better to be able to reuse the already trained models in the other tests methods
+@pytest.mark.skip(reason="D1 model not well defined")
 def test_LocText_D0_D1(corpus_percentage):
 
     if (corpus_percentage == 1.0):
@@ -138,13 +144,14 @@ def test_LocText_D0_D1(corpus_percentage):
 
 
 # "Full" as in the full pipeline: first ner, then re
+@pytest.mark.skip(reason="Do not require tagger running docker container")
 def test_baseline_full(corpus_percentage):
     if (corpus_percentage == 1.0):
-        EXPECTED_F = 0.4712
+        EXPECTED_F = 0.5050
     else:
         EXPECTED_F = None
 
-    corpus = read_corpus("LocText", corpus_percentage, predict_entities=True)
+    corpus = read_corpus("LocText", corpus_percentage, predict_entities="9606,3702,4932")
 
     annotator_gen_fun = (lambda _: StubSameSentenceRelationExtractor(PRO_ID, LOC_ID, REL_PRO_LOC_ID, use_gold=False, use_pred=True).annotate)
 
@@ -158,19 +165,20 @@ def test_baseline_full(corpus_percentage):
 
 
 # "Full" as in the full pipeline: first ner, then re
+@pytest.mark.skip(reason="Do not require tagger running docker container")
 def test_loctext_full(corpus_percentage):
     if (corpus_percentage == 1.0):
         EXPECTED_F = 0.6178
     else:
         EXPECTED_F = 0.6779
 
-    _test_LocText(corpus_percentage, model='D0', EXPECTED_F=EXPECTED_F, predict_entities=True)
+    _test_LocText(corpus_percentage, model='D0', EXPECTED_F=EXPECTED_F, predict_entities="9606,3702,4932")
 
 
 # -----------------------------------------------------------------------------------
 
 
-def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=False, EXPECTED_F_SE=0.001):
+def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=None, EXPECTED_F_SE=0.001):
     # Note: EXPECTED_F=None will make the test fail for non-yet verified evaluations
     # Note: the real StdErr's are around ~0.0027-0.0095. Decrease them by default to be more strict with tests
 
@@ -178,7 +186,11 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=Fa
 
     corpus = read_corpus("LocText", corpus_percentage, predict_entities)
 
-    rel_evaluation = evaluate_with_argv(['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL), '--predict_entities', 'true'])
+    args = ['--model', model, '--corpus_percentage', str(corpus_percentage), '--evaluation_level', str(EVALUATION_LEVEL)]
+    if predict_entities:
+        args += ['--predict_entities', predict_entities]
+
+    rel_evaluation = evaluate_with_argv(args)
 
     print("LocText " + model, rel_evaluation)
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
