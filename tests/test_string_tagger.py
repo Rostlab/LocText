@@ -48,6 +48,7 @@ def test_number_of_tagged_entities():
 
 
 def test_basic_json_responses():
+    if run_tests:
 
-    assert TAGGER_SEND_EGAL.get_string_tagger_json_response("simple text") == []
-    assert TAGGER_SEND_EGAL.get_string_tagger_json_response("p53") != []
+        assert TAGGER_SEND_EGAL.get_string_tagger_json_response("simple text") == []
+        assert TAGGER_SEND_EGAL.get_string_tagger_json_response("p53") != []
