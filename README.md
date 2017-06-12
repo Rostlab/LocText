@@ -4,4 +4,11 @@
 
 # LocText
 
-NLP Extraction of Relationships: Protein--Cell Compartments
+NLP Extraction of Relationships: Protein <--> Cell Compartments
+
+## Requirements
+
+_Tested on a single machine (not cluster)_
+
+* [nalaf](https://github.com/Rostlab/nalaf)
+* [STRING tagger, dockerized](https://github.com/juanmirocks/STRING-tagger-server)
