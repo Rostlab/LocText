@@ -351,7 +351,11 @@ class StringTagger(Tagger):
     def is_server_running(self, host=None):
         """Return true if server is running"""
         host = host if host else self.host
-        return urllib.request.urlopen(host).getcode() == 200
+        try:
+            return urllib.request.urlopen(host).getcode() == 200
+
+        except Exception as e:
+            return False
 
 
     def create_nalaf_entity(self, tagger_entity, original_text, offset_adjustment=0):
