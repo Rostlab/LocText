@@ -27,6 +27,7 @@ setup(
 
     install_requires=[
         # 'nalaf',
+        'requests_cache>=0.4.13',
         'ujson',  # It should be included with spacy, AFAIK
     ]
 )
