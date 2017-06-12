@@ -25,6 +25,7 @@ install:
   - printf 'LocText commit --> ' && git rev-parse HEAD  # **LocText**: log the exact commit for debugging purposes
   - pip install .
   - python -m loctext.download_data
+  - python -m spacy download en
 
 script:
   - time py.test -v --cov=./

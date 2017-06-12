@@ -10,7 +10,7 @@ def readme():
 setup(
     name='LocText',
     version='0.1.0',
-    description='NLP Extraction of Relationships: Protein--Cell Compartments',
+    description='NLP Extraction of Relationships: Protein <--> Cell Compartments',
     long_description=readme(),
     url='https://github.com/Rostlab/LocText',
     author='Juan Miguel Cejuela, Shrikant Vinchurkar',
@@ -27,8 +27,6 @@ setup(
 
     install_requires=[
         # 'nalaf',
-        'spacy',
         'ujson',  # It should be included with spacy, AFAIK
-        'progress'
     ]
 )
