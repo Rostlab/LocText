@@ -1,0 +1,39 @@
+language: python
+
+python:
+  - "3.5"
+
+branches:
+  only:
+    - master
+    - develop
+
+cache:
+  pip: true
+  directories:
+    - $HOME/nltk_data
+
+before_install:
+  - printenv  # Log for debugging purposes
+  - pip install --no-clean git+https://github.com/Rostlab/nalaf.git@develop
+  # - printf 'nalaf commit --> ' && cd /tmp/pip-*-build && git rev-parse HEAD  # **nalaf**: log the exact commit for debugging purposes
+  - python -m nalaf.download_corpora
+  - pip install codecov pytest-cov
+  - cd $TRAVIS_BUILD_DIR
+
+install:
+  - printf 'LocText commit --> ' && git rev-parse HEAD  # **LocText**: log the exact commit for debugging purposes
+  - pip install .
+  - python -m loctext.download_data
+  - python -m spacy download en
+
+script:
+  - time py.test -v --cov=./
+
+after_success:
+  - codecov
+
+notifications:
+  slack:
+    rooms:
+      - secure: ShqQTFocdt7C84mM/rqLDR8OeuTG3cYXLOUGe4p8REB3CrGJD8rZcUygmNbEOJjn/ImAztcYkVmcEpAjbyMcdZ73iRlGRJh6Dc2kJ/k3islj+UBhBe0oJGmcWazbXtqf7ZzsXAvtSH8By6KY9SxFuex8zCvZifAzWAu1opQYrLNLMpuYjkE7nTinINEwAkZ47Qn7wKsahkPFFBzPDcVVIyJwV62jOiZYDmZaFAS2wdKICxZDXQXknx2Qfyyp49hHG7YOOypMkoRMvz8Z5ApPluOvb7oPNVs+pPnPI0dIHcACcPdDoc+LqcSD3T5Wyft3Qagh1YmgGrv3R05MJ9knJCX577Z3kdSbQd+JcjHeKSIFsC3Evp58cK/NAHnu2x3NV+u589QhS9kaBibd16W0a2Bw2+qRXwmKqKS3AOkXQmMtaDuZCGZBqsxegmam/7uu4QTCpBQplz9881M9Fg8sPZhg6XLBepN/H2p7gS2IKQs6sUEaEkqw86P1OaREjVuTN+A3uGpG2egcITiTOARlNJDj1gWjWgVLIW2tGSxTm0jxk5OQyw4fIHG4mTFztxyrgRurOzCBhLv8QcYPFmWXMl/iieSw2VHFo7TQkXPyPLQkOf8ted4cbtq1OrGm0aZy+G7SCxe8uuHnZz/6yT8lijXOMuZZqjlGZPUf8CcZtoQ=
