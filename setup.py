@@ -9,8 +9,8 @@ def readme():
 
 setup(
     name='LocText',
-    version='0.1.0',
-    description='NLP Extraction of Relationships: Protein <--> Cell Compartments',
+    version='1.0.0',
+    description='NLP-based Relation Extraction (RE) of: Proteins <--> Cell Compartments',
     long_description=readme(),
     url='https://github.com/Rostlab/LocText',
     author='Juan Miguel Cejuela, Shrikant Vinchurkar',
