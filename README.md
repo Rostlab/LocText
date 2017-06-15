@@ -49,4 +49,4 @@ Full documentation is due. For now:
 * Traverse over the extracted relations as in [`annotated_corpus.predicted_relations()`](https://github.com/Rostlab/nalaf/blob/develop/nalaf/structures/data.py#L104), which returns objects of [type Relation, as defined in nalaf](https://github.com/Rostlab/nalaf/blob/develop/nalaf/structures/data.py#L1963)
 
 
-For any any issue or question with the LocText and nalaf code, please open up an issue in the corresponding repository. Indeed, considerable chunks require refactoring and documentation; don't hesitate to complain ;)
+For any any issue or question with the [LocText](https://github.com/Rostlab/LocText) and [nalaf](https://github.com/Rostlab/nalaf) code, please open up an issue in the corresponding repository. Indeed, considerable chunks require refactoring and documentation; don't hesitate to complain ;)
