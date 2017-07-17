@@ -36,8 +36,6 @@ python -m spacy download en
 
 ```shell
 python run.py --text "GCN2 was constitutively localized to the nucleolus or recruited to the nucleolus by amino acid starvation stress"
-
-python run.py --pmid 28189689  # Annotate the abstract of the given PMID -- Note, sometimes this may fail if the the online NCBI eutils are down
 ```
 
 
