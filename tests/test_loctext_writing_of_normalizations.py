@@ -51,16 +51,16 @@ def test_same_stats():
     assert len(list(original.edges())) > 0 and (len(list(original.edges())) == len(list(newone.edges())) == (- num_d0 + len(list(newone.predicted_relations()))))
 
     # Normalizations
-    assert all(len(e.normalisation_dict) == 0 for e in original.entities())
+    assert all(len(e.norms) == 0 for e in original.entities())
 
     count_normalizations = 0
 
     for e in newone.entities():
         if str(e.class_id) != "e_4":
-            print(e.normalisation_dict)
+            print(e.norms)
 
-            assert len(e.normalisation_dict) == 1, e
-            norm_id = next(iter(e.normalisation_dict.values()))
+            assert len(e.norms) == 1, e
+            norm_id = next(iter(e.norms.values()))
 
             assert type(norm_id) is str or e.class_id == "e_1" and norm_id is None, e   # do not write arrays, only comma-separated strings
             assert norm_id is None or ' ' not in norm_id, e   # We cannot have stuff like 'GO:0005811 lipid droplet' -- let's have only the GO id

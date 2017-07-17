@@ -286,13 +286,13 @@ def write_external_evaluation_results(args, eval_corpus):
             else:
                 raise AssertionError(("Cannot be", rel))
 
-            e1s = e1.normalisation_dict.get(UNIPROT_NORM_ID, None)
+            e1s = e1.norms.get(UNIPROT_NORM_ID, None)
             if e1s is not None:
                 e1s = e1s = filter(None, e1s.split(","))
             else:
                 e1s = []
 
-            e2s = e2.normalisation_dict.get(GO_NORM_ID, None)
+            e2s = e2.norms.get(GO_NORM_ID, None)
             if e2s is not None:
                 e2s = e2s = filter(None, e2s.split(","))
             else:
