@@ -8,9 +8,13 @@ from loctext.learning.annotators import LocTextDXModelRelationExtractor
 
 RE_MODEL_PATH = repo_path("resources", "models", "D0_9606,3702,4932_1497520729.163767.bin")
 RE_FEATURES_PATH = repo_path("resources", "features", "selected", "0_True_LinearSVC_C=2.0-1487943476.673364-NAMES.py")
+RE_MODEL_BIN = None
+with open(RE_MODEL_PATH, "rb") as f:
+    RE_MODEL_BIN = pickle.load(f)
 
 
 def parse_arguments(argv=[]):
+
     import argparse
 
     parser = argparse.ArgumentParser(description='Run LocText on some text to extract Protein<-->Cell Compartments relations')
@@ -31,14 +35,12 @@ def parse_arguments(argv=[]):
 
 
 def read_models(args):
-    # Note, the id constants for the entities and relations are arbitrary
+    # Note, the id constants for the entities and relations (*_ID) are arbitrary.
+    # Nonetheless, you must know them to later extract your desired types of entities/relations
 
-    NER = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, host=args.entity_tagger_url)
+    ner = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, host=args.entity_tagger_url)
 
-    with open(RE_MODEL_PATH, "rb") as f:
-        RE_MODEL_BIN = pickle.load(f)
-
-    RE = LocTextDXModelRelationExtractor(
+    re = LocTextDXModelRelationExtractor(
         PRO_ID, LOC_ID, REL_PRO_LOC_ID,
         sentence_distance=0,
         selected_features_file=RE_FEATURES_PATH,
@@ -52,13 +54,13 @@ def read_models(args):
         C=1,
     )
 
-    return (NER, RE)
+    return (ner, re)
 
 
 def run_with_argv(argv=[]):
     args = parse_arguments(argv)
 
-    NER, RE = read_models(args)
+    ner, re = read_models(args)
 
     if args.text:
         corpus = StringReader(args.text).read()
@@ -66,8 +68,8 @@ def run_with_argv(argv=[]):
         corpus = PMIDReader(args.pmid).read()
     # See more possible readers including some NCBI XML files in `nalaf.utils.readers`
 
-    NER.annotate(corpus)
-    RE.annotate(corpus)
+    ner.annotate(corpus)
+    re.annotate(corpus)
 
     return corpus
 
@@ -75,4 +77,13 @@ def run_with_argv(argv=[]):
 if __name__ == "__main__":
     import sys
     annotated_corpus = run_with_argv(sys.argv[1:])
-    print(annotated_corpus)
+
+    print()
+    print("# Predicted entities:")
+    for entity in annotated_corpus.predicted_entities():
+        print(entity)
+
+    print()
+    print("# Predicted relations:")
+    for relation in annotated_corpus.predicted_relations():
+        print(relation)

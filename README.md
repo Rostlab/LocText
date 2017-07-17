@@ -36,10 +36,20 @@ python -m spacy download en
 
 ```shell
 python run.py --text "GCN2 was constitutively localized to the nucleolus or recruited to the nucleolus by amino acid starvation stress"
-
-python run.py --pmid 28189689  # Annotate the abstract of the given PMID -- Note, sometimes this may fail if the the online NCBI eutils are down
 ```
 
+You should see something like the following:
+
+```shell
+# Predicted entities:
+Entity(class_id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9P2K8,Q9LX30,Q9FIB4,P15442'})
+Entity(class_id: e_2, offset: 41, text: nucleolus, norms: {'n_9': 'GO:0005730'})
+Entity(class_id: e_2, offset: 71, text: nucleolus, norms: {'n_9': 'GO:0005730'})
+
+# Predicted relations:
+Relation(class_id:"r_5": e1:"Entity(class_id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9P2K8,Q9LX30,Q9FIB4,P15442'})"   <--->   e2:"Entity(class_id: e_2, offset: 41, text: nucleolus, norms: {'n_9': 'GO:0005730'})")
+Relation(class_id:"r_5": e1:"Entity(class_id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9P2K8,Q9LX30,Q9FIB4,P15442'})"   <--->   e2:"Entity(class_id: e_2, offset: 71, text: nucleolus, norms: {'n_9': 'GO:0005730'})")
+```
 
 ### Python API
 

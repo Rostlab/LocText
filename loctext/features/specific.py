@@ -143,7 +143,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
                 self.add_with_value(f_set, edge, f_key, ratio)
 
             loc_keyed_text = ENGLISH_STEMMER.stem(localization.text)
-            loc_norm = localization.normalisation_dict.get(self.c_localization_norm_class, None)
+            loc_norm = localization.norms.get(self.c_localization_norm_class, None)
 
             ratio = self.c_corpus_unnormalized_total_background_loc_rels_ratios.get(loc_keyed_text, 0)
             add_f_ratio("f_corpus_unnormalized_total_background_loc_rels_ratios", ratio)
@@ -160,7 +160,7 @@ class LocalizationRelationsRatios(EdgeFeatureGenerator):
             # ratio = self.c_SwissProt_normalized_total_background_loc_rels_ratios.get(loc_norm, 0)
             # add_f_ratio("f_SwissProt_normalized_total_background_loc_rels_ratios", ratio)
 
-            pro_norm_ids_str = protein.normalisation_dict.get(self.c_protein_norm_class, None)
+            pro_norm_ids_str = protein.norms.get(self.c_protein_norm_class, None)
             if not pro_norm_ids_str:  # catches None or empty strings
                 pro_norm_ids = []
             else:

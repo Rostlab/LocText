@@ -3,7 +3,7 @@ from loctext.learning.train import read_corpus
 def num_normalizations(dataset):
     count = 0
     for data in dataset.entities():
-        if data.normalisation_dict and list(data.normalisation_dict.values())[0]:
+        if data.norms and list(data.norms.values())[0]:
             count += 1
 
     return count

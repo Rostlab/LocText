@@ -9,7 +9,7 @@ def readme():
 
 setup(
     name='LocText',
-    version='1.0.0',
+    version='1.0.1',
     description='NLP-based Relation Extraction (RE) of: Proteins <--> Cell Compartments',
     long_description=readme(),
     url='https://github.com/Rostlab/LocText',
@@ -27,7 +27,8 @@ setup(
 
     install_requires=[
         # 'nalaf',
-        'requests_cache>=0.4.13',
+        'scikit-learn == 0.18.1',
+        'requests_cache >= 0.4.13',
         'ujson',  # It should be included with spacy, AFAIK
     ]
 )
