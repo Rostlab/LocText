@@ -77,4 +77,13 @@ def run_with_argv(argv=[]):
 if __name__ == "__main__":
     import sys
     annotated_corpus = run_with_argv(sys.argv[1:])
-    print(annotated_corpus)
+
+    print()
+    print("# Predicted entities:")
+    for entity in annotated_corpus.predicted_entities():
+        print(entity)
+
+    print()
+    print("# Predicted relations:")
+    for relation in annotated_corpus.predicted_relations():
+        print(relation)
