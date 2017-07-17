@@ -25,7 +25,7 @@ def entity2text(entity):
     return ENGLISH_STEMMER.stem(entity.text)
 
 def entity2norm(entity):
-    n_id, n_val = list(entity.normalisation_dict.items())[0]
+    n_id, n_val = list(entity.norms.items())[0]
     return n_val
 
 def entity2key(entity):
