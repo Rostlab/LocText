@@ -429,7 +429,7 @@ class StringTagger(Tagger):
             else:
                 norms_dic = None
 
-            pred_entity = Entity(class_id=e_class_id, offset=offset, text=entity_text, norm=norms_dic)
+            pred_entity = Entity(class_id=e_class_id, offset=offset, text=entity_text, norms=norms_dic)
 
             return pred_entity
 
