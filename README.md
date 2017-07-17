@@ -40,7 +40,7 @@ python run.py --text "GCN2 was constitutively localized to the nucleolus or recr
 
 You should see something like the following:
 
-```python
+```shell
 ----DATASET----
 Nr of documents: 1, Nr of chars: 112
 ---DOCUMENT---
