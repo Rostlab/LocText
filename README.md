@@ -56,7 +56,53 @@ Relation(class_id:"r_5": e1:"Entity(class_id: e_1, offset: 0, text: GCN2, norms:
 Full documentation is due. For now:
 
 * [Read the example script](run.py) to know how to instantiate the main classes
-* Traverse over the extracted relations as in [`annotated_corpus.predicted_relations()`](https://github.com/Rostlab/nalaf/blob/develop/nalaf/structures/data.py#L104), which returns objects of [type Relation, as defined in nalaf](https://github.com/Rostlab/nalaf/blob/develop/nalaf/structures/data.py#L1963)
+* Traverse over the extracted relations as in [`annotated_corpus.predicted_relations()`](https://github.com/Rostlab/nalaf/blob/develop/nalaf/structures/data.py#L104), which returns objects of [type Relation, as defined in nalaf](https://github.com/Rostlab/nalaf/blob/develop/nalaf/structures/data.py)
 
 
 For any any issue or question with the [LocText](https://github.com/Rostlab/LocText) and [nalaf](https://github.com/Rostlab/nalaf) code, please open up an issue in the corresponding repository. Indeed, considerable chunks require refactoring and documentation; don't hesitate to complain ;)
+
+
+### Development
+
+We use [pytest](https://docs.pytest.org/) for testing.
+
+---
+
+To do a quick performance cross-validation of the LocText machine-learning model, execute:
+
+```shell
+python loctext/learning/train.py --model D0  # Or use --help for more possible arguments
+```
+
+You should see something like:
+
+```shell
+Run Arguments:
+	corpus_percentage = 1.0
+	cv_with_test_set = False
+	eval_corpus = None
+	evaluate_only_on_edges_plausible_relations = False
+	evaluation_level = 4
+	evaluator = <nalaf.learning.evaluators.DocumentLevelRelationEvaluator object at 0x1100bcc18>
+	feature_generators = LocText
+	force_external_corpus_evaluation = False
+	k_num_folds = 5
+	load_model = None
+	model = D0
+	predict_entities = []
+	save_model = None
+	training_corpus = LocText
+
+Training corpus stats:
+	#documents: 100
+	#relations total: 1345
+	#relations prot<-->loc: 550
+	#entities: Counter({'e_1': 1393, 'e_2': 558, 'e_3': 277})
+	#sentences: 1056
+	#instances (edges): 663 -- #P=351 vs. #N=312
+	#plausible relations from edges: 351
+	#features: 302
+
+# class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
+r_5	191	32	112	0	0	0.8565	0.6304	0.7262	0.0031	0.8565	0.6304	0.7262	0.0030
+```
