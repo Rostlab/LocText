@@ -9,7 +9,7 @@ def readme():
 
 setup(
     name='LocText',
-    version='1.0.0',
+    version='1.0.1',
     description='NLP-based Relation Extraction (RE) of: Proteins <--> Cell Compartments',
     long_description=readme(),
     url='https://github.com/Rostlab/LocText',
