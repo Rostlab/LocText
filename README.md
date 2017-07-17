@@ -38,6 +38,31 @@ python -m spacy download en
 python run.py --text "GCN2 was constitutively localized to the nucleolus or recruited to the nucleolus by amino acid starvation stress"
 ```
 
+You should see something like the following:
+
+```python
+----DATASET----
+Nr of documents: 1, Nr of chars: 112
+---DOCUMENT---
+Document ID: 'doc_1'
+Size: 112, Title: GCN2 was constitutively localized to the nucleolus or recruited to the nucleolus by amino acid starvation stress
+--PART--
+Part ID: "part_1"
+Is Abstract: True
+-Text-
+"GCN2 was constitutively localized to the nucleolus or recruited to the nucleolus by amino acid starvation stress"
+-Entities-
+[]
+-Predicted entities-
+Entity(id: e_1, offset: 0, text: GCN2, norm: {'n_7': 'Q9LX30,Q9FIB4,Q9P2K8,P15442'})
+Entity(id: e_2, offset: 41, text: nucleolus, norm: {'n_9': 'GO:0005730'})
+Entity(id: e_2, offset: 71, text: nucleolus, norm: {'n_9': 'GO:0005730'})
+-Relations-
+[]
+-Predicted relations-
+Relation(id:"r_5": e1:"Entity(id: e_1, offset: 0, text: GCN2, norm: {'n_7': 'Q9LX30,Q9FIB4,Q9P2K8,P15442'})"   <--->   e2:"Entity(id: e_2, offset: 41, text: nucleolus, norm: {'n_9': 'GO:0005730'})")
+Relation(id:"r_5": e1:"Entity(id: e_1, offset: 0, text: GCN2, norm: {'n_7': 'Q9LX30,Q9FIB4,Q9P2K8,P15442'})"   <--->   e2:"Entity(id: e_2, offset: 71, text: nucleolus, norm: {'n_9': 'GO:0005730'})")
+```
 
 ### Python API
 
