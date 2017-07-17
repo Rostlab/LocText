@@ -42,13 +42,13 @@ You should see something like the following:
 
 ```shell
 # Predicted entities:
-Entity(id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9LX30,P15442,Q9P2K8,Q9FIB4'})
-Entity(id: e_2, offset: 41, text: nucleolus, norms: {'n_9': 'GO:0005730'})
-Entity(id: e_2, offset: 71, text: nucleolus, norms: {'n_9': 'GO:0005730'})
+Entity(class_id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9P2K8,Q9LX30,Q9FIB4,P15442'})
+Entity(class_id: e_2, offset: 41, text: nucleolus, norms: {'n_9': 'GO:0005730'})
+Entity(class_id: e_2, offset: 71, text: nucleolus, norms: {'n_9': 'GO:0005730'})
 
 # Predicted relations:
-Relation(id:"r_5": e1:"Entity(id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9LX30,P15442,Q9P2K8,Q9FIB4'})"   <--->   e2:"Entity(id: e_2, offset: 41, text: nucleolus, norms: {'n_9': 'GO:0005730'})")
-Relation(id:"r_5": e1:"Entity(id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9LX30,P15442,Q9P2K8,Q9FIB4'})"   <--->   e2:"Entity(id: e_2, offset: 71, text: nucleolus, norms: {'n_9': 'GO:0005730'})")
+Relation(class_id:"r_5": e1:"Entity(class_id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9P2K8,Q9LX30,Q9FIB4,P15442'})"   <--->   e2:"Entity(class_id: e_2, offset: 41, text: nucleolus, norms: {'n_9': 'GO:0005730'})")
+Relation(class_id:"r_5": e1:"Entity(class_id: e_1, offset: 0, text: GCN2, norms: {'n_7': 'Q9P2K8,Q9LX30,Q9FIB4,P15442'})"   <--->   e2:"Entity(class_id: e_2, offset: 71, text: nucleolus, norms: {'n_9': 'GO:0005730'})")
 ```
 
 ### Python API
