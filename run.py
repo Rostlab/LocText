@@ -35,8 +35,8 @@ def parse_arguments(argv=[]):
 
 
 def read_models(args):
-    # Note, the id constants for the entities and relations (*_ID) are arbitrary.
-    # Nonetheless, you must know them to later extract your desired types of entities/relations
+    # Note, the id constants for the entities and relations (*_ID) are arbitrary. Nonetheless, you must know them to
+    # later extract your desired types of entities/relations
 
     ner = StringTagger(PRO_ID, LOC_ID, ORG_ID, UNIPROT_NORM_ID, GO_NORM_ID, TAXONOMY_NORM_ID, host=args.entity_tagger_url)
 
