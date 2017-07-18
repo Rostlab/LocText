@@ -62,7 +62,7 @@ Full documentation is due. For now:
 For any any issue or question with the [LocText](https://github.com/Rostlab/LocText) and [nalaf](https://github.com/Rostlab/nalaf) code, please open up an issue in the corresponding repository. Indeed, considerable chunks require refactoring and documentation; don't hesitate to complain ;)
 
 
-### Development
+## Development
 
 We use [pytest](https://docs.pytest.org/) for testing.
 
