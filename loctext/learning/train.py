@@ -16,6 +16,13 @@ from loctext.util import simple_parse_GO
 import time
 
 
+import pkg_resources
+print("numpy", pkg_resources.get_distribution("numpy").version)
+print("scipy", pkg_resources.get_distribution("scipy").version)
+print("scikit-learn", pkg_resources.get_distribution("scikit-learn").version)
+print("spacy", pkg_resources.get_distribution("spacy").version)
+
+
 def parse_arguments(argv=[]):
     import argparse
 
