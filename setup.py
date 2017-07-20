@@ -27,7 +27,9 @@ setup(
 
     install_requires=[
         # 'nalaf',
+        'spacy == v1.7.5',
         'scikit-learn == 0.18.1',
+
         'requests_cache >= 0.4.13',
         'ujson',  # It should be included with spacy, AFAIK
     ]
