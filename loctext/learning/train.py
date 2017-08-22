@@ -16,15 +16,6 @@ from loctext.util import simple_parse_GO
 import time
 
 
-import pkg_resources
-print("numpy", pkg_resources.get_distribution("numpy").version)
-print("scipy", pkg_resources.get_distribution("scipy").version)
-print("scikit-learn", pkg_resources.get_distribution("scikit-learn").version)
-print("spacy", pkg_resources.get_distribution("spacy").version)
-print("nltk", pkg_resources.get_distribution("nltk").version)
-print("gensim", pkg_resources.get_distribution("gensim").version)
-
-
 def parse_arguments(argv=[]):
     import argparse
 
@@ -511,10 +502,17 @@ def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=F
 
 
 def print_run_args(args, training_corpus, eval_corpus):
+    import pkg_resources
+
     print()
     print("Run Arguments: ")
     for key, value in sorted((vars(args)).items()):
         print("\t{} = {}".format(key, value))
+
+    important_libraries = ["numpy", "scipy", "scikit-learn", "spacy"]
+    aux = ", ".join((l + " == " + pkg_resources.get_distribution(l).version for l in important_libraries))
+    print("\t---")
+    print("\tUsing libraries versions: " + aux)
 
     print()
     print_corpus_hard_core_stats("Training", training_corpus)
