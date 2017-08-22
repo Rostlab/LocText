@@ -26,10 +26,15 @@ setup(
     ],
 
     install_requires=[
+        # ML
         # 'nalaf',
-        'spacy == v1.7.5',
+        'numpy == 1.13.1',
+        'scipy == 0.18.1',  # or 0.19.0
         'scikit-learn == 0.18.1',
+        'spacy == 1.7.5',
+        'nltk == 3.2.2',
 
+        # Other
         'requests_cache >= 0.4.13',
         'ujson',  # It should be included with spacy, AFAIK
     ]
