@@ -28,11 +28,11 @@ setup(
     install_requires=[
         # ML
         'nalaf == 0.2.1',
-        'numpy == 1.13.1',
+        'numpy == 1.11.2',
         'scipy == 0.18.1',  # or 0.19.0
         'scikit-learn == 0.18.1',
         'spacy == 1.2.0',
-        'nltk == 3.2.2',
+        'nltk == 3.2.1',
 
         # Other
         'requests',
