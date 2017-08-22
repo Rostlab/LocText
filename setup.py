@@ -35,6 +35,7 @@ setup(
         'nltk == 3.2.2',
 
         # Other
+        'requests',
         'requests_cache >= 0.4.13',
         'ujson',  # It should be included with spacy, AFAIK
     ]
