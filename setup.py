@@ -22,12 +22,12 @@ setup(
     setup_requires=['pytest'],
 
     dependency_links=[
-        'https://github.com/Rostlab/nalaf/tree/develop#egg=nalaf'
+        'git+https://github.com/Rostlab/nalaf.git@feature/performance_check#egg=nalaf'
     ],
 
     install_requires=[
         # ML
-        # 'nalaf',
+        'nalaf == 0.2.1',
         'numpy == 1.13.1',
         'scipy == 0.18.1',  # or 0.19.0
         'scikit-learn == 0.18.1',
