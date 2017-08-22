@@ -21,6 +21,8 @@ print("numpy", pkg_resources.get_distribution("numpy").version)
 print("scipy", pkg_resources.get_distribution("scipy").version)
 print("scikit-learn", pkg_resources.get_distribution("scikit-learn").version)
 print("spacy", pkg_resources.get_distribution("spacy").version)
+print("nltk", pkg_resources.get_distribution("nltk").version)
+print("gensim", pkg_resources.get_distribution("gensim").version)
 
 
 def parse_arguments(argv=[]):
