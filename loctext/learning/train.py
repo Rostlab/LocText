@@ -174,8 +174,7 @@ def train(args, submodel_name, training_set, submodel, execute_pipeline):
 
 
 def plot_pr_curve(submodel):
-    precision, recall = submodel.model.pr_rates[0]
-    auc_value = auc(precision, recall)
+    precision, recall, pr_auc = submodel.model.pr_rates[0]
 
     plt.step(recall, precision, color='b', alpha=0.2, where='post')
     plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
@@ -184,7 +183,8 @@ def plot_pr_curve(submodel):
     plt.ylabel('Precision')
     plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
-    plt.title('2-class Precision-Recall curve: AUC={0:0.2f}'.format(auc_value))
+    plt.title('2-class Precision-Recall curve: AUC={0:0.2f}'.format(pr_auc))
+    plt.show()
 
 
 def _select_annotator_submodels(args):
