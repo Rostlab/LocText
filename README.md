@@ -22,7 +22,8 @@ Non-packaged dependencies (each software has its own dependencies):
 ```shell
 git clone https://github.com/Rostlab/LocText.git
 cd LocText
-pip3 install .
+# We recommend you use python virtualenv: https://pypi.python.org/pypi/virtualenv
+pip install -r requirements.txt
 python -m loctext.download_data
 ```
 
