@@ -24,7 +24,6 @@ git clone https://github.com/Rostlab/LocText.git
 cd LocText
 pip3 install .
 python -m loctext.download_data
-python -m spacy download en
 ```
 
 
@@ -71,10 +70,11 @@ We use [pytest](https://docs.pytest.org/) for testing.
 To do a quick performance cross-validation of the LocText machine-learning model, execute:
 
 ```shell
-python loctext/learning/train.py --model D0  # Or use --help for more possible arguments
+# Use --help for more possible arguments
+python loctext/learning/train.py --model D0
 ```
 
-You should see something like:
+In the end, you should see something like:
 
 ```shell
 Run Arguments:
@@ -83,7 +83,7 @@ Run Arguments:
 	eval_corpus = None
 	evaluate_only_on_edges_plausible_relations = False
 	evaluation_level = 4
-	evaluator = <nalaf.learning.evaluators.DocumentLevelRelationEvaluator object at 0x1100bcc18>
+	evaluator = <nalaf.learning.evaluators.DocumentLevelRelationEvaluator object at 0x10802df98>
 	feature_generators = LocText
 	force_external_corpus_evaluation = False
 	k_num_folds = 5
@@ -92,6 +92,8 @@ Run Arguments:
 	predict_entities = []
 	save_model = None
 	training_corpus = LocText
+	---
+	Using libraries versions: numpy == 1.11.2, scipy == 0.18.1, scikit-learn == 0.18.1, spacy == 1.2.0
 
 Training corpus stats:
 	#documents: 100
@@ -104,5 +106,5 @@ Training corpus stats:
 	#features: 302
 
 # class	tp	fp	fn	fp_ov	fn_ov	e|P	e|R	e|F	e|F_SE	o|P	o|R	o|F	o|F_SE
-r_5	191	32	112	0	0	0.8565	0.6304	0.7262	0.0031	0.8565	0.6304	0.7262	0.0030
+r_5	214	18	89	0	0	0.9224	0.7063	0.8000	0.0031	0.9224	0.7063	0.8000	0.0031
 ```
