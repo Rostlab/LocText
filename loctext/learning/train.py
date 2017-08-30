@@ -14,6 +14,8 @@ from nalaf.utils.download import DownloadArticle
 from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 from loctext.util import simple_parse_GO
 import time
+from sklearn.metrics import precision_recall_curve, auc
+import matplotlib.pyplot as plt
 
 
 def parse_arguments(argv=[]):
@@ -121,6 +123,9 @@ def evaluate(args, training_corpus, eval_corpus):
         if not (eval_corpus or args.save_model):
             # Do cross validation
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
+
+            plot_pr_curve(submodel)
+
             rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
         else:
@@ -166,6 +171,20 @@ def train(args, submodel_name, training_set, submodel, execute_pipeline):
             print("Model saved to: ", model_path)
 
     return submodel.annotate
+
+
+def plot_pr_curve(submodel):
+    precision, recall = submodel.model.pr_rates[0]
+    auc_value = auc(precision, recall)
+
+    plt.step(recall, precision, color='b', alpha=0.2, where='post')
+    plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
+
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.ylim([0.0, 1.05])
+    plt.xlim([0.0, 1.0])
+    plt.title('2-class Precision-Recall curve: AUC={0:0.2f}'.format(auc_value))
 
 
 def _select_annotator_submodels(args):
