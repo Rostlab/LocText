@@ -124,7 +124,7 @@ def evaluate(args, training_corpus, eval_corpus):
             # Do cross validation
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
 
-            plot_pr_curve(submodel)
+            # plot_pr_curve(submodel)
 
             rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
@@ -174,16 +174,18 @@ def train(args, submodel_name, training_set, submodel, execute_pipeline):
 
 
 def plot_pr_curve(submodel):
-    precision, recall, pr_auc = submodel.model.pr_rates[0]
+    for i, pack in enumerate(submodel.model.pr_rates, start=1):
+        precision, recall, pr_auc = pack
 
-    plt.step(recall, precision, color='b', alpha=0.2, where='post')
-    plt.fill_between(recall, precision, step='post', alpha=0.2, color='b')
+        label = ("Fold " + str(i) + " AUC={0:.4f}".format(pr_auc))
+        plt.step(recall, precision, label=label)
 
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.ylim([0.0, 1.05])
     plt.xlim([0.0, 1.0])
-    plt.title('2-class Precision-Recall curve: AUC={0:0.2f}'.format(pr_auc))
+    #plt.title('2-class Precision-Recall curve: AUC={0:0.2f}'.format(pr_auc))
+    plt.legend(loc='lower left', fontsize='small')
     plt.show()
 
 
