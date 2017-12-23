@@ -7,9 +7,9 @@ cloudpickle==0.4.0
 cymem==1.31.2
 gensim==0.13.3
 idna==2.6
--e git+https://github.com/juanmirocks/LocText.git@017b55466d2d3e09360bf28a8f60c0c67b94aa9e#egg=LocText
+# -e git+https://github.com/juanmirocks/LocText.git@017b55466d2d3e09360bf28a8f60c0c67b94aa9e#egg=LocText
 murmurhash==0.26.4
--e git+https://github.com/Rostlab/nalaf.git@c44597a6bda14c849ab98b609383fc449764eba0#egg=nalaf
+# -e git+https://github.com/Rostlab/nalaf.git@c44597a6bda14c849ab98b609383fc449764eba0#egg=nalaf
 nltk==3.2.1
 numpy==1.11.2
 pathlib==1.0.1
