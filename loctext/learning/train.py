@@ -15,7 +15,6 @@ from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 from loctext.util import simple_parse_GO
 import time
 from sklearn.metrics import precision_recall_curve, auc
-import matplotlib.pyplot as plt
 
 
 def parse_arguments(argv=[]):
@@ -174,6 +173,8 @@ def train(args, submodel_name, training_set, submodel, execute_pipeline):
 
 
 def plot_pr_curve(submodel):
+    import matplotlib.pyplot as plt
+
     for i, pack in enumerate(submodel.model.pr_rates, start=1):
         precision, recall, pr_auc = pack
 
