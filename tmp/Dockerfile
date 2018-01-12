@@ -6,7 +6,7 @@ RUN apt-get update && \
 RUN git clone https://github.com/Rostlab/nalaf.git && \
     cd nalaf && \
     python setup.py install && \
-    python -m nalaf.download_corpora
+    python -m nalaf.download_data
 
 RUN cd ..
 

@@ -17,7 +17,7 @@ before_install:
   - printenv  # Log for debugging purposes
   - pip install --no-clean git+https://github.com/Rostlab/nalaf.git@develop
   # - printf 'nalaf commit --> ' && cd /tmp/pip-*-build && git rev-parse HEAD  # **nalaf**: log the exact commit for debugging purposes
-  - python -m nalaf.download_corpora
+  - python -m nalaf.download_data
   - pip install codecov pytest-cov
   - cd $TRAVIS_BUILD_DIR
 
