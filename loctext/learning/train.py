@@ -14,6 +14,7 @@ from nalaf.utils.download import DownloadArticle
 from nalaf.structures.data import Dataset, Document, Part, Entity, Relation
 from loctext.util import simple_parse_GO
 import time
+from sklearn.metrics import precision_recall_curve, auc
 
 
 def parse_arguments(argv=[]):
@@ -121,6 +122,9 @@ def evaluate(args, training_corpus, eval_corpus):
         if not (eval_corpus or args.save_model):
             # Do cross validation
             evaluations = Evaluations.cross_validate(annotator_gen_fun, training_corpus, args.evaluator, args.k_num_folds, use_validation_set=not args.cv_with_test_set)
+
+            # plot_pr_curve(submodel)
+
             rel_evaluation = evaluations  # evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
         else:
@@ -166,6 +170,24 @@ def train(args, submodel_name, training_set, submodel, execute_pipeline):
             print("Model saved to: ", model_path)
 
     return submodel.annotate
+
+
+def plot_pr_curve(submodel):
+    import matplotlib.pyplot as plt
+
+    for i, pack in enumerate(submodel.model.pr_rates, start=1):
+        precision, recall, pr_auc = pack
+
+        label = ("Fold " + str(i) + " AUC={0:.4f}".format(pr_auc))
+        plt.step(recall, precision, label=label)
+
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.ylim([0.0, 1.05])
+    plt.xlim([0.0, 1.0])
+    #plt.title('2-class Precision-Recall curve: AUC={0:0.2f}'.format(pr_auc))
+    plt.legend(loc='lower left', fontsize='small')
+    plt.show()
 
 
 def _select_annotator_submodels(args):
@@ -502,10 +524,17 @@ def get_evaluator(evaluation_level, evaluate_only_on_edges_plausible_relations=F
 
 
 def print_run_args(args, training_corpus, eval_corpus):
+    import pkg_resources
+
     print()
     print("Run Arguments: ")
     for key, value in sorted((vars(args)).items()):
         print("\t{} = {}".format(key, value))
+
+    important_libraries = ["numpy", "scipy", "scikit-learn", "spacy"]
+    aux = ", ".join((l + " == " + pkg_resources.get_distribution(l).version for l in important_libraries))
+    print("\t---")
+    print("\tUsing libraries versions: " + aux)
 
     print()
     print_corpus_hard_core_stats("Training", training_corpus)

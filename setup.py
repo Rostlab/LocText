@@ -22,12 +22,20 @@ setup(
     setup_requires=['pytest'],
 
     dependency_links=[
-        'https://github.com/Rostlab/nalaf/tree/develop#egg=nalaf'
+        'git+https://github.com/Rostlab/nalaf.git@feature/performance_check#egg=nalaf'
     ],
 
     install_requires=[
-        # 'nalaf',
+        # ML
+        'nalaf == 0.2.2',
+        'numpy == 1.11.2',
+        'scipy == 0.18.1',  # or 0.19.0
         'scikit-learn == 0.18.1',
+        'spacy == 1.2.0',
+        'nltk == 3.2.1',
+
+        # Other
+        'requests',
         'requests_cache >= 0.4.13',
         'ujson',  # It should be included with spacy, AFAIK
     ]

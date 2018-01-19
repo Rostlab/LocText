@@ -190,12 +190,16 @@ def _test_LocText(corpus_percentage, model, EXPECTED_F=None, predict_entities=No
     if predict_entities:
         args += ['--predict_entities', predict_entities]
 
-    rel_evaluation = evaluate_with_argv(args)
+    evaluations = evaluate_with_argv(args)
+
+    rel_evaluation = evaluations(REL_PRO_LOC_ID).compute(strictness="exact")
 
     print("LocText " + model, rel_evaluation)
+    print(evaluations)
+
     assert math.isclose(rel_evaluation.f_measure, EXPECTED_F, abs_tol=EXPECTED_F_SE * 1.1)
 
-    return rel_evaluation
+    return evaluations
 
 
 # -----------------------------------------------------------------------------------
