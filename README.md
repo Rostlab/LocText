@@ -7,6 +7,10 @@ Text-mine the relationship of `Proteins <--> Cell Compartments` (meaning, _prote
 
 Run on PubMed abstracts or any string (i.e. including full text).
 
+
+**Publication**: [LocText: relation extraction of protein localizations to assist database curation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-018-2021-9)
+
+
 ## Requirements
 
 Runs on `Python >= 3.5`.
