@@ -28,7 +28,7 @@ setup(
     install_requires=[
         # ML
         'nalaf == 0.2.2',
-        'numpy == 1.11.2',
+        'numpy == 1.22.0',
         'scipy == 0.18.1',  # or 0.19.0
         'scikit-learn == 0.18.1',
         'spacy == 1.2.0',
