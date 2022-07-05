@@ -27,7 +27,7 @@ smart-open==1.5.3
 spacy==1.2.0
 sputnik==0.9.3
 thinc==5.0.8
-ujson==1.35
+ujson==5.4.0
 urllib3==1.24.1
 # -e git+https://github.com/juanmirocks/LocText.git@017b55466d2d3e09360bf28a8f60c0c67b94aa9e#egg=LocText
 # -e git+https://github.com/Rostlab/nalaf.git@8b89d5dea0dd16ce0907cbf6faf1c6002c4f02e0#egg=nalaf
